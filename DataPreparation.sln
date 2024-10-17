@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPreparation", "DataPreparation\DataPreparation.csproj", "{F2810759-7EB2-4046-835F-0D846CDE586C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPreparation.UnitTests", "DataPreparation.UnitTests\DataPreparation.UnitTests.csproj", "{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F2810759-7EB2-4046-835F-0D846CDE586C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2810759-7EB2-4046-835F-0D846CDE586C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2810759-7EB2-4046-835F-0D846CDE586C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2810759-7EB2-4046-835F-0D846CDE586C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
