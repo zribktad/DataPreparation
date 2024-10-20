@@ -20,42 +20,19 @@ namespace DataPreparation.Testing
         {
 
             DataRegister.RegisterDataPreparation();
-            
 
-            IServiceCollection serviceCollection = new ServiceCollection();
-            if (test.TypeInfo.Type.GetInterface(nameof(IDataPreparationTestCase)) != null)
+            IServiceCollection serviceCollection = DataRegister.GetServiceCollection();
+            if (test.TypeInfo?.Type.GetInterface(nameof(IDataPreparationTestCase)) != null)
             {
-                var dataPreparationTestCase = (IDataPreparationTestCase)Activator.CreateInstance(test.TypeInfo.Type);
-                dataPreparationTestCase.DataPreparationServices(serviceCollection);
-                
-            }
-
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var allTypes = new List<Type>();
-            foreach (var assembly in assemblies)
-            {
-                try
+                var dataTestCase = Activator.CreateInstance(test.TypeInfo.Type);
+                if(dataTestCase is IDataPreparationTestCase dataPreparationTestCase)
                 {
-                    var types = assembly.GetTypes();
-                    allTypes.AddRange(types);
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    Console.WriteLine($"Warning: Unable to load types from assembly {assembly.FullName}: {ex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Warning: Unable to load assembly {assembly.FullName}: {ex.Message}");
+                    dataPreparationTestCase.DataPreparationServices(serviceCollection);
                 }
             }
 
-            var typesWithAttribute = allTypes.Where(type =>
-                type.GetCustomAttributes(typeof(DataPreparationForAttribute), true).Any() ||
-                type.GetCustomAttributes(typeof(DataMethodPreparationForAttribute), true).Any());
-
-            
-           // ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
-            //DataRegister.Register(test.TypeInfo.Type, serviceProvider);
+            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+           // DataRegister.Register(test.TypeInfo.Type, serviceProvider);
 
         }
 

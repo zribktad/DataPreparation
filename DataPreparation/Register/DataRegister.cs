@@ -61,7 +61,7 @@ namespace DataPreparation.Testing
             }
         }
 
-        public static IServiceCollection GetBaseServiceCollectionCopy()
+        public static IServiceCollection GetServiceCollection()
         {
             IServiceCollection newServiceCollection = new ServiceCollection();
             foreach (var service in baseServiceCollection)
@@ -69,6 +69,15 @@ namespace DataPreparation.Testing
                 newServiceCollection.Add(service);
             }
             return newServiceCollection;
+        }
+
+        public static Type? GetClassDataPreparationType(Type classType)
+        {
+            return ClassDataRegister.GetValueOrDefault(classType);
+        }
+        public static Type? GetMethodDataPreparationType(MethodInfo methodInfo)
+        {
+            return MethodDataRegister.GetValueOrDefault(methodInfo);
         }
 
 
