@@ -3,6 +3,7 @@ using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using DataPreparation.Testing.Register;
 
 namespace DataPreparation.Testing
 {
@@ -18,21 +19,42 @@ namespace DataPreparation.Testing
 
         public void BeforeTest(ITest test)
         {
+            IServiceCollection serviceCollection2 = new ServiceCollection();
 
-            DataRegister.RegisterDataPreparation();
-
-            IServiceCollection serviceCollection = DataRegister.GetServiceCollection();
-            if (test.TypeInfo?.Type.GetInterface(nameof(IDataPreparationTestCase)) != null)
+            IServiceCollection serviceCollection = new ServiceCollection();
+            if (test.TypeInfo.Type.GetInterface(nameof(IDataPreparationTestCase)) != null)
             {
-                var dataTestCase = Activator.CreateInstance(test.TypeInfo.Type);
-                if(dataTestCase is IDataPreparationTestCase dataPreparationTestCase)
+                var dataPreparationTestCase = (IDataPreparationTestCase)Activator.CreateInstance(test.TypeInfo.Type);
+                dataPreparationTestCase.DataPreparationServices(serviceCollection);
+                
+            }
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var allTypes = new List<Type>();
+            foreach (var assembly in assemblies)
+            {
+                try
                 {
-                    dataPreparationTestCase.DataPreparationServices(serviceCollection);
+                    var types = assembly.GetTypes();
+                    allTypes.AddRange(types);
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    Console.WriteLine($"Warning: Unable to load types from assembly {assembly.FullName}: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Unable to load assembly {assembly.FullName}: {ex.Message}");
                 }
             }
 
-            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
-           // DataRegister.Register(test.TypeInfo.Type, serviceProvider);
+            var typesWithAttribute = allTypes.Where(type =>
+                type.GetCustomAttributes(typeof(DataPreparationForAttribute), true).Any() ||
+                type.GetCustomAttributes(typeof(DataMethodPreparationForAttribute), true).Any());
+
+            ServicesProviderRegister.RegisterDataPreparation();
+           // ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            //ServicesProviderRegister.Register(test.TypeInfo.Type, serviceProvider);
 
         }
 

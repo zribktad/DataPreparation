@@ -1,24 +1,29 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework.Interfaces;
 
 namespace DataPreparation.Testing
 {
     public static class DataRegister
     {
+        #region providers for Test Cases
 
-        //private static readonly Dictionary<Type, IServiceProvider> providerDictionary = new();
-        //public static void Register<TDataCase>(IServiceProvider serviceProvider)
-        //{
-        //    providerDictionary[typeof(TDataCase)] = serviceProvider;
-        //}
-        //public static void Register(Type type,IServiceProvider serviceProvider)
-        //{
-        //    providerDictionary[type] = serviceProvider;
-        //}
-        //public static IServiceProvider? GetRegistered(Type classType)
-        //{
-        //    return providerDictionary.GetValueOrDefault(classType);
-        //}
+        private static readonly Dictionary<Type, IServiceProvider> providerDictionary = new();
+        public static void Register<TDataCase>(IServiceProvider serviceProvider)
+        {
+            providerDictionary[typeof(TDataCase)] = serviceProvider;
+        }
+        public static void Register(Type type, IServiceProvider serviceProvider)
+        {
+            providerDictionary[type] = serviceProvider;
+        }
+        public static IServiceProvider? GetRegistered(Type testCase)
+        {
+            return providerDictionary.GetValueOrDefault(testCase);
+        }
+
+
+        #endregion
 
         private static bool registered = false;
         public static void  RegisterDataPreparation()
@@ -84,5 +89,21 @@ namespace DataPreparation.Testing
         private static readonly IServiceCollection baseServiceCollection = new ServiceCollection();
         private static readonly Dictionary<Type, Type> ClassDataRegister = new();
         private static readonly Dictionary<MethodInfo, Type> MethodDataRegister = new();
+
+        public static object GetTestCaseService(ITest test, Type dataPreparationClassType)
+        {
+            if (dataPreparationClassType == null || test == null)
+            {
+                throw new Exception("Incorrect call for service");
+            }
+            var testProvider = GetRegistered(test.Fixture.GetType());
+            if (testProvider == null)
+            {
+                //TODO  
+                return null;
+            }
+
+            return testProvider.GetService(dataPreparationClassType);
+        }
     }
 }

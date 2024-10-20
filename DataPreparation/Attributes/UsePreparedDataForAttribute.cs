@@ -23,10 +23,12 @@ namespace DataPreparation.Testing.Attributes
 
         public void BeforeTest(ITest test)
         {
-
-            var dataPreparationClass = DataRegister.GetClassDataPreparationType(ClassType);
+             
+            var dataPreparationClassType = DataRegister.GetClassDataPreparationType(ClassType);
+            var dataPreparationClass = DataRegister.GetTestCaseService(test, dataPreparationClassType);
             if (dataPreparationClass == null)
             {
+                //TODO
             }
 
             if (dataPreparationClass is IClassDataPreparation dataPreparationClassInstance)
@@ -34,20 +36,30 @@ namespace DataPreparation.Testing.Attributes
                 dataPreparationClassInstance.TestUpData();
 
             }
+            else
+            {
+                //TODO
+            }
 
             foreach (var methodName in MethodsNames)
             {
                 var methodInfo = ClassType.GetMethod(methodName);
                 if (methodInfo != null)
                 {
-                    var dataPreparationMethod = DataRegister.GetMethodDataPreparationType(methodInfo);
-                    if (dataPreparationMethod == null )
+                    var dataPreparationMethodType = DataRegister.GetMethodDataPreparationType(methodInfo);
+                    var dataPreparationMethodClass = DataRegister.GetTestCaseService(test, dataPreparationMethodType);
+                    if (dataPreparationMethodClass == null )
                     {
+                        //TODO
                     }
 
-                    if (dataPreparationMethod is IMethodDataPreparation dataPreparationMethod)
+                    if (dataPreparationMethodClass is IMethodDataPreparation dataPreparationMethodInstance)
                     {
-                        dataPreparationMethod.TestUpData();
+                        dataPreparationMethodInstance.TestUpData();
+                    }
+                    else
+                    {
+                        //TODO
                     }
                 }
             }
