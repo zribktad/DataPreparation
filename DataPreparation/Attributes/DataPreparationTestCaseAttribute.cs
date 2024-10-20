@@ -3,7 +3,6 @@ using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using DataPreparation.Testing.Register;
 
 namespace DataPreparation.Testing
 {
@@ -29,24 +28,6 @@ namespace DataPreparation.Testing
                 
             }
 
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var allTypes = new List<Type>();
-            foreach (var assembly in assemblies)
-            {
-                try
-                {
-                    var types = assembly.GetTypes();
-                    allTypes.AddRange(types);
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    Console.WriteLine($"Warning: Unable to load types from assembly {assembly.FullName}: {ex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Warning: Unable to load assembly {assembly.FullName}: {ex.Message}");
-                }
-            }
 
             var typesWithAttribute = allTypes.Where(type =>
                 type.GetCustomAttributes(typeof(DataPreparationForAttribute), true).Any() ||
