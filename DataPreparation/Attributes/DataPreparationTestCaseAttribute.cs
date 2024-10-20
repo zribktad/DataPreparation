@@ -1,12 +1,12 @@
-﻿using NUnit.Framework;
+﻿using System.Reflection;
+using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using DataPreparation.Testing.Register;
 
 namespace DataPreparation.Testing
 {
-    [AttributeUsage(AttributeTargets.Class,AllowMultiple = false,Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class,Inherited = false)]
     public class DataPreparationTestCaseAttribute : Attribute, ITestAction
     {
         // Constructor for the attribute
@@ -18,16 +18,45 @@ namespace DataPreparation.Testing
 
         public void BeforeTest(ITest test)
         {
+
+            DataRegister.RegisterDataPreparation();
+            
+
+            IServiceCollection serviceCollection = new ServiceCollection();
             if (test.TypeInfo.Type.GetInterface(nameof(IDataPreparationTestCase)) != null)
             {
                 var dataPreparationTestCase = (IDataPreparationTestCase)Activator.CreateInstance(test.TypeInfo.Type);
-                IServiceCollection serviceCollection = new ServiceCollection();
                 dataPreparationTestCase.DataPreparationServices(serviceCollection);
-                ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
-                ServicesProviderRegister.Register(test.TypeInfo.Type,serviceProvider);
-
+                
             }
-            DataPreparationRegister.RegisterFromAttributes();
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var allTypes = new List<Type>();
+            foreach (var assembly in assemblies)
+            {
+                try
+                {
+                    var types = assembly.GetTypes();
+                    allTypes.AddRange(types);
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    Console.WriteLine($"Warning: Unable to load types from assembly {assembly.FullName}: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Unable to load assembly {assembly.FullName}: {ex.Message}");
+                }
+            }
+
+            var typesWithAttribute = allTypes.Where(type =>
+                type.GetCustomAttributes(typeof(DataPreparationForAttribute), true).Any() ||
+                type.GetCustomAttributes(typeof(DataMethodPreparationForAttribute), true).Any());
+
+            
+           // ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            //DataRegister.Register(test.TypeInfo.Type, serviceProvider);
+
         }
 
         public void AfterTest(ITest test)

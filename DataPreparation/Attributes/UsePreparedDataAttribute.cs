@@ -10,7 +10,6 @@ namespace DataPreparation.Testing
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public class UsePreparedDataAttribute: Attribute, ITestAction
     {
-
         public ActionTargets Targets => ActionTargets.Test;
         public UsePreparedDataAttribute()
         {
@@ -19,9 +18,6 @@ namespace DataPreparation.Testing
         private List<IDataPreparation> _dataPreparations = new();
         public UsePreparedDataAttribute(params Type[] dataProviders)
         {
-           
-          
-
             //get from Data{Register} the data preparation for the test
             foreach (var dataProvider in dataProviders)
             {
@@ -35,8 +31,6 @@ namespace DataPreparation.Testing
             }
 
         }
-
-
         public void BeforeTest(ITest test)
         {
 

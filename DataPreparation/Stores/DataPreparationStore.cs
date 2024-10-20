@@ -1,25 +1,28 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace DataPreparation.Testing
+namespace DataPreparation.Testing.Stores
 {
-    public static class DataPreparationRegister
+    internal class DataPreparationStore
     {
-        private static readonly Dictionary<Type, Type> DataRegister = new();
-       
 
-        public static void Register<TDataPreparation, TClass>()
-            where TDataPreparation : IDataPreparation
+        private readonly Dictionary<Type, Type> DataRegister = new();
+        public void Register<IMethod, TClass>()
+            where IMethod : IDataPreparation
         {
-            DataRegister[typeof(TClass)] = typeof(TDataPreparation);
+            DataRegister[typeof(IMethod)] = typeof(TClass);
         }
 
-        public static Type? GetDataPreparationType(Type classType)
+        public  Type? GetDataPreparationType(Type methodClassType)
         {
-            return DataRegister.GetValueOrDefault(classType);
+            return DataRegister.GetValueOrDefault(methodClassType);
         }
-        public static void RegisterFromAttributes()
+        public void RegisterFromAttributes(Type tw)
         {
-            
             try
             {
                 var dataPreparationTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -32,7 +35,7 @@ namespace DataPreparation.Testing
                         catch (ReflectionTypeLoadException ex)
                         {
                             Console.WriteLine($"Warning: Unable to load types from assembly {assembly.FullName}: {ex.Message}");
-                            return []; 
+                            return [];
                         }
                     })
                     .Where(type => type.GetCustomAttributes(typeof(DataPreparationForAttribute), false).Length > 0);
