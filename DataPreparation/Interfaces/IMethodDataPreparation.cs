@@ -1,6 +1,6 @@
 ﻿namespace DataPreparation.Testing
 {
-    public interface IDataPreparation
+    public interface IMethodDataPreparation
     {
         void TestUpData();
         void TestDownData();

@@ -1,28 +1,26 @@
-﻿using DataPreparation.Testing.Interfaces;
-using DataPreparation.Testing.Register;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
-namespace DataPreparation.Testing.Attributes
+namespace DataPreparation.Testing
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public class UsePreparedData: Attribute, ITestAction
+    public class UsePreparedDataAttribute: Attribute, ITestAction
     {
 
         public ActionTargets Targets => ActionTargets.Test;
-        public UsePreparedData()
+        public UsePreparedDataAttribute()
         {
         }
 
         private List<IDataPreparation> _dataPreparations = new();
-        public UsePreparedData(params Type[] dataProviders)
+        public UsePreparedDataAttribute(params Type[] dataProviders)
         {
            
-            DataPreparationRegister.RegisterFromAttributes();
+          
 
             //get from Data{Register} the data preparation for the test
             foreach (var dataProvider in dataProviders)

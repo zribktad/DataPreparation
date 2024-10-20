@@ -1,12 +1,12 @@
 ﻿using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
-namespace DataPreparation.Testing.Attributes
+namespace DataPreparation.Testing
 {
-    public class PrepareClassData : Attribute, ITestAction
+    public class PrepareClassDataAttribute : Attribute, ITestAction
     {
         private readonly string _className;
-        public PrepareClassData(string className = null)
+        public PrepareClassDataAttribute(string className = null)
         {
             _className = className ?? "UnknownClass"; 
         }

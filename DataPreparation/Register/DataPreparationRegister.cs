@@ -1,12 +1,10 @@
 ﻿using System.Reflection;
-using DataPreparation.Testing.Attributes;
-using DataPreparation.Testing.Interfaces;
 
-namespace DataPreparation.Testing.Register
+namespace DataPreparation.Testing
 {
     public static class DataPreparationRegister
     {
-        private static readonly Dictionary<Type, Type> DataRegister = new Dictionary<Type, Type>();
+        private static readonly Dictionary<Type, Type> DataRegister = new();
         private static bool _registered;
 
         public static void Register<TDataPreparation, TClass>()
@@ -17,7 +15,7 @@ namespace DataPreparation.Testing.Register
 
         public static Type? GetDataPreparationType(Type classType)
         {
-            return DataRegister.TryGetValue(classType, out var dataPreparationType) ? dataPreparationType : null;
+            return DataRegister.GetValueOrDefault(classType);
         }
         public static void RegisterFromAttributes()
         {

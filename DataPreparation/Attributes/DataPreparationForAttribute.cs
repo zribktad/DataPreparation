@@ -1,4 +1,6 @@
-﻿namespace DataPreparation.Testing.Attributes
+﻿using System.Reflection;
+
+namespace DataPreparation.Testing
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class DataPreparationFor: Attribute
@@ -9,4 +11,5 @@
             ClassType = type;
         }
     }
+
 }
