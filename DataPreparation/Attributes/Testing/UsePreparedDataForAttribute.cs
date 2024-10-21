@@ -1,4 +1,6 @@
-﻿using DataPreparation.Data;
+﻿using System.Reflection;
+using DataPreparation.Data;
+using DataPreparation.DataHandling;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
@@ -8,10 +10,7 @@ namespace DataPreparation.Testing
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class UsePreparedDataForAttribute: Attribute, ITestAction
     {
-        private List<IDataPreparation> _testData;
-        private readonly Type _classType;
-        private readonly string[] _methodsNames;
-        private bool _useClassDataPreparation = false;
+     
         public UsePreparedDataForAttribute(Type classType, params string[] methodsNames)
         {
             _classType = classType;
@@ -26,67 +25,48 @@ namespace DataPreparation.Testing
 
         public void BeforeTest(ITest test)
         {
+            _preparedDataList = DataPreparations(test);
 
-            _testData = new();
-             
-            var dataPreparationClassType = DataRegister.GetClassDataPreparationType(_classType);
-            if (dataPreparationClassType == null)
-            {
-                //error handling 
-            }
-            else
-            {
-                var dataPreparationClass = DataRegister.GetTestCaseService(test, dataPreparationClassType);
-                if (dataPreparationClass == null)
-                {
-                    //TODO
-                }
-                if (dataPreparationClass is IClassDataPreparation dataPreparationClassInstance)
-                {
-                   
-                    _testData.Add(dataPreparationClassInstance);
-                }
-                else
-                {
-                    //TODO
-                }
-            }
+            TestDataHandler.DataUp(_preparedDataList);
+        }
 
-           
+
+        public void AfterTest(ITest test)
+        {
+            TestDataHandler.DataDown(_preparedDataList);
+        }
+
+        private List<IDataPreparation> DataPreparations(ITest test)
+        {
+            List<IDataPreparation> preparedDataList = [];
+            if (_useClassDataPreparation)
+            {
+                var preparationData = GetDataPreparation.Class(test, _classType);
+                if (preparationData == null)
+                {
+                    throw new Exception("Class data preparation not found");
+                }
+                preparedDataList.Add(preparationData);
+            }
 
             foreach (var methodName in _methodsNames)
             {
                 var methodInfo = _classType.GetMethod(methodName);
-                if (methodInfo != null)
+                var preparationData = GetDataPreparation.Method(test, methodInfo);
+                if (preparationData == null)
                 {
-                    var dataPreparationMethodType = DataRegister.GetMethodDataPreparationType(methodInfo);
-                    var dataPreparationMethodClass = DataRegister.GetTestCaseService(test, dataPreparationMethodType);
-                    if (dataPreparationMethodClass == null )
-                    {
-                        //TODO
-                    }
-
-                    if (dataPreparationMethodClass is IMethodDataPreparation dataPreparationMethodInstance)
-                    {
-                        _testData.Add(dataPreparationMethodInstance);
-                    }
-                    else
-                    {
-                        //TODO
-                    }
+                    throw new Exception("Method data preparation not found");
                 }
+                preparedDataList.Add(preparationData);
             }
 
-            TestDataHandler.DataUp(_testData);
-          
-          
-        }
-
-        public void AfterTest(ITest test)
-        {
-            TestDataHandler.DataDown(_testData);
+            return preparedDataList;
         }
 
         public ActionTargets Targets => ActionTargets.Test;
+        private List<IDataPreparation> _preparedDataList;
+        private readonly Type _classType;
+        private readonly string[] _methodsNames;
+        private readonly bool _useClassDataPreparation = false;
     }
 }

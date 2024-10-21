@@ -26,17 +26,26 @@ namespace DataPreparation.Testing
 
         }
 
-        public static object GetTestCaseService(ITest test, Type dataPreparationClassType)
+        public static IDataPreparation? GetTestCaseServiceData(ITest test, Type dataPreparationClassType)
         {
             if (dataPreparationClassType == null || test == null)
             {
                 throw new Exception("Incorrect call for service");
             }
             var testProvider = GetRegistered(test.Fixture.GetType());
-            if (testProvider == null) return null;
-         
+            if (testProvider == null)
+            {
+                Console.WriteLine($"Service provider for test {test.Fixture} not found.");
+                return null;
+            }
 
-            return testProvider.GetService(dataPreparationClassType);
+            if (testProvider.GetService(dataPreparationClassType) is not IDataPreparation dataPreparation)
+            {
+                Console.WriteLine($"Data preparation not found for {dataPreparationClassType.FullName} not found.");
+                return null;
+            }
+            return dataPreparation;
+           
         }
 
         #endregion
