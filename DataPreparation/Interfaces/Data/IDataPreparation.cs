@@ -1,4 +1,4 @@
-﻿namespace DataPreparation.Testing
+﻿namespace DataPreparation.Data
 {
     public interface IDataPreparation
     {

@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace DataPreparation.Testing
+namespace DataPreparation.Data
 {
  
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]

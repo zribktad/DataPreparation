@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using DataPreparation.Data;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework.Interfaces;
 
@@ -9,10 +10,7 @@ namespace DataPreparation.Testing
         #region providers for Test Cases
 
         private static readonly Dictionary<Type, IServiceProvider> providerDictionary = new();
-        public static void Register<TDataCase>(IServiceProvider serviceProvider)
-        {
-            providerDictionary[typeof(TDataCase)] = serviceProvider;
-        }
+     
         public static void Register(Type type, IServiceProvider serviceProvider)
         {
             providerDictionary[type] = serviceProvider;
@@ -21,7 +19,25 @@ namespace DataPreparation.Testing
         {
             return providerDictionary.GetValueOrDefault(testCase);
         }
+        public static void RegisterDataCollection(ITest test, IServiceCollection serviceCollection)
+        {
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            Register(test.Fixture.GetType(), serviceProvider);
 
+        }
+
+        public static object GetTestCaseService(ITest test, Type dataPreparationClassType)
+        {
+            if (dataPreparationClassType == null || test == null)
+            {
+                throw new Exception("Incorrect call for service");
+            }
+            var testProvider = GetRegistered(test.Fixture.GetType());
+            if (testProvider == null) return null;
+         
+
+            return testProvider.GetService(dataPreparationClassType);
+        }
 
         #endregion
 
@@ -66,8 +82,9 @@ namespace DataPreparation.Testing
             }
         }
 
-        public static IServiceCollection GetServiceCollection()
+        public static IServiceCollection GetBaseDataServiceCollection()
         {
+            RegisterDataPreparation();
             IServiceCollection newServiceCollection = new ServiceCollection();
             foreach (var service in baseServiceCollection)
             {
@@ -90,20 +107,8 @@ namespace DataPreparation.Testing
         private static readonly Dictionary<Type, Type> ClassDataRegister = new();
         private static readonly Dictionary<MethodInfo, Type> MethodDataRegister = new();
 
-        public static object GetTestCaseService(ITest test, Type dataPreparationClassType)
-        {
-            if (dataPreparationClassType == null || test == null)
-            {
-                throw new Exception("Incorrect call for service");
-            }
-            var testProvider = GetRegistered(test.Fixture.GetType());
-            if (testProvider == null)
-            {
-                //TODO  
-                return null;
-            }
+  
 
-            return testProvider.GetService(dataPreparationClassType);
-        }
+     
     }
 }

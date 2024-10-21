@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
-namespace DataPreparation.Testing
+namespace DataPreparation.Data
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class DataPreparationForAttribute: Attribute
