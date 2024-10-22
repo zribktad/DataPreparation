@@ -36,11 +36,11 @@ namespace DataPreparation.Testing
                             return []; 
                         }
                     })
-                    .Where(type => type.GetCustomAttributes(typeof(DataPreparationForAttribute), false).Length > 0);
+                    .Where(type => type.GetCustomAttributes(typeof(DataClassPreparationForAttribute), false).Length > 0);
 
                 foreach (var dataPreparationType in dataPreparationTypes)
                 {
-                    var attribute = (DataPreparationForAttribute)Attribute.GetCustomAttribute(dataPreparationType, typeof(DataPreparationForAttribute));
+                    var attribute = (DataClassPreparationForAttribute)Attribute.GetCustomAttribute(dataPreparationType, typeof(DataClassPreparationForAttribute));
                     if (attribute != null)
                     {
                         DataRegister[attribute.ClassType] = dataPreparationType;

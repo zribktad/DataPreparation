@@ -1,54 +1,46 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using DataPreparation.Data;
 using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
 namespace DataPreparation.Testing
 {
-    public static class DataRegister
+    internal static class DataRegister
     {
-        #region providers for Test Cases
+       
 
-        private static readonly Dictionary<Type, IServiceProvider> providerDictionary = new();
-     
-        public static void Register(Type type, IServiceProvider serviceProvider)
-        {
-            providerDictionary[type] = serviceProvider;
-        }
-        public static IServiceProvider? GetRegistered(Type testCase)
-        {
-            return providerDictionary.GetValueOrDefault(testCase);
-        }
+
         public static void RegisterDataCollection(ITest test, IServiceCollection serviceCollection)
         {
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            Register(test.Fixture.GetType(), serviceProvider);
+            CaseProviderStore.Register(test.Fixture.GetType(), serviceProvider);
 
         }
 
-        public static IDataPreparation? GetTestCaseServiceData(ITest test, Type dataPreparationClassType)
+        public static IDataPreparation? GetTestCaseServiceData(ITest test, Type dataPreparationType)
         {
-            if (dataPreparationClassType == null || test == null)
+            if (dataPreparationType == null || test == null)
             {
                 throw new Exception("Incorrect call for service");
             }
-            var testProvider = GetRegistered(test.Fixture.GetType());
+            var testProvider = CaseProviderStore.GetRegistered(test.Fixture.GetType());
             if (testProvider == null)
             {
                 Console.WriteLine($"Service provider for test {test.Fixture} not found.");
                 return null;
             }
 
-            if (testProvider.GetService(dataPreparationClassType) is not IDataPreparation dataPreparation)
+            if (testProvider.GetService(dataPreparationType) is not IDataPreparation dataPreparation)
             {
-                Console.WriteLine($"Data preparation not found for {dataPreparationClassType.FullName} not found.");
+                Console.WriteLine($"Data preparation not found for {dataPreparationType.FullName} not found.");
                 return null;
             }
             return dataPreparation;
            
         }
 
-        #endregion
 
         private static bool registered = false;
         public static void  RegisterDataPreparation()
@@ -77,16 +69,22 @@ namespace DataPreparation.Testing
 
             foreach (var type in allTypes)
             {
-                if (type.GetCustomAttribute<DataPreparationForAttribute>() is { } classAttribute )
+                if (type.GetCustomAttribute<DataClassPreparationForAttribute>() is { } classAttribute )
                 {
                     var classType = classAttribute.ClassType;
-                    ClassDataRegister[classType] = type;
-                    baseServiceCollection.Add(new ServiceDescriptor(type, type, ServiceLifetime.Transient));
+                    DataTypeStore.SetClassDataPreparationType(classType, type);
+                    BaseServiceCollectionStore.Base.Add(new ServiceDescriptor(type, type, classAttribute.Lifetime));
                 }else if ( type.GetCustomAttribute<DataMethodPreparationForAttribute>() is { } methodAttribute)
                 {
                     var methodInfo = methodAttribute.MethodInfo;
-                    MethodDataRegister[methodInfo] = type;
-                    baseServiceCollection.Add(new ServiceDescriptor(type, type, ServiceLifetime.Transient));
+                    DataTypeStore.SetMethodDataPreparationType(methodInfo,type);
+
+                    BaseServiceCollectionStore.Base.Add(new ServiceDescriptor(type, type, methodAttribute.Lifetime));
+                }
+                else
+                {
+                    TestAttributeStore.AddAttributes<UsePreparedDataAttribute>(type);
+                    TestAttributeStore.AddAttributes<UsePreparedDataForAttribute>(type);
                 }
             }
         }
@@ -95,28 +93,12 @@ namespace DataPreparation.Testing
         {
             RegisterDataPreparation();
             IServiceCollection newServiceCollection = new ServiceCollection();
-            foreach (var service in baseServiceCollection)
+            foreach (var service in BaseServiceCollectionStore.Base)
             {
                 newServiceCollection.Add(service);
             }
             return newServiceCollection;
         }
-
-        public static Type? GetClassDataPreparationType(Type classType)
-        {
-            return ClassDataRegister.GetValueOrDefault(classType);
-        }
-        public static Type? GetMethodDataPreparationType(MethodInfo methodInfo)
-        {
-            return MethodDataRegister.GetValueOrDefault(methodInfo);
-        }
-
-
-        private static readonly IServiceCollection baseServiceCollection = new ServiceCollection();
-        private static readonly Dictionary<Type, Type> ClassDataRegister = new();
-        private static readonly Dictionary<MethodInfo, Type> MethodDataRegister = new();
-
-  
 
      
     }

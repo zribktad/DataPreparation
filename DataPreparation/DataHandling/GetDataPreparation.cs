@@ -17,10 +17,10 @@ namespace DataPreparation.DataHandling
         {
             if (methodInfo != null)
             {
-                var dataPreparationMethodType = DataRegister.GetMethodDataPreparationType(methodInfo);
+                var dataPreparationMethodType = DataTypeStore.GetMethodDataPreparationType(methodInfo);
                 if (dataPreparationMethodType == null)
                 {
-                    //error handling 
+                   Console.Error.WriteLine($"Prepared data method for method {methodInfo.Name} in test {test.MethodName} not registered.");
                 }
                 else
                 {
@@ -28,16 +28,17 @@ namespace DataPreparation.DataHandling
                         DataRegister.GetTestCaseServiceData(test, dataPreparationMethodType);
                     if (dataPreparationMethodClass == null)
                     {
-                        //TODO
+                        Console.Error.WriteLine($"Prepared data method class {dataPreparationMethodType.FullName} for method {methodInfo.Name} in test {test.MethodName} not registered.");
                     }
 
-                    if (dataPreparationMethodClass is IMethodDataPreparation dataPreparationMethodInstance)
+                    if (dataPreparationMethodClass is not IMethodDataPreparation dataPreparationMethodInstance)
                     {
-                        return dataPreparationMethodInstance;
+                        Console.Error.WriteLine(
+                            $"Prepared data method class {dataPreparationMethodType.FullName} for method {methodInfo.Name} in test {test.MethodName} has not IMethodDataPreparation interface .");
                     }
                     else
                     {
-                        //TODO
+                        return dataPreparationMethodInstance;
                     }
                 }
             }
@@ -46,17 +47,17 @@ namespace DataPreparation.DataHandling
 
         internal static IClassDataPreparation? Class(ITest test, Type classType)
         {
-            var dataPreparationClassType = DataRegister.GetClassDataPreparationType(classType);
+            var dataPreparationClassType = DataTypeStore.GetClassDataPreparationType(classType);
             if (dataPreparationClassType == null)
             {
-                //error handling 
+                Console.Error.WriteLine($"Prepared data class for class {classType.Name} in test {test.MethodName} not registered.");
             }
             else
             {
                 var dataPreparationClass = DataRegister.GetTestCaseServiceData(test, dataPreparationClassType);
                 if (dataPreparationClass == null)
                 {
-                    //TODO
+                    Console.Error.WriteLine($"Prepared data method class {dataPreparationClassType.FullName} for class {classType.Name} in test {test.MethodName} not registered.");
                 }
                 if (dataPreparationClass is IClassDataPreparation dataPreparationClassInstance)
                 {
@@ -66,7 +67,8 @@ namespace DataPreparation.DataHandling
                 }
                 else
                 {
-                    //TODO
+                    Console.Error.WriteLine(
+                        $"Prepared data method class {dataPreparationClassType.FullName} for class {classType.Name} in test {test.MethodName} has not IClassDataPreparation interface .");
                 }
             }
             return null;

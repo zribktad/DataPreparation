@@ -26,7 +26,7 @@ namespace DataPreparation.Testing
         public void BeforeTest(ITest test)
         {
             _preparedDataList = DataPreparations(test);
-
+            var t = TestContext.CurrentContext;
             TestDataHandler.DataUp(_preparedDataList);
         }
 

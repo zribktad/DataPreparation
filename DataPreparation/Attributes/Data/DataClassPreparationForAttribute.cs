@@ -3,11 +3,11 @@
 namespace DataPreparation.Data
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class DataPreparationForAttribute: Attribute
+    public class DataClassPreparationForAttribute: Attribute
     {
         public ServiceLifetime Lifetime { get; }
         public Type ClassType { get; }
-        public DataPreparationForAttribute(Type type, ServiceLifetime lifetime = ServiceLifetime.Transient)
+        public DataClassPreparationForAttribute(Type type, ServiceLifetime lifetime = ServiceLifetime.Transient)
         {
             ClassType = type;
             Lifetime= lifetime;
