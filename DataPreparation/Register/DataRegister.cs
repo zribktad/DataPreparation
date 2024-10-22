@@ -11,42 +11,12 @@ namespace DataPreparation.Testing
     {
        
 
-
-        public static void RegisterDataCollection(ITest test, IServiceCollection serviceCollection)
-        {
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            CaseProviderStore.Register(test.Fixture.GetType(), serviceProvider);
-
-        }
-
-        public static IDataPreparation? GetTestCaseServiceData(ITest test, Type dataPreparationType)
-        {
-            if (dataPreparationType == null || test == null)
-            {
-                throw new Exception("Incorrect call for service");
-            }
-            var testProvider = CaseProviderStore.GetRegistered(test.Fixture.GetType());
-            if (testProvider == null)
-            {
-                Console.WriteLine($"Service provider for test {test.Fixture} not found.");
-                return null;
-            }
-
-            if (testProvider.GetService(dataPreparationType) is not IDataPreparation dataPreparation)
-            {
-                Console.WriteLine($"Data preparation not found for {dataPreparationType.FullName} not found.");
-                return null;
-            }
-            return dataPreparation;
-           
-        }
-
-
-        private static bool registered = false;
+        private static bool _registered = false;
+        //TODO only assembly for users
         public static void  RegisterDataPreparation()
         {
-            if(registered) return;
-            registered=true;
+            if(_registered) return;
+            _registered=true;
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var allTypes = new List<Type>();
@@ -81,10 +51,18 @@ namespace DataPreparation.Testing
 
                     BaseServiceCollectionStore.Base.Add(new ServiceDescriptor(type, type, methodAttribute.Lifetime));
                 }
-                else
+                else if(type.GetCustomAttribute<DataPreparationTestCaseAttribute>() is { } )
                 {
-                    TestAttributeStore.AddAttributes<UsePreparedDataAttribute>(type);
-                    TestAttributeStore.AddAttributes<UsePreparedDataForAttribute>(type);
+                    
+                    foreach (var testMethod in type.GetMethods())
+                    {
+                        
+                        TestAttributeStore.AddAttributes<UsePreparedDataAttribute>(testMethod);
+                        TestAttributeStore.AddAttributes<UsePreparedDataForAttribute>(testMethod);
+                    }
+
+                 
+          
                 }
             }
         }

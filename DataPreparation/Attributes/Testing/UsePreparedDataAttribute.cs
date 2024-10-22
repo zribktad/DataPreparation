@@ -14,16 +14,15 @@ namespace DataPreparation.Testing
 
         public void BeforeTest(ITest test)
         {
+        
             _preparedDataList = PrepareDataList(test, _dataProviders);
-
-            TestDataHandler.DataUp(_preparedDataList);
+            TestDataPreparationStore.AddDataPreparation(test.Method.MethodInfo, _preparedDataList);
+            TestDataHandler.DataUp(test.Method.MethodInfo);
         }
-
-
         public void AfterTest(ITest test)
         {
             //down data for the test
-            TestDataHandler.DataDown(_preparedDataList);
+            TestDataHandler.DataDown(test.Method.MethodInfo);
 
         }
 
@@ -32,7 +31,7 @@ namespace DataPreparation.Testing
             List<IDataPreparation> preparedDataList = new();
             foreach (var dataPreparationType in dataProviders)
             {
-                var preparedData = DataRegister.GetTestCaseServiceData(test, dataPreparationType);
+                var preparedData = CaseProviderStore.GetTestCaseServiceData(test, dataPreparationType);
                 if (preparedData == null)
                 {
                     throw new Exception($"Prepared data for {dataPreparationType.FullName} not found");

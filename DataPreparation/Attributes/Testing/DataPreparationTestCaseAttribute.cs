@@ -26,7 +26,7 @@ namespace DataPreparation.Testing
                 
             }
 
-            DataRegister.RegisterDataCollection(test,serviceCollection);
+            CaseProviderStore.RegisterDataCollection(test,serviceCollection);
 
 
         }

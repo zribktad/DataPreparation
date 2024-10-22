@@ -25,7 +25,7 @@ namespace DataPreparation.DataHandling
                 else
                 {
                     var dataPreparationMethodClass =
-                        DataRegister.GetTestCaseServiceData(test, dataPreparationMethodType);
+                        CaseProviderStore.GetTestCaseServiceData(test, dataPreparationMethodType);
                     if (dataPreparationMethodClass == null)
                     {
                         Console.Error.WriteLine($"Prepared data method class {dataPreparationMethodType.FullName} for method {methodInfo.Name} in test {test.MethodName} not registered.");
@@ -54,7 +54,7 @@ namespace DataPreparation.DataHandling
             }
             else
             {
-                var dataPreparationClass = DataRegister.GetTestCaseServiceData(test, dataPreparationClassType);
+                var dataPreparationClass = CaseProviderStore.GetTestCaseServiceData(test, dataPreparationClassType);
                 if (dataPreparationClass == null)
                 {
                     Console.Error.WriteLine($"Prepared data method class {dataPreparationClassType.FullName} for class {classType.Name} in test {test.MethodName} not registered.");

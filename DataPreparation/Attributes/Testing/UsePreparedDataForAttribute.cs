@@ -25,15 +25,17 @@ namespace DataPreparation.Testing
 
         public void BeforeTest(ITest test)
         {
+          
             _preparedDataList = DataPreparations(test);
-            var t = TestContext.CurrentContext;
-            TestDataHandler.DataUp(_preparedDataList);
+            TestDataPreparationStore.AddDataPreparation(test.Method.MethodInfo, _preparedDataList);
+            TestDataHandler.DataUp(test.Method.MethodInfo);
         }
 
 
         public void AfterTest(ITest test)
         {
-            TestDataHandler.DataDown(_preparedDataList);
+            Type testMethodType = test.Method.TypeInfo.Type;
+            TestDataHandler.DataDown(test.Method.MethodInfo);
         }
 
         private List<IDataPreparation> DataPreparations(ITest test)
