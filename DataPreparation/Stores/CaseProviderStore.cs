@@ -27,7 +27,8 @@ namespace DataPreparation.Testing
         public static void RegisterDataCollection(ITest test, IServiceCollection serviceCollection)
         {
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            Register(test.Fixture.GetType(), serviceProvider);
+            var type = test.Fixture.GetType();
+            Register(type, serviceProvider);
 
         }
 

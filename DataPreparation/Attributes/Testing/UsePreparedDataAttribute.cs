@@ -5,7 +5,7 @@ using NUnit.Framework.Interfaces;
 namespace DataPreparation.Testing
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public class UsePreparedDataAttribute : Attribute, ITestAction
+    public class UsePreparedDataAttribute : NUnitAttribute, ITestAction
     {
         public UsePreparedDataAttribute(params Type[] dataProviders)
         {
@@ -14,7 +14,7 @@ namespace DataPreparation.Testing
 
         public void BeforeTest(ITest test)
         {
-        
+            DataPreparation.TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture.GetType());
             _preparedDataList = PrepareDataList(test, _dataProviders);
             TestDataPreparationStore.AddDataPreparation(test.Method.MethodInfo, _preparedDataList);
             TestDataHandler.DataUp(test.Method.MethodInfo);

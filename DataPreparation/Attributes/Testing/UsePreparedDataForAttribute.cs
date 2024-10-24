@@ -8,7 +8,7 @@ using NUnit.Framework.Internal;
 namespace DataPreparation.Testing
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class UsePreparedDataForAttribute: Attribute, ITestAction
+    public class UsePreparedDataForAttribute: NUnitAttribute, ITestAction
     {
      
         public UsePreparedDataForAttribute(Type classType, params string[] methodsNames)
@@ -25,7 +25,7 @@ namespace DataPreparation.Testing
 
         public void BeforeTest(ITest test)
         {
-          
+            TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture.GetType());
             _preparedDataList = DataPreparations(test);
             TestDataPreparationStore.AddDataPreparation(test.Method.MethodInfo, _preparedDataList);
             TestDataHandler.DataUp(test.Method.MethodInfo);

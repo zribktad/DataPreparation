@@ -6,7 +6,7 @@ using NUnit.Framework.Interfaces;
 namespace DataPreparation.Testing
 {
     [AttributeUsage(AttributeTargets.Class,Inherited = false)]
-    public class DataPreparationTestCaseAttribute : Attribute, ITestAction
+    public class DataPreparationTestCaseAttribute : NUnitAttribute, ITestAction
     {
         // Constructor for the attribute
         public DataPreparationTestCaseAttribute()
