@@ -5,39 +5,46 @@ using NUnit.Framework.Interfaces;
 
 namespace DataPreparation.Testing
 {
-    [AttributeUsage(AttributeTargets.Class,Inherited = false)]
+    /// <summary>
+    /// Attribute to specify the test case for which data preparation is required.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class DataPreparationTestCaseAttribute : NUnitAttribute, ITestAction
     {
-        // Constructor for the attribute
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataPreparationTestCaseAttribute"/> class.
+        /// </summary>
         public DataPreparationTestCaseAttribute()
         {
-
-
         }
 
+        /// <summary>
+        /// Method to be called before the test is executed.
+        /// </summary>
+        /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-            
             IServiceCollection serviceCollection = DataRegister.GetBaseDataServiceCollection();
             if (test.TypeInfo.Type.GetInterface(nameof(ITestCaseServicesDataPreparation)) != null)
             {
-                var dataPreparationTestCase = (ITestCaseServicesDataPreparation)Activator.CreateInstance(test.TypeInfo.Type);
+                var dataPreparationTestCase =Activator.CreateInstance(test.TypeInfo.Type) as ITestCaseServicesDataPreparation;
                 dataPreparationTestCase.DataPreparationServices(serviceCollection);
-                
             }
 
-            CaseProviderStore.RegisterDataCollection(test,serviceCollection);
-
-
+            CaseProviderStore.RegisterDataCollection(test, serviceCollection);
         }
 
+        /// <summary>
+        /// Method to be called after the test is executed.
+        /// </summary>
+        /// <param name="test">The test that has been executed.</param>
         public void AfterTest(ITest test)
         {
-         
         }
 
-        public ActionTargets Targets =>  ActionTargets.Suite ;
-
-
+        /// <summary>
+        /// Gets the targets for the action.
+        /// </summary>
+        public ActionTargets Targets => ActionTargets.Suite;
     }
 }

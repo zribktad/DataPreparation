@@ -16,7 +16,6 @@ namespace DataPreparation.Testing
         {
             Console.WriteLine("Automatically loading attributes...");
 
-            // Tu môžeš implementovať logiku na načítanie všetkých atribútov pomocou reflexie
             var allTypes = test.Fixture.GetType().Assembly.GetTypes();
 
             foreach (var type in allTypes)
