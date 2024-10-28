@@ -34,9 +34,14 @@ namespace DataPreparation.Testing
                     throw new Exception("Test case cannot be create, maybe not valid constructor");
                 }
 
-                if (testCaseInstance is ITestCaseServicesDataPreparation servicesDataPreparation)
+                if (testCaseInstance is IDataPreparationCaseServices servicesDataPreparation)
                 {
                     servicesDataPreparation.DataPreparationServices(serviceCollection);
+                }
+
+                if (testCaseInstance is IDataPreparationSetUpConnections setUpConnections)
+                {
+                  var caseConnections =  setUpConnections.SetUpConnections();
                 }
 
             }

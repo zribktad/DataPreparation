@@ -19,4 +19,9 @@
       <PackageReference Include="NUnitTestAdapter" Version="2.3.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Models\Data\" />
+      <Folder Include="Unums\Testing\" />
+    </ItemGroup>
+
 </Project>
