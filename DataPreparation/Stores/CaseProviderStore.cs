@@ -24,11 +24,10 @@ namespace DataPreparation.Testing
         }
 
 
-        public static void RegisterDataCollection(ITest test, IServiceCollection serviceCollection)
+        public static void RegisterDataCollection(Type testCaseType, IServiceCollection serviceCollection)
         {
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            var type = test.Fixture.GetType();
-            Register(type, serviceProvider);
+            Register(testCaseType, serviceProvider);
 
         }
 

@@ -25,13 +25,25 @@ namespace DataPreparation.Testing
         public void BeforeTest(ITest test)
         {
             IServiceCollection serviceCollection = DataRegister.GetBaseDataServiceCollection();
-            if (test.TypeInfo.Type.GetInterface(nameof(ITestCaseServicesDataPreparation)) != null)
+
+            if (test.TypeInfo != null)
             {
-                var dataPreparationTestCase =Activator.CreateInstance(test.TypeInfo.Type) as ITestCaseServicesDataPreparation;
-                dataPreparationTestCase.DataPreparationServices(serviceCollection);
+                var testCaseInstance = Activator.CreateInstance(test.TypeInfo.Type);
+                if (testCaseInstance == null)
+                {
+                    throw new Exception("Test case cannot be create, maybe not valid constructor");
+                }
+
+                if (testCaseInstance is ITestCaseServicesDataPreparation servicesDataPreparation)
+                {
+                    servicesDataPreparation.DataPreparationServices(serviceCollection);
+                }
+
             }
 
-            CaseProviderStore.RegisterDataCollection(test, serviceCollection);
+            CaseProviderStore.RegisterDataCollection(test.Fixture.GetType(), serviceCollection);
+
+            TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture.GetType());
         }
 
         /// <summary>
