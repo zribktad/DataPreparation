@@ -25,9 +25,7 @@ namespace DataPreparation.Testing
         
         internal static void AddAttributes(MethodInfo methodInfo)
         {
-            AddAttributes<UsePreparedDataAttribute>(methodInfo);
-            AddAttributes<UsePreparedDataForAttribute>(methodInfo);
-            AddAttributes<UsePreparedDataParamsAttribute>(methodInfo);
+            AddAttributes<UsePreparedAttribute>(methodInfo);
         }
 
         /// <summary>

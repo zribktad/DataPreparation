@@ -55,10 +55,16 @@ namespace DataPreparation.Testing
             return DataPreparationTestStore.GetValueOrDefault(methodInfo);
         }
 
-
+        internal static void AddDataPreparation(MethodInfo methodMethodInfo, object preparedMethodData, object[] upData, object[] downData)
+        {
+            AddDataPreparation(methodMethodInfo, new PreparedData(preparedMethodData, upData, downData));
+        }
+     
         internal static void AddDataPreparation(MethodInfo methodMethodInfo, List<object> preparedDataList)
         {
             AddDataPreparation(methodMethodInfo, preparedDataList.Select(data => new PreparedData(data,[],[])).ToList());
         }
+     
+     
     }
 }

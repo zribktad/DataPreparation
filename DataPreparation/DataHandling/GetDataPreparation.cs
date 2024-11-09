@@ -22,28 +22,40 @@ namespace DataPreparation.DataHandling
             List<object> preparedDataList = new();
             if (useClassDataPreparation)
             {
-                var preparationData = Class(test, classType);
-                if (preparationData == null)
-                {
-                    throw new Exception("Class data preparation not found");
-                }
-
-                preparedDataList.Add(preparationData);
+               
+                preparedDataList.Add( GetClassDataPreparation(test, classType ));
             }
-
             foreach (var methodName in methodsNames)
             {
-                var methodInfo = classType.GetMethod(methodName);
-                var preparationData = Method(test, methodInfo);
-                if (preparationData == null)
-                {
-                    throw new Exception("Method data preparation not found");
-                }
-
-                preparedDataList.Add(preparationData);
+                preparedDataList.Add( GetMethodDataPreparation(test, classType, methodName ));
             }
 
             return preparedDataList;
+        }
+
+     
+
+        internal static object GetMethodDataPreparation(ITest test, Type classType, string methodsName)
+        {
+            var methodInfo = classType.GetMethod(methodsName);
+            var preparationData = Method(test, methodInfo);
+            if (preparationData == null)
+            {
+                throw new Exception("Method data preparation not found");
+            }
+
+            return preparationData;
+        }
+
+        internal static object GetClassDataPreparation(ITest test, Type classType)
+        {
+            var preparationData = Class(test, classType);
+            if (preparationData == null)
+            {
+                throw new Exception("Class data preparation not found");
+            }
+
+            return preparationData;
         }
 
         internal static object PrepareData(ITest test, Type dataPreparationType)
@@ -78,6 +90,7 @@ namespace DataPreparation.DataHandling
             {
                 Console.Error.WriteLine(
                     $"Prepared data method for method {methodInfo.Name} in test {test.MethodName} not registered.");
+                
             }
             else
             {

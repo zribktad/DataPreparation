@@ -14,33 +14,47 @@ namespace DataPreparation.Testing
     {
         internal static void DataUp(MethodInfo testMethodInfo)
         {
+            try
+            {
 
-            TestAttributeCountStore.AddAttributeCount(testMethodInfo);
-            if (!TestAttributeCountStore.AreAllTestAttributesUp(testMethodInfo)) return;
+           
+                TestAttributeCountStore.AddAttributeCount(testMethodInfo);
+                if (!TestAttributeCountStore.AreAllTestAttributesUp(testMethodInfo)) return;
 
-            var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
-            if (testData == null) return;
-            
-            Console.WriteLine($"Data for test {testMethodInfo.Name} starting up");
-            RunnerTestData.Up(testData);
-            Console.WriteLine($"Data for test {testMethodInfo.Name} are up");
-
+                var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
+                if (testData == null) return;
+                
+                Console.WriteLine($"Data for test {testMethodInfo.Name} starting up");
+                RunnerTestData.Up(testData);
+                Console.WriteLine($"Data for test {testMethodInfo.Name} are up");
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
 
         }
 
         internal static void DataDown(MethodInfo testMethodInfo)
         {
+            try
+            {
 
-            TestAttributeCountStore.RemoveAttributeCount(testMethodInfo);
-            if(!TestAttributeCountStore.AreAllTestAttributesDown(testMethodInfo)) return;
+                TestAttributeCountStore.RemoveAttributeCount(testMethodInfo);
+                if(!TestAttributeCountStore.AreAllTestAttributesDown(testMethodInfo)) return;
 
-            var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
+                var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
 
-            if (testData == null) return;
-            
-            Console.WriteLine($"Data for test {testMethodInfo.Name} starting down");
-            RunnerTestData.Down(testData);
-            Console.WriteLine($"Data for test {testMethodInfo.Name} are down");
+                if (testData == null) return;
+                
+                Console.WriteLine($"Data for test {testMethodInfo.Name} starting down");
+                RunnerTestData.Down(testData);
+                Console.WriteLine($"Data for test {testMethodInfo.Name} are down");
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
 
         }
 

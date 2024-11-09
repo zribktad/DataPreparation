@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using DataPreparation.DataHandling;
 using DataPreparation.Models;
+using DataPreparation.Provider;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
@@ -9,8 +10,8 @@ namespace DataPreparation.Testing
     /// <summary>
     /// Attribute to specify that prepared data should be used for the test method.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public class UsePreparedDataParamsAttribute : NUnitAttribute, ITestAction
+    [AttributeUsage(AttributeTargets.Method,AllowMultiple = true, Inherited = false)]
+    public class UsePreparedDataParamsAttribute :UsePreparedAttribute
     {
        
         public UsePreparedDataParamsAttribute(Type dataProviders,  [NotNull] object[] paramsUpData, [NotNull]object[] paramsDownData)
@@ -21,22 +22,20 @@ namespace DataPreparation.Testing
          
         }
         
-        public UsePreparedDataParamsAttribute(Type dataProviders,  object[] paramsUpData)
+        public UsePreparedDataParamsAttribute(Type dataProviders,  object[] paramsUpData):this(dataProviders,paramsUpData,[])
         {
-            _dataProviders = dataProviders ?? throw new ArgumentNullException(nameof(dataProviders));
-            _paramsUpData = paramsUpData ?? throw new ArgumentNullException(nameof(paramsUpData));
         }
-        public UsePreparedDataParamsAttribute(Type dataProviders)
+        public UsePreparedDataParamsAttribute(Type dataProviders):this(dataProviders,[],[])
         {
-            _dataProviders = dataProviders ?? throw new ArgumentNullException(nameof(dataProviders));
         }
+       
       
 
         /// <summary>
         /// Method to be called before the test is executed.
         /// </summary>
         /// <param name="test">The test that is going to be executed.</param>
-        public void BeforeTest(ITest test)
+        public override void BeforeTest(ITest test)
         {
             //set the service provider for static global access
             TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture!.GetType());
@@ -54,7 +53,7 @@ namespace DataPreparation.Testing
         /// Method to be called after the test is executed.
         /// </summary>
         /// <param name="test">The test that has been executed.</param>
-        public void AfterTest(ITest test)
+        public override void AfterTest(ITest test)
         {
             // Down data for the test
             TestDataHandler.DataDown(test.Method!.MethodInfo);
@@ -69,6 +68,6 @@ namespace DataPreparation.Testing
         /// <summary>
         /// Gets the targets for the action.
         /// </summary>
-        public ActionTargets Targets => ActionTargets.Test;
+        public override ActionTargets Targets => ActionTargets.Test;
     }
 }
