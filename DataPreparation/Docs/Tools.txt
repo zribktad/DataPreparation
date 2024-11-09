@@ -5,5 +5,3 @@ psql -U ear -d OrderService // connect to database
 pg_dump -U ear -Fc -Z 9 --file=file.dump OrderService // create dump without connect to DB 
 pg_restore -U ear -d OrderService file.dump // restore dump pg_restore -U <username> -d <database_name> <file.dump>
 find / -name file.dump 2> dev/null //find all dump files
-
-

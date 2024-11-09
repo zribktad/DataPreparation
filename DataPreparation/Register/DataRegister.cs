@@ -13,7 +13,7 @@ namespace DataPreparation.Testing
 
         private static bool _registered = false;
         //TODO only assembly for users
-        public static void  RegisterDataPreparation()
+        private static void  RegisterDataPreparation()
         {
             if(_registered) return;
             _registered=true;
@@ -36,7 +36,6 @@ namespace DataPreparation.Testing
                     Console.WriteLine($"Warning: Unable to load assembly {assembly.FullName}: {ex.Message}");
                 }
             }
-
             foreach (var type in allTypes)
             {
                 if (type.GetCustomAttribute<DataClassPreparationForAttribute>() is { } classAttribute )
@@ -48,7 +47,6 @@ namespace DataPreparation.Testing
                 {
                     var methodInfo = methodAttribute.MethodInfo;
                     DataTypeStore.SetMethodDataPreparationType(methodInfo,type);
-
                     BaseServiceCollectionStore.Base.Add(new ServiceDescriptor(type, type, methodAttribute.Lifetime));
                 }
                 else if(type.GetCustomAttribute<DataPreparationTestCaseAttribute>() is { } )
@@ -56,17 +54,13 @@ namespace DataPreparation.Testing
                     
                     foreach (var testMethod in type.GetMethods())
                     {
-                        
                         TestAttributeStore.AddAttributes<UsePreparedDataAttribute>(testMethod);
                         TestAttributeStore.AddAttributes<UsePreparedDataForAttribute>(testMethod);
                     }
-
-                 
-          
+                    
                 }
             }
         }
-
         public static IServiceCollection GetBaseDataServiceCollection()
         {
             RegisterDataPreparation();
