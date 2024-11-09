@@ -43,9 +43,12 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-            TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture.GetType());
-            _preparedDataList = DataPreparations(test);
-            TestDataPreparationStore.AddDataPreparation(test.Method.MethodInfo, _preparedDataList);
+            TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture!.GetType());
+            // Prepare data for the test from attribute
+            var preparedDataList = GetDataPreparation.DataPreparations(test, _useClassDataPreparation, _classType, _methodsNames); 
+            // Add the prepared data to the store
+            TestDataPreparationStore.AddDataPreparation(test.Method!.MethodInfo, preparedDataList);
+            // Up data for the test if all data are prepared
             TestDataHandler.DataUp(test.Method.MethodInfo);
         }
 
@@ -58,45 +61,12 @@ namespace DataPreparation.Testing
             TestDataHandler.DataDown(test.Method.MethodInfo);
         }
 
-        /// <summary>
-        /// Prepares the data list for the test.
-        /// </summary>
-        /// <param name="test">The test that is going to be executed.</param>
-        /// <returns>A list of prepared data.</returns>
-        /// <exception cref="Exception">Thrown when prepared data for a class or method is not found.</exception>
-        private List<IDataPreparation> DataPreparations(ITest test)
-        {
-            List<IDataPreparation> preparedDataList = new();
-            if (_useClassDataPreparation)
-            {
-                var preparationData = GetDataPreparation.Class(test, _classType);
-                if (preparationData == null)
-                {
-                    throw new Exception("Class data preparation not found");
-                }
-                preparedDataList.Add(preparationData);
-            }
-
-            foreach (var methodName in _methodsNames)
-            {
-                var methodInfo = _classType.GetMethod(methodName);
-                var preparationData = GetDataPreparation.Method(test, methodInfo);
-                if (preparationData == null)
-                {
-                    throw new Exception("Method data preparation not found");
-                }
-                preparedDataList.Add(preparationData);
-            }
-
-            return preparedDataList;
-        }
-
+       
         /// <summary>
         /// Gets the targets for the action.
         /// </summary>
         public ActionTargets Targets => ActionTargets.Test;
-
-        private List<IDataPreparation> _preparedDataList;
+        
         private readonly Type _classType;
         private readonly string[] _methodsNames;
         private readonly bool _useClassDataPreparation = false;

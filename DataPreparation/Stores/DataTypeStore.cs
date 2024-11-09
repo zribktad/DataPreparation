@@ -8,6 +8,10 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DataPreparation.Testing
 {
+    
+    /// <summary>
+    /// Provides a store for data type preparation associated with test cases.
+    /// </summary>
     internal  static class DataTypeStore
     {
 

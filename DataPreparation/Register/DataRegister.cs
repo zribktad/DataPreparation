@@ -20,10 +20,12 @@ namespace DataPreparation.Testing
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var allTypes = new List<Type>();
+            //Load all types from assemblies
             foreach (var assembly in assemblies)
             {
                 try
                 {
+                    //Get all types from assembly (classes, interfaces, structs, enums)
                     var types = assembly.GetTypes();
                     allTypes.AddRange(types);
                 }
@@ -36,26 +38,32 @@ namespace DataPreparation.Testing
                     Console.WriteLine($"Warning: Unable to load assembly {assembly.FullName}: {ex.Message}");
                 }
             }
+            
+            //Register Data Preparation classes
             foreach (var type in allTypes)
             {
+                //Register Data Preparation Classes
                 if (type.GetCustomAttribute<DataClassPreparationForAttribute>() is { } classAttribute )
                 {
                     var classType = classAttribute.ClassType;
                     DataTypeStore.SetClassDataPreparationType(classType, type);
                     BaseServiceCollectionStore.Base.Add(new ServiceDescriptor(type, type, classAttribute.Lifetime));
-                }else if ( type.GetCustomAttribute<DataMethodPreparationForAttribute>() is { } methodAttribute)
+                }
+                //Register Data Preparation Methods
+                else if ( type.GetCustomAttribute<DataMethodPreparationForAttribute>() is { } methodAttribute)
                 {
                     var methodInfo = methodAttribute.MethodInfo;
                     DataTypeStore.SetMethodDataPreparationType(methodInfo,type);
                     BaseServiceCollectionStore.Base.Add(new ServiceDescriptor(type, type, methodAttribute.Lifetime));
                 }
+                //Register Data Preparation Test Cases
                 else if(type.GetCustomAttribute<DataPreparationTestCaseAttribute>() is { } )
                 {
-                    
+                    //Register method/class data preparation
                     foreach (var testMethod in type.GetMethods())
                     {
-                        TestAttributeStore.AddAttributes<UsePreparedDataAttribute>(testMethod);
-                        TestAttributeStore.AddAttributes<UsePreparedDataForAttribute>(testMethod);
+                        TestAttributeCountStore.AddAttributes(testMethod);
+                       
                     }
                     
                 }

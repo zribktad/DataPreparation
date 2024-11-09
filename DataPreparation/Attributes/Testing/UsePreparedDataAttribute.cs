@@ -1,4 +1,5 @@
 ﻿using DataPreparation.Data;
+using DataPreparation.DataHandling;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
@@ -26,8 +27,12 @@ namespace DataPreparation.Testing
         public void BeforeTest(ITest test)
         {
             DataPreparation.TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture.GetType());
-            _preparedDataList = PrepareDataList(test, _dataProviders);
-            TestDataPreparationStore.AddDataPreparation(test.Method.MethodInfo, _preparedDataList);
+            
+            // Prepare data for the test from attribute
+            var preparedDataList = GetDataPreparation.PrepareDataList(test, _dataProviders);
+            // Add the prepared data to the store
+            TestDataPreparationStore.AddDataPreparation(test.Method.MethodInfo, preparedDataList);
+            // Up data for the test if all data are prepared
             TestDataHandler.DataUp(test.Method.MethodInfo);
         }
 
@@ -41,29 +46,8 @@ namespace DataPreparation.Testing
             TestDataHandler.DataDown(test.Method.MethodInfo);
         }
 
-        /// <summary>
-        /// Prepares the data list for the test.
-        /// </summary>
-        /// <param name="test">The test that is going to be executed.</param>
-        /// <param name="dataProviders">The types of data providers to use for preparing data.</param>
-        /// <returns>A list of prepared data.</returns>
-        /// <exception cref="Exception">Thrown when prepared data for a data provider is not found.</exception>
-        private List<IDataPreparation> PrepareDataList(ITest test, Type[] dataProviders)
-        {
-            List<IDataPreparation> preparedDataList = new();
-            foreach (var dataPreparationType in dataProviders)
-            {
-                var preparedData = CaseProviderStore.GetTestCaseServiceData(test, dataPreparationType);
-                if (preparedData == null)
-                {
-                    throw new Exception($"Prepared data for {dataPreparationType.FullName} not found");
-                }
-                preparedDataList.Add(preparedData);
-            }
-            return preparedDataList;
-        }
 
-        private List<IDataPreparation> _preparedDataList = new();
+        
         private readonly Type[] _dataProviders;
 
         /// <summary>

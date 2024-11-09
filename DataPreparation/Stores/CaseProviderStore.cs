@@ -9,12 +9,15 @@ using System.Threading.Tasks;
 
 namespace DataPreparation.Testing
 {
+    /// <summary>
+    /// Provides a store for service providers associated with test cases.
+    /// </summary>
     internal  static class CaseProviderStore
     {
-
+        //Store Service Provider for each test case
         private static readonly Dictionary<Type, IServiceProvider> providerDictionary = new();
 
-        public static void Register(Type type, IServiceProvider serviceProvider)
+        private static void Register(Type type, IServiceProvider serviceProvider)
         {
             providerDictionary[type] = serviceProvider;
         }
@@ -24,14 +27,14 @@ namespace DataPreparation.Testing
         }
 
 
-        public static void RegisterDataCollection(Type testCaseType, IServiceCollection serviceCollection)
+        internal static void RegisterDataCollection(Type testCaseType, IServiceCollection serviceCollection)
         {
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Register(testCaseType, serviceProvider);
 
         }
 
-        public static IDataPreparation? GetTestCaseServiceData(ITest test, Type dataPreparationType)
+        public static object? GetTestCaseServiceData(ITest test, Type dataPreparationType)
         {
             if (dataPreparationType == null || test == null)
             {
@@ -44,12 +47,13 @@ namespace DataPreparation.Testing
                 return null;
             }
 
-            if (testProvider.GetService(dataPreparationType) is not IDataPreparation dataPreparation)
+            if (testProvider.GetService(dataPreparationType) is var preparedData && preparedData == null)
             {
-                Console.WriteLine($"Data preparation not found for {dataPreparationType.FullName} not found.");
+                Console.WriteLine($"Data preparation not found for {dataPreparationType.FullName}.");
                 return null;
             }
-            return dataPreparation;
+        
+            return preparedData;
 
         }
 

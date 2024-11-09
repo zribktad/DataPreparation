@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using DataPreparation.Data;
+using DataPreparation.Runners;
 using NUnit.Framework.Internal;
 
 namespace DataPreparation.Testing
@@ -14,41 +15,32 @@ namespace DataPreparation.Testing
         internal static void DataUp(MethodInfo testMethodInfo)
         {
 
-            TestAttributeStore.AddAttributeCount(testMethodInfo);
-            if (!TestAttributeStore.AreAllTestAttributesUp(testMethodInfo)) return;
+            TestAttributeCountStore.AddAttributeCount(testMethodInfo);
+            if (!TestAttributeCountStore.AreAllTestAttributesUp(testMethodInfo)) return;
 
             var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
-            if (testData != null)
-            {
-                Console.WriteLine($"Data for test {testMethodInfo.Name} starting up");
-                foreach (var data in testData)
-                {
-                    data.TestUpData();
-                }
-                Console.WriteLine($"Data for test {testMethodInfo.Name} are up");
-            }
+            if (testData == null) return;
+            
+            Console.WriteLine($"Data for test {testMethodInfo.Name} starting up");
+            RunnerTestData.Up(testData);
+            Console.WriteLine($"Data for test {testMethodInfo.Name} are up");
 
-  
+
         }
 
         internal static void DataDown(MethodInfo testMethodInfo)
         {
 
-            TestAttributeStore.RemoveAttributeCount(testMethodInfo);
-            if(!TestAttributeStore.AreAllTestAttributesDown(testMethodInfo)) return;
+            TestAttributeCountStore.RemoveAttributeCount(testMethodInfo);
+            if(!TestAttributeCountStore.AreAllTestAttributesDown(testMethodInfo)) return;
 
             var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
-            
-            if (testData != null)
-            {
-                Console.WriteLine($"Data for test {testMethodInfo.Name} starting down");
-                foreach (var data in testData)
-                {
-                    data.TestDownData();
-                }
 
-                Console.WriteLine($"Data for test {testMethodInfo.Name} are down");
-            }
+            if (testData == null) return;
+            
+            Console.WriteLine($"Data for test {testMethodInfo.Name} starting down");
+            RunnerTestData.Down(testData);
+            Console.WriteLine($"Data for test {testMethodInfo.Name} are down");
 
         }
 

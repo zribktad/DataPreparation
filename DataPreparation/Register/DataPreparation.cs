@@ -8,6 +8,6 @@ namespace DataPreparation
 {
     public static class TestData
     {
-        public static IServiceProvider ServiceProvider { get; set; }
+        public static IServiceProvider? ServiceProvider { get; set; }
     }
 }
