@@ -1,4 +1,5 @@
-﻿using DataPreparation.Analyzers;
+﻿using System.Runtime.CompilerServices;
+using DataPreparation.Analyzers;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +17,9 @@ namespace DataPreparation.Testing
         /// <summary>
         /// Initializes a new instance of the <see cref="DataPreparationTestCaseAttribute"/> class.
         /// </summary>
-        public DataPreparationTestCaseAttribute()
+        public DataPreparationTestCaseAttribute([CallerFilePath]string filePath = "")
         {
+            _filePath= filePath;
         }
 
         /// <summary>
@@ -26,7 +28,8 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-            MethodAnalyzer.AnalyzeTestMethod(MethodAnalyzer.testSourceCodeTest);
+            MethodAnalyzer.AnalyzeTestCase(_filePath, test.Fixture.GetType());
+            // MethodAnalyzer.AnalyzeTestMethod(t);
             
             IServiceCollection serviceCollection = DataRegister.GetBaseDataServiceCollection();
 
@@ -67,5 +70,6 @@ namespace DataPreparation.Testing
         /// Gets the targets for the action.
         /// </summary>
         public ActionTargets Targets => ActionTargets.Suite;
+        private string _filePath;
     }
 }
