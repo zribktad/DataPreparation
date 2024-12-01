@@ -1,4 +1,5 @@
-﻿using DataPreparation.Provider;
+﻿using DataPreparation.Analyzers;
+using DataPreparation.Provider;
 using DataPreparation.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -25,6 +26,8 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
+            MethodAnalyzer.AnalyzeTestMethod(MethodAnalyzer.testSourceCodeTest);
+            
             IServiceCollection serviceCollection = DataRegister.GetBaseDataServiceCollection();
 
             if (test.TypeInfo != null)

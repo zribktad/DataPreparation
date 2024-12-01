@@ -23,6 +23,10 @@ namespace DataPreparation.Testing
         {
             return MethodDataRegister.GetValueOrDefault(methodInfo);
         }
+        public static bool HasMethodDataPreparationType(MethodInfo methodInfo)
+        {
+            return MethodDataRegister.ContainsKey(methodInfo);
+        }
 
         public static void SetClassDataPreparationType(Type classType, Type data)
         {

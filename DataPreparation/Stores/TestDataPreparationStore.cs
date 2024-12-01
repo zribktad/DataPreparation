@@ -54,6 +54,11 @@ namespace DataPreparation.Testing
         {
             return DataPreparationTestStore.GetValueOrDefault(methodInfo);
         }
+        
+        internal static bool HasPreparedData(MethodInfo methodInfo)
+        {
+            return DataPreparationTestStore.GetValueOrDefault(methodInfo) != null;
+        }
 
         internal static void AddDataPreparation(MethodInfo methodMethodInfo, object preparedMethodData, object[] upData, object[] downData)
         {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DataPreparation.Analyzers;
 using DataPreparation.Data;
 using DataPreparation.Runners;
 using NUnit.Framework.Internal;
@@ -16,11 +17,14 @@ namespace DataPreparation.Testing
         {
             try
             {
-
-           
                 TestAttributeCountStore.AddAttributeCount(testMethodInfo);
                 if (!TestAttributeCountStore.AreAllTestAttributesUp(testMethodInfo)) return;
-
+                
+                //analyse and results 
+                var analysisResult = MethodAnalyzer.Analyze(testMethodInfo);
+                //MethodAnalyzer.Analyze(testMethodInfo);
+                analysisResult?.Print();
+                
                 var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
                 if (testData == null) return;
                 
@@ -32,7 +36,6 @@ namespace DataPreparation.Testing
             {
                 throw;
             }
-
         }
 
         internal static void DataDown(MethodInfo testMethodInfo)
