@@ -17,12 +17,10 @@ namespace DataPreparation.Analyzers
         {
             var assemblyPath = type.Assembly.Location;
 
-            // Krok 2: Načítať všetky súbory zdrojového kódu z tejto assembly
             var sourceFiles = Directory.GetFiles(Path.GetDirectoryName(assemblyPath), "*.cs", SearchOption.AllDirectories);
 
             foreach (var file in sourceFiles)
             {
-                // Krok 3: Prečítať zdrojový kód a vytvoriť syntaktický strom
                 var sourceCode = File.ReadAllText(file);
                 var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
                 var root = syntaxTree.GetRoot();
@@ -70,8 +68,23 @@ public class ExampleTests
         {
             // Read the source code of the test case
             var testSourceCodeString = ReadAllFile(testSourceCodePath);
-            var syntaxTree = CSharpSyntaxTree.ParseText(testSourceCodeString);
-            var root = syntaxTree.GetRoot();
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(testSourceCodeString);
+            CSharpCompilation compilation = CSharpCompilation.Create("DataPreparationCompilation", new[] { syntaxTree });
+            SemanticModel model = compilation.GetSemanticModel(syntaxTree);
+            SyntaxNode root = syntaxTree.GetRoot();
+          
+            var methodDeclarations = root.DescendantNodes().OfType<MethodDeclarationSyntax>();
+           
+            
+            var t = AnalyzerStore.AddOrGetAnalyzeData(testCaseType,testSourceCodeString);
+            
+            foreach (var method in methodDeclarations)
+            {
+                var methodSymbol = model.GetDeclaredSymbol(method) as IMethodSymbol;
+                Console.WriteLine("Found Method Symbol from compil: " + methodSymbol.Name + " ns: " + methodSymbol.ContainingNamespace + " class: " + methodSymbol.ContainingType.Name);
+                
+            }
+        
             // find the Test Case
             var testCase = FindNodeForTestCase(testCaseType, root);
             // Find all Test Methods in the Test Case
@@ -81,7 +94,52 @@ public class ExampleTests
 
          
         }
+        static void PrintSyntaxTree(SyntaxNode node, int level)
+        {
+            // Odsadenie podľa úrovne
+            var indent = new string(' ', level * 2);
 
+            // Vypísanie informácií o uzle
+            if (node is MemberAccessExpressionSyntax memberAccess)
+            {
+                Console.WriteLine($"{indent}MemberAccessExpressionSyntax: Target = {memberAccess.Expression}, Member = {memberAccess.Name}");
+            }
+            else if (node is InvocationExpressionSyntax invocation)
+            {
+                var method = invocation.Expression is MemberAccessExpressionSyntax ma
+                    ? ma.Name.ToString()
+                    : invocation.Expression.ToString();
+                Console.WriteLine($"{indent}InvocationExpressionSyntax: Method = {method}");
+                Console.WriteLine($"{indent}  Arguments:");
+                foreach (var argument in invocation.ArgumentList.Arguments)
+                {
+                    PrintSyntaxTree(argument, level + 2);
+                }
+            }
+            else if (node is ArgumentSyntax argument)
+            {
+                Console.WriteLine($"{indent}ArgumentSyntax: {argument}");
+                PrintSyntaxTree(argument.Expression, level + 1); // Vypíš podrobnosti o výraze v argumente
+            }
+            else if (node is IdentifierNameSyntax identifier)
+            {
+                Console.WriteLine($"{indent}IdentifierNameSyntax: Identifier = {identifier.Identifier.ValueText} with ID: {identifier.Identifier}");
+            }
+            else if (node is LiteralExpressionSyntax literal)
+            {
+                Console.WriteLine($"{indent}LiteralExpressionSyntax: Literal = {literal.Token.Value}");
+            }
+            else
+            {
+                Console.WriteLine($"{indent}{node.Kind()}");
+            }
+
+            // Rekurzia pre poduzly
+            foreach (var child in node.ChildNodes())
+            {
+                PrintSyntaxTree(child, level + 1);
+            }
+        }
         private static void AnalyzeTestMethod(MethodDeclarationSyntax testSourceCode, ClassDeclarationSyntax testCase)
         {
             var assertionStatements = GetAssertionStatementsForTestMethod(testSourceCode);
@@ -89,18 +147,50 @@ public class ExampleTests
             foreach (var assertion in assertionStatements)
             {
                 Console.WriteLine("Found FluentAssertion Statement: " + assertion);
+                PrintSyntaxTree(assertion, 0);
                 var assertVariable = assertion.Expression.ToString().Split('.')[0];
-            
-                var arguments = assertion.ArgumentList.Arguments;
-                TraceVariableDeclaration(testCase, assertVariable);
-                if (arguments.Count > 0)
+                var fluentAssertionTreeNodes = assertion.DescendantNodes();
+                assertion.ChildNodes().ToList().ForEach(node => Console.WriteLine(node));
+                foreach (var fluentAssertionTreeNode in fluentAssertionTreeNodes)
                 {
-                    var expectedValue = arguments[0].Expression;
-                    Console.WriteLine($"Expected Value in Assertion: {expectedValue}");
+                    if (fluentAssertionTreeNode is MemberAccessExpressionSyntax memberAccess)
+                    {
+                        Console.WriteLine($"MemberAccessExpressionSyntax: Target = {memberAccess.Expression}, Member = {memberAccess.Name}");
+                    }
+                    else if (fluentAssertionTreeNode is InvocationExpressionSyntax invocation)
+                    {
+                        var method = invocation.Expression is MemberAccessExpressionSyntax ma
+                            ? ma.Name.ToString()
+                            : invocation.Expression.ToString();
+                        Console.WriteLine($"InvocationExpressionSyntax: Method = {method}, Arguments = {string.Join(", ", invocation.ArgumentList.Arguments)}");
+                    }
+                    else if (fluentAssertionTreeNode is IdentifierNameSyntax identifier)
+                    {
+                        Console.WriteLine($"IdentifierNameSyntax: Identifier = {identifier.Identifier.ValueText}");
+                    }
+                    else if (fluentAssertionTreeNode is LiteralExpressionSyntax literal)
+                    {
+                        Console.WriteLine($"LiteralExpressionSyntax: Literal = {literal.Token.Value}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Other Syntax Node: {fluentAssertionTreeNode.Kind()}");
+                    }
+                    
+                }
                 
+                TraceVariableDeclaration(testCase, assertVariable);
+                
+                var arguments = assertion.ArgumentList.Arguments;
+                foreach (var argument in arguments)
+                {
+                    var expectedValue = argument.Expression;
+                    Console.WriteLine($"Expected Value in Assertion: {expectedValue}");
+
                     // Trace the variable declaration
                     TraceVariableDeclaration(testCase, expectedValue.ToString());
                 }
+                
             }
         }
 
