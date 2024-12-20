@@ -9,7 +9,7 @@ internal static class AnalyzerStore
 {
     static readonly Dictionary<Type, AnalyzerTestClassStore?> _analyzers = new();
 
-    internal static AnalyzerTestClassStore? AddOrGetAnalyzeData(Type testClassType, string? sourceCodeString = null)
+    internal static AnalyzerTestClassStore? AddOrGetAnalyzeTestCaseData(Type testClassType, string? sourceCodeString = null)
     {
         if (_analyzers.TryGetValue(testClassType, out var analyzer))
         {
@@ -79,9 +79,9 @@ internal class AnalyzerTestMethodData
     internal readonly CSharpCompilation Compilation;
     internal readonly SemanticModel Model;
     internal readonly SyntaxNode FileRoot;
-    internal readonly SyntaxNode Root;
+    internal readonly MethodDeclarationSyntax Root;
 
-    public AnalyzerTestMethodData(SyntaxTree syntaxTree, CSharpCompilation compilation, SemanticModel model, SyntaxNode fileRoot, SyntaxNode root)
+    public AnalyzerTestMethodData(SyntaxTree syntaxTree, CSharpCompilation compilation, SemanticModel model, SyntaxNode fileRoot, MethodDeclarationSyntax root)
     {
         SyntaxTree = syntaxTree;
         Compilation = compilation;

@@ -21,19 +21,16 @@ namespace DataPreparation.DataHandling
         {
             List<object> preparedDataList = new();
             if (useClassDataPreparation)
-            {
-               
+            {    
                 preparedDataList.Add( GetClassDataPreparation(test, classType ));
             }
             foreach (var methodName in methodsNames)
             {
                 preparedDataList.Add( GetMethodDataPreparation(test, classType, methodName ));
             }
-
             return preparedDataList;
         }
 
-     
 
         internal static object GetMethodDataPreparation(ITest test, Type classType, string methodsName)
         {

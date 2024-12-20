@@ -21,9 +21,10 @@ namespace DataPreparation.Testing
                 if (!TestAttributeCountStore.AreAllTestAttributesUp(testMethodInfo)) return;
                 
                 //analyse and results 
-                var analysisResult = MethodAnalyzer.Analyze(testMethodInfo);
+                //var analysisResult = MethodAnalyzer.Analyze(testMethodInfo);
                 //MethodAnalyzer.Analyze(testMethodInfo);
-                analysisResult?.Print();
+                
+                //analysisResult?.Print();
                 
                 var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
                 if (testData == null) return;

@@ -68,32 +68,45 @@ public class ExampleTests
         {
             // Read the source code of the test case
             var testSourceCodeString = ReadAllFile(testSourceCodePath);
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(testSourceCodeString);
-            CSharpCompilation compilation = CSharpCompilation.Create("DataPreparationCompilation", new[] { syntaxTree });
-            SemanticModel model = compilation.GetSemanticModel(syntaxTree);
-            SyntaxNode root = syntaxTree.GetRoot();
-          
-            var methodDeclarations = root.DescendantNodes().OfType<MethodDeclarationSyntax>();
-           
+            // SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(testSourceCodeString);
+            // CSharpCompilation compilation = CSharpCompilation.Create("DataPreparationCompilation", new[] { syntaxTree });
+            // SemanticModel model = compilation.GetSemanticModel(syntaxTree);
+            // SyntaxNode root = syntaxTree.GetRoot();
             
-            var t = AnalyzerStore.AddOrGetAnalyzeData(testCaseType,testSourceCodeString);
-            
-            foreach (var method in methodDeclarations)
-            {
-                var methodSymbol = model.GetDeclaredSymbol(method) as IMethodSymbol;
-                Console.WriteLine("Found Method Symbol from compil: " + methodSymbol.Name + " ns: " + methodSymbol.ContainingNamespace + " class: " + methodSymbol.ContainingType.Name);
-                
-            }
-        
-            // find the Test Case
-            var testCase = FindNodeForTestCase(testCaseType, root);
-            // Find all Test Methods in the Test Case
-            var testMethods = FindTestMethodsForCase(testCase);
-            // Analyze each test method
-            testMethods.ForEach(testMethod => AnalyzeTestMethod(testMethod,testCase));
+            var t = AnalyzerStore.AddOrGetAnalyzeTestCaseData(testCaseType,testSourceCodeString);
 
+            if (t == null)
+            {
+                throw new Exception("Analyzing of this test case not working.");
+            }
+            
+            // var methodDeclarations = analyzedMethodData.Root.DescendantNodes().OfType<MethodDeclarationSyntax>();
+            // foreach (var method in methodDeclarations)
+            // {
+            //     var methodSymbol = analyzedMethodData.Model.GetDeclaredSymbol(method) as IMethodSymbol;
+            //     Console.WriteLine("Found Method Symbol from compil: " + methodSymbol.Name + " ns: " + methodSymbol.ContainingNamespace + " class: " + methodSymbol.ContainingType.Name);
+            //     
+            // }
+            //
+            // // find the Test Case
+            // var testCase = FindNodeForTestCase(testCaseType, analyzedMethodData.Root);
+            // // Find all Test Methods in the Test Case
+            // var testMethods = FindTestMethodsForCase(testCase);
+            // // Analyze each test method
+            // testMethods.ForEach(testMethod => AnalyzeTestMethod(testMethod,testCase));
+            //
          
         }
+
+        public static void AnalyzeTestMethod(Type testCaseType, MethodInfo methodMethodInfo)
+        {
+            var analyzedMethodData = AnalyzerStore.AddOrGetAnalyzeMethodData(testCaseType,methodMethodInfo);
+            AnalyzeTestMethod(analyzedMethodData.Root, analyzedMethodData.FileRoot);
+            
+          
+            
+        }
+
         static void PrintSyntaxTree(SyntaxNode node, int level)
         {
             // Odsadenie podľa úrovne
@@ -140,17 +153,23 @@ public class ExampleTests
                 PrintSyntaxTree(child, level + 1);
             }
         }
-        private static void AnalyzeTestMethod(MethodDeclarationSyntax testSourceCode, ClassDeclarationSyntax testCase)
+        private static void AnalyzeTestMethod(MethodDeclarationSyntax methodDeclarationSyntax, SyntaxNode testCase)
         {
-            var assertionStatements = GetAssertionStatementsForTestMethod(testSourceCode);
-            Console.WriteLine("Analyzing Test Method: " + testSourceCode.Identifier);
+            var assertionStatements = GetAssertionStatementsForTestMethod(methodDeclarationSyntax);
+            Console.WriteLine("Analyzing Test Method: " + methodDeclarationSyntax.Identifier);
             foreach (var assertion in assertionStatements)
             {
                 Console.WriteLine("Found FluentAssertion Statement: " + assertion);
-                PrintSyntaxTree(assertion, 0);
+            }
+            
+
+            foreach (var assertion in assertionStatements)
+                {
+                    Console.WriteLine("For Found FluentAssertion Statement: " + assertion);   
+                //PrintSyntaxTree(assertion, 0);
                 var assertVariable = assertion.Expression.ToString().Split('.')[0];
                 var fluentAssertionTreeNodes = assertion.DescendantNodes();
-                assertion.ChildNodes().ToList().ForEach(node => Console.WriteLine(node));
+               // assertion.ChildNodes().ToList().ForEach(node => Console.WriteLine(node));
                 foreach (var fluentAssertionTreeNode in fluentAssertionTreeNodes)
                 {
                     if (fluentAssertionTreeNode is MemberAccessExpressionSyntax memberAccess)
@@ -177,23 +196,29 @@ public class ExampleTests
                         Console.WriteLine($"Other Syntax Node: {fluentAssertionTreeNode.Kind()}");
                     }
                     
+                    TraceVariableDeclaration(testCase, "result");
+                    
                 }
                 
-                TraceVariableDeclaration(testCase, assertVariable);
+                //TraceVariableDeclaration(testCase, assertVariable);
                 
-                var arguments = assertion.ArgumentList.Arguments;
-                foreach (var argument in arguments)
-                {
-                    var expectedValue = argument.Expression;
-                    Console.WriteLine($"Expected Value in Assertion: {expectedValue}");
-
-                    // Trace the variable declaration
-                    TraceVariableDeclaration(testCase, expectedValue.ToString());
+                // var arguments = assertion.ArgumentList.Arguments;
+                // foreach (var argument in arguments)
+                // {
+                //     var expectedValue = argument.Expression;
+                //     Console.WriteLine($"Expected Value in Assertion: {expectedValue}");
+                //
+                //     // Trace the variable declaration
+                //     TraceVariableDeclaration(methodDeclarationSyntax, expectedValue.ToString());
+                // }
                 }
-                
-            }
         }
-
+       
+        string ShouldClausule2 = "#track#.#param#.Should().Be(#value#)";
+        string ShouldClausule = "#track#.Should(c => c.#param# == #value#)";
+        string ShouldBeClausule = "#track#.Should().Be(#value#)";
+        string AssertClausule = "Assert.That(#track#, Is.EqualTo(#value#))"; 
+        string AssertClausule2 = "Assert.That(#track#, Has.Exactly(#count#).Matches<*>(* => *.#param# == #value#))"; //Assert.That(result, Has.Exactly(1).Matches<Customer>(c => c.Id == 1L));
         private static IEnumerable<InvocationExpressionSyntax> GetAssertionStatementsForTestMethod(MethodDeclarationSyntax testSourceCode)
         {
             var assertionStatements = testSourceCode.DescendantNodes()
@@ -254,8 +279,8 @@ public class ExampleTests
         {
             Console.WriteLine("Found FluentAssertion Statement: " + assertion);
             var assertVariable = assertion.Expression.ToString().Split('.')[0];
-            
             var arguments = assertion.ArgumentList.Arguments;
+            
             TraceVariableDeclaration(root, assertVariable);
             if (arguments.Count > 0)
             {
@@ -267,8 +292,10 @@ public class ExampleTests
             }
         }
         // Now track references to all variables in the method
-      //  TrackVariableSetters(root, "result");
+        //TrackVariableSetters(root, "result");
     }
+        
+        
 
     static void TrackVariableSetters(SyntaxNode root, string variableName)
     {
@@ -439,5 +466,7 @@ public class ExampleTests
         {
            return System.IO.File.ReadAllText(filePath);
         }
+
+       
     }
 }
