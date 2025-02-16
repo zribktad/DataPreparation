@@ -15,10 +15,11 @@ namespace DataPreparation.Testing
         public IEnumerable GetData(IParameterInfo parameter)
         {
 
-            var caseProvider = CaseProviderStore.GetRegistered(parameter.Method.TypeInfo.Type);
+          //  var caseProvider = TestStore.GetRegistered(parameter.Method.TypeInfo.Type);
 
 
-            yield return caseProvider;
+            //yield return caseProvider;
+            return null;
         }
     }
 }

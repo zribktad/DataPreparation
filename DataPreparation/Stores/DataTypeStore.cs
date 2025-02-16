@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -36,8 +37,8 @@ namespace DataPreparation.Testing
         {
             MethodDataRegister[methodInfo] = data;
         }
-        private static readonly Dictionary<Type, Type> ClassDataRegister = new();
-        private static readonly Dictionary<MethodInfo, Type> MethodDataRegister = new();
+        private static readonly ConcurrentDictionary<Type, Type> ClassDataRegister = new();
+        private static readonly ConcurrentDictionary<MethodInfo, Type> MethodDataRegister = new();
 
     }
 }

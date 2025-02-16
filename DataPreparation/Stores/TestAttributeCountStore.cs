@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -16,11 +17,11 @@ namespace DataPreparation.Testing
     internal static class TestAttributeCountStore
     {
         //Store use data preparation attributes for each test case
-        private static readonly Dictionary<MethodInfo, List<ITestAction>?> AttributesForTestStore = new();
+        private static readonly ConcurrentDictionary<MethodInfo, List<ITestAction>?> AttributesForTestStore = new();
         //count the use of attributes data up
-        private static readonly Dictionary<MethodInfo, long> UseAttributesTestUpCount = new();
+        private static readonly ConcurrentDictionary<MethodInfo, long> UseAttributesTestUpCount = new();
         //count the use of attributes data down
-        private static readonly Dictionary<MethodInfo, long> UseAttributesTestDownCount = new();
+        private static readonly ConcurrentDictionary<MethodInfo, long> UseAttributesTestDownCount = new();
 
         
         internal static void AddAttributes(MethodInfo methodInfo)
@@ -77,7 +78,7 @@ namespace DataPreparation.Testing
             return CheckTestAttributeCount(methodInfo, GetAttributesCount(methodInfo), UseAttributesTestDownCount);
         }
 
-        private static bool CheckTestAttributeCount(MethodInfo methodInfo, long expectedCount , Dictionary<MethodInfo, long> counter)
+        private static bool CheckTestAttributeCount(MethodInfo methodInfo, long expectedCount , IDictionary<MethodInfo, long> counter)
         {
             if (counter.TryGetValue(methodInfo, out long actualCount))
             {

@@ -8,6 +8,7 @@ public static  class MethodConvertor
     public static MethodInfo? GetInfo(Type? classType, string methodName, TypeReference[] array)
     {
         if (classType == null) return null;
+        
         // var method = classType.GetMethods()
         //     .Where(m => m.Name == methodName)
         //     .FirstOrDefault(m =>

@@ -18,12 +18,11 @@
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0-2.final" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
       <PackageReference Include="Mono.Cecil" Version="0.11.6" />
-      <PackageReference Include="NUnit" Version="4.2.2" />
-      <PackageReference Include="NUnitTestAdapter" Version="2.3.0" />
+      <PackageReference Include="NUnit" Version="3.14.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Models\Data\" />
+      <Folder Include="Factory\Data\" />
       <Folder Include="Unums\Testing\" />
     </ItemGroup>
 

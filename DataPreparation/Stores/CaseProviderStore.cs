@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework.Interfaces;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,18 +13,18 @@ namespace DataPreparation.Testing
     /// <summary>
     /// Provides a store for service providers associated with test cases.
     /// </summary>
-    internal  static class CaseProviderStore
+    public  static class CaseProviderStoreOff
     {
         //Store Service Provider for each test case
-        private static readonly Dictionary<Type, IServiceProvider> providerDictionary = new();
+        private static readonly ConcurrentDictionary<Type, IServiceProvider> ProviderDictionary = new();
 
         private static void Register(Type type, IServiceProvider serviceProvider)
         {
-            providerDictionary[type] = serviceProvider;
+            ProviderDictionary[type] = serviceProvider;
         }
         public static IServiceProvider? GetRegistered(Type testCase)
         {
-            return providerDictionary.GetValueOrDefault(testCase);
+            return ProviderDictionary.GetValueOrDefault(testCase);
         }
 
 

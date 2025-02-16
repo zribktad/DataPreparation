@@ -57,7 +57,8 @@ namespace DataPreparation.DataHandling
 
         internal static object PrepareData(ITest test, Type dataPreparationType)
         {
-            var preparedData = CaseProviderStore.GetTestCaseServiceData(test, dataPreparationType);
+            
+            var preparedData = TestStore.GetTestCaseServiceData((MethodBase)test.Method.MethodInfo, dataPreparationType);
             if (preparedData == null)
             {
                 throw new Exception($"Prepared data for {dataPreparationType.FullName} not found");
@@ -92,7 +93,7 @@ namespace DataPreparation.DataHandling
             else
             {
                 var dataPreparationMethodClass =
-                    CaseProviderStore.GetTestCaseServiceData(test, dataPreparationMethodType);
+                    TestStore.GetTestCaseServiceData((MethodBase)test.Method.MethodInfo, dataPreparationMethodType);
                 if (dataPreparationMethodClass == null)
                 {
                     Console.Error.WriteLine(
@@ -115,7 +116,7 @@ namespace DataPreparation.DataHandling
             }
             else
             {
-                var dataPreparationClass = CaseProviderStore.GetTestCaseServiceData(test, dataPreparationClassType);
+                var dataPreparationClass = TestStore.GetTestCaseServiceData((MethodBase)test.Method.MethodInfo, dataPreparationClassType);
                 if (dataPreparationClass == null)
                 {
                     Console.Error.WriteLine(

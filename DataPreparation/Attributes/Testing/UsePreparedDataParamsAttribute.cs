@@ -37,9 +37,6 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public override void BeforeTest(ITest test)
         {
-            //set the service provider for static global access
-            TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture!.GetType());
-            
             // Prepare data for the test from attribute
             var preparedDataClassInstance = GetDataPreparation.PrepareData(test, _dataProviders);
             var preparedData = new PreparedData(preparedDataClassInstance,_paramsUpData,_paramsDownData);

@@ -42,7 +42,6 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public override void BeforeTest(ITest test)
         {
-            TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture!.GetType());
             // Prepare class data for the test from attribute
             if (_useClassDataPreparation)
             {

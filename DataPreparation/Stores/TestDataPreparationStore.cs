@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using DataPreparation.Data;
 using DataPreparation.Models;
 
@@ -9,7 +10,7 @@ namespace DataPreparation.Testing
     /// </summary>
     internal static class TestDataPreparationStore
     {
-        private static readonly Dictionary<MethodInfo, List<PreparedData>> DataPreparationTestStore = new();
+        private static readonly ConcurrentDictionary<MethodInfo, List<PreparedData>> DataPreparationTestStore = new();
 
         //maybe TODO check if data are in the store
         /// <summary>

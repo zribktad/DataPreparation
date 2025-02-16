@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using DataPreparation.Analyzers;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
@@ -31,7 +32,7 @@ namespace DataPreparation.Testing
             MethodAnalyzer.AnalyzeTestCase(_filePath, test.Fixture.GetType());
             // MethodAnalyzer.AnalyzeTestMethod(t);
             
-            IServiceCollection serviceCollection = DataRegister.GetBaseDataServiceCollection();
+            IServiceCollection baseDataServiceCollection = DataRegister.GetBaseDataServiceCollection();
 
             if (test.TypeInfo != null)
             {
@@ -43,7 +44,7 @@ namespace DataPreparation.Testing
 
                 if (testCaseInstance is IDataPreparationCaseServices servicesDataPreparation)
                 {
-                    servicesDataPreparation.DataPreparationServices(serviceCollection);
+                    servicesDataPreparation.DataPreparationServices(baseDataServiceCollection);
                 }
 
                 if (testCaseInstance is IDataPreparationSetUpConnections setUpConnections)
@@ -53,9 +54,13 @@ namespace DataPreparation.Testing
 
             }
 
-            CaseProviderStore.RegisterDataCollection(test.Fixture.GetType(), serviceCollection);
+            foreach (var testMethod in test.Tests)
+            {
+                TestStore.RegisterDataCollection((MethodBase)testMethod.Method.MethodInfo, baseDataServiceCollection);
+            }
+            
 
-            TestData.ServiceProvider = CaseProviderStore.GetRegistered(test.Fixture.GetType());
+        
         }
 
         /// <summary>
