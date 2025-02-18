@@ -5,12 +5,14 @@ namespace DataPreparation.Factory.Testing;
 
 public class FactoryData<T> : IFactoryData
 {
-    public FactoryData(T data ,IDataParams? args) 
+    public FactoryData(long id,T data ,IDataParams? args) 
     {
         Data = data ?? throw new ArgumentNullException(nameof(data));
+        Id = id;
         Args = args;
     }
 
+    public long Id { get; }
     public  object Data { get; }
     public IDataParams? Args { get; }
     

@@ -2,14 +2,14 @@ namespace DataPreparation.Models.Data;
 
 public class ThreadSafeCounter
 {
-    private int _counter = 0;
+    private long _counter = 0;
 
-    public int Increment()
+    public long Increment()
     {
         return Interlocked.Increment(ref _counter);
     }
 
-    public int GetCount()
+    public long GetCount()
     {
         return Interlocked.CompareExchange(ref _counter, 0, 0);
     }
