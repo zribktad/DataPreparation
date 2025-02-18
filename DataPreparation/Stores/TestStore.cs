@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using DataPreparation.Factory.Testing;
+using DataPreparation.Testing.Factory;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework.Interfaces;
 
@@ -7,25 +9,40 @@ namespace DataPreparation.Testing;
 
 internal static class TestStore
 {
-    private static readonly ConcurrentDictionary<MethodBase, IServiceProvider> ProviderDictionary = new();
+    private static readonly ConcurrentDictionary<MethodBase, IServiceProvider> TestProviders = new();
+    private static readonly ConcurrentDictionary<MethodBase, ISourceFactory> TestSourceFactories = new();
 
-    private static void Register(MethodBase method, IServiceProvider serviceProvider)
+    #region SourceFactory
+    
+    public static ISourceFactory GetFactory(MethodBase method) => TestSourceFactories.GetOrAdd(method,Create(method));
+
+    internal static ISourceFactory? DeleteFactory(MethodBase method)
     {
-        ProviderDictionary[method] = serviceProvider;
+        TestSourceFactories.TryRemove(method, out var factory);
+        return factory;
     }
 
-    public static IServiceProvider? GetRegistered(MethodBase method)
+    private static SourceFactory Create(MethodBase method)
     {
-        return ProviderDictionary.GetValueOrDefault(method);
+        IServiceProvider serviceProvider = GetRegistered(method) ?? throw new InvalidOperationException($"No service provider found for {method}.");
+        return new(serviceProvider);
     }
 
-
-    internal static void RegisterDataCollection(MethodBase method, IServiceCollection serviceCollection)
+    #endregion
+    #region Provider
+    
+    private static bool Register(MethodBase method, IServiceProvider serviceProvider) => TestProviders.TryAdd(method, serviceProvider);
+    
+    internal static IServiceProvider? DeleteProvider(MethodBase method)
     {
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        Register(method, serviceProvider);
-
+        TestProviders.TryRemove(method, out var provider);
+        return provider;
     }
+
+    public static IServiceProvider? GetRegistered(MethodBase method) => TestProviders.GetValueOrDefault(method);
+
+
+    internal static bool RegisterDataCollection(MethodBase method, IServiceCollection serviceCollection) => Register(method, serviceCollection.BuildServiceProvider());
 
     public static object? GetTestCaseServiceData(MethodBase method, Type dataPreparationType)
     {
@@ -49,4 +66,5 @@ internal static class TestStore
         return preparedData;
 
     }
+    #endregion
 }

@@ -1,8 +1,11 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using DataPreparation.Analyzers;
+using DataPreparation.Factory.Testing;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
+using DataPreparation.Factory.Testing;
+using DataPreparation.Testing.Factory;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -29,11 +32,11 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-            MethodAnalyzer.AnalyzeTestCase(_filePath, test.Fixture.GetType());
+            // MethodAnalyzer.AnalyzeTestCase(_filePath, test.Fixture.GetType()); //TODO: Analyze
             // MethodAnalyzer.AnalyzeTestMethod(t);
             
-            IServiceCollection baseDataServiceCollection = DataRegister.GetBaseDataServiceCollection();
-
+            IServiceCollection baseDataServiceCollection = DataRegister.GetBaseDataServiceCollection(test.Fixture.GetType().Assembly);
+            
             if (test.TypeInfo != null)
             {
                 var testCaseInstance = Activator.CreateInstance(test.TypeInfo.Type);
@@ -49,14 +52,18 @@ namespace DataPreparation.Testing
 
                 if (testCaseInstance is IDataPreparationSetUpConnections setUpConnections)
                 {
-                  var caseConnections =  setUpConnections.SetUpConnections();
+                  var caseConnections =  setUpConnections.SetUpConnections(); //Todo: Implement
                 }
 
             }
 
             foreach (var testMethod in test.Tests)
             {
-                TestStore.RegisterDataCollection((MethodBase)testMethod.Method.MethodInfo, baseDataServiceCollection);
+                if (TestStore.RegisterDataCollection((MethodBase)testMethod.Method.MethodInfo,
+                        baseDataServiceCollection))
+                {
+                    Console.Error.WriteLine($"Data preparation for {testMethod.Method.MethodInfo.Name} failed.");
+                }
             }
             
 
@@ -69,6 +76,11 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that has been executed.</param>
         public void AfterTest(ITest test)
         {
+            foreach (var testMethod in test.Tests)
+            {
+                TestStore.DeleteProvider((MethodBase)testMethod.Method.MethodInfo);
+                TestStore.DeleteFactory((MethodBase)testMethod.Method.MethodInfo);
+            }
         }
 
         /// <summary>

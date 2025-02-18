@@ -22,14 +22,16 @@ namespace DataPreparation.Provider
         {
             var methodBase = TestMethodHelper.GetLatestTestMethod();
             
-            return  TestStore.GetRegistered(methodBase) ?? throw new InvalidOperationException($"No service provider found.");
+            return  TestStore.GetRegistered(methodBase?? throw new InvalidOperationException($"{nameof(GetProvider)} was used outside of Test method ")) ?? throw new InvalidOperationException($"No service provider found for {methodBase}.");
         }
 
  
 
         public static ISourceFactory GetFactory()
         {
-            return null;
+            var methodBase = TestMethodHelper.GetLatestTestMethod();
+            
+            return TestStore.GetFactory(methodBase ?? throw new InvalidOperationException($"{nameof(GetFactory)} was used outside of Test method ")) ?? throw new InvalidOperationException($"No Factory found for {methodBase}.");
         }
       
     }
