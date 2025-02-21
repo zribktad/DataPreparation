@@ -11,7 +11,7 @@ namespace DataPreparation.Analyzers
 {
     
  
-    internal class MethodAnalyzer
+    internal static class MethodAnalyzer
     {
         public static string GetSourceCodeForType(Type type)
         {
@@ -64,7 +64,7 @@ public class ExampleTests
     }
 }";
         
-        public static void AnalyzeTestCase(string testSourceCodePath, Type testCaseType)
+        public static void AnalyzeTestFixture(string testSourceCodePath, Type testFixtureType)
         {
             // Read the source code of the test case
             var testSourceCodeString = ReadAllFile(testSourceCodePath);
@@ -73,7 +73,7 @@ public class ExampleTests
             // SemanticModel model = compilation.GetSemanticModel(syntaxTree);
             // SyntaxNode root = syntaxTree.GetRoot();
             
-            var t = AnalyzerStore.AddOrGetAnalyzeTestCaseData(testCaseType,testSourceCodeString);
+            var t = AnalyzerStore.AddOrGetAnalyzeTestFixtureData(testFixtureType,testSourceCodeString);
 
             if (t == null)
             {
@@ -89,18 +89,18 @@ public class ExampleTests
             // }
             //
             // // find the Test Case
-            // var testCase = FindNodeForTestCase(testCaseType, analyzedMethodData.Root);
+            // var testFixture = FindNodeForTestFixture(testFixtureType, analyzedMethodData.Root);
             // // Find all Test Methods in the Test Case
-            // var testMethods = FindTestMethodsForCase(testCase);
+            // var testMethods = FindTestMethodsForCase(testFixture);
             // // Analyze each test method
-            // testMethods.ForEach(testMethod => AnalyzeTestMethod(testMethod,testCase));
+            // testMethods.ForEach(testMethod => AnalyzeTestMethod(testMethod,testFixture));
             //
          
         }
 
-        public static void AnalyzeTestMethod(Type testCaseType, MethodInfo methodMethodInfo)
+        public static void AnalyzeTestMethod(Type testFixtureType, MethodInfo methodMethodInfo)
         {
-            var analyzedMethodData = AnalyzerStore.AddOrGetAnalyzeMethodData(testCaseType,methodMethodInfo);
+            var analyzedMethodData = AnalyzerStore.AddOrGetAnalyzeMethodData(testFixtureType,methodMethodInfo);
             AnalyzeTestMethod(analyzedMethodData.Root, analyzedMethodData.FileRoot);
             
           
@@ -153,7 +153,7 @@ public class ExampleTests
                 PrintSyntaxTree(child, level + 1);
             }
         }
-        private static void AnalyzeTestMethod(MethodDeclarationSyntax methodDeclarationSyntax, SyntaxNode testCase)
+        private static void AnalyzeTestMethod(MethodDeclarationSyntax methodDeclarationSyntax, SyntaxNode testFixture)
         {
             var assertionStatements = GetAssertionStatementsForTestMethod(methodDeclarationSyntax);
             Console.WriteLine("Analyzing Test Method: " + methodDeclarationSyntax.Identifier);
@@ -196,11 +196,11 @@ public class ExampleTests
                         Console.WriteLine($"Other Syntax Node: {fluentAssertionTreeNode.Kind()}");
                     }
                     
-                    TraceVariableDeclaration(testCase, "result");
+                    TraceVariableDeclaration(testFixture, "result");
                     
                 }
                 
-                //TraceVariableDeclaration(testCase, assertVariable);
+                //TraceVariableDeclaration(testFixture, assertVariable);
                 
                 // var arguments = assertion.ArgumentList.Arguments;
                 // foreach (var argument in arguments)
@@ -213,12 +213,12 @@ public class ExampleTests
                 // }
                 }
         }
-       
-        string ShouldClausule2 = "#track#.#param#.Should().Be(#value#)";
-        string ShouldClausule = "#track#.Should(c => c.#param# == #value#)";
-        string ShouldBeClausule = "#track#.Should().Be(#value#)";
-        string AssertClausule = "Assert.That(#track#, Is.EqualTo(#value#))"; 
-        string AssertClausule2 = "Assert.That(#track#, Has.Exactly(#count#).Matches<*>(* => *.#param# == #value#))"; //Assert.That(result, Has.Exactly(1).Matches<Customer>(c => c.Id == 1L));
+
+        static string ShouldClausule2 = "#track#.#param#.Should().Be(#value#)";
+        static string ShouldClausule = "#track#.Should(c => c.#param# == #value#)";
+        static string ShouldBeClausule = "#track#.Should().Be(#value#)";
+        static string AssertClausule = "Assert.That(#track#, Is.EqualTo(#value#))";
+        static string AssertClausule2 = "Assert.That(#track#, Has.Exactly(#count#).Matches<*>(* => *.#param# == #value#))"; //Assert.That(result, Has.Exactly(1).Matches<Customer>(c => c.Id == 1L));
         private static IEnumerable<InvocationExpressionSyntax> GetAssertionStatementsForTestMethod(MethodDeclarationSyntax testSourceCode)
         {
             var assertionStatements = testSourceCode.DescendantNodes()
@@ -227,9 +227,9 @@ public class ExampleTests
             return assertionStatements;
         }
 
-        private static List<MethodDeclarationSyntax> FindTestMethodsForCase(ClassDeclarationSyntax testCase)
+        private static List<MethodDeclarationSyntax> FindTestMethodsForCase(ClassDeclarationSyntax testFixture)
         {
-            var testMethods = testCase.DescendantNodes()
+            var testMethods = testFixture.DescendantNodes()
                 .OfType<MethodDeclarationSyntax>()
                 .Where(method => method.AttributeLists
                     .SelectMany(list => list.Attributes)
@@ -243,26 +243,26 @@ public class ExampleTests
             return testMethods;
         }
 
-        private static ClassDeclarationSyntax FindNodeForTestCase(Type testCaseType, SyntaxNode root)
+        private static ClassDeclarationSyntax FindNodeForTestFixture(Type testFixtureType, SyntaxNode root)
         {
-            var testCase = root
+            var testFixture = root
                 .DescendantNodes()
                 .OfType<ClassDeclarationSyntax>()
-                .FirstOrDefault(classDeclaration => classDeclaration.Identifier.Text == testCaseType.Name
+                .FirstOrDefault(classDeclaration => classDeclaration.Identifier.Text == testFixtureType.Name
                                                     && classDeclaration.AttributeLists
                                                         .SelectMany(list => list.Attributes)
-                                                        .Any(attr => attr.Name.ToString() == nameof(DataPreparationTestCaseAttribute).Replace("Attribute", "")));
+                                                        .Any(attr => attr.Name.ToString() == nameof(DataPreparationTestFixtureAttribute).Replace("Attribute", "")));
             
-            if (testCase == null)
+            if (testFixture == null)
             {
                 Console.WriteLine("Test Case not found.");
                 throw new Exception("Test Case not found.");
             }
             else
             {
-                Console.WriteLine("Found Test Case: " + testCase.Identifier);
+                Console.WriteLine("Found Test Case: " + testFixture.Identifier);
             }
-            return testCase;
+            return testFixture;
         }
 
         public static void AnalyzeTestMethod(string testSourceCode)

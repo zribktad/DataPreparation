@@ -44,7 +44,7 @@ internal static class TestStore
 
     internal static bool RegisterDataCollection(MethodBase method, IServiceCollection serviceCollection) => Register(method, serviceCollection.BuildServiceProvider());
 
-    public static object? GetTestCaseServiceData(MethodBase method, Type dataPreparationType)
+    public static object? GetTestFixtureServiceData(MethodBase method, Type dataPreparationType)
     {
         if (dataPreparationType == null || method == null)
         {

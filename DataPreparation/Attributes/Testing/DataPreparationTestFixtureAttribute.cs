@@ -16,12 +16,12 @@ namespace DataPreparation.Testing
     /// Attribute to specify the test case for which data preparation is required.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public class DataPreparationTestCaseAttribute : NUnitAttribute, ITestAction
+    public class DataPreparationTestFixtureAttribute : NUnitAttribute, ITestAction
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataPreparationTestCaseAttribute"/> class.
+        /// Initializes a new instance of the <see cref="DataPreparationTestFixtureAttribute"/> class.
         /// </summary>
-        public DataPreparationTestCaseAttribute([CallerFilePath]string filePath = "")
+        public DataPreparationTestFixtureAttribute([CallerFilePath]string filePath = "")
         {
             _filePath= filePath;
         }
@@ -32,25 +32,25 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-            // MethodAnalyzer.AnalyzeTestCase(_filePath, test.Fixture.GetType()); //TODO: Analyze
+            // MethodAnalyzer.AnalyzeTestFixture(_filePath, test.Fixture.GetType()); //TODO: Analyze
             // MethodAnalyzer.AnalyzeTestMethod(t);
             
             IServiceCollection baseDataServiceCollection = DataRegister.GetBaseDataServiceCollection(test.Fixture.GetType().Assembly);
             
             if (test.TypeInfo != null)
             {
-                var testCaseInstance = Activator.CreateInstance(test.TypeInfo.Type);
-                if (testCaseInstance == null)
+                var testFixtureInstance = Activator.CreateInstance(test.TypeInfo.Type);
+                if (testFixtureInstance == null)
                 {
                     throw new Exception("Test case cannot be create, maybe not valid constructor");
                 }
 
-                if (testCaseInstance is IDataPreparationCaseServices servicesDataPreparation)
+                if (testFixtureInstance is IDataPreparationTestServices servicesDataPreparation)
                 {
                     servicesDataPreparation.DataPreparationServices(baseDataServiceCollection);
                 }
 
-                if (testCaseInstance is IDataPreparationSetUpConnections setUpConnections)
+                if (testFixtureInstance is IDataPreparationSetUpConnections setUpConnections)
                 {
                   var caseConnections =  setUpConnections.SetUpConnections(); //Todo: Implement
                 }

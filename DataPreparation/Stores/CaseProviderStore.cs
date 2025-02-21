@@ -13,7 +13,7 @@ namespace DataPreparation.Testing
     /// <summary>
     /// Provides a store for service providers associated with test cases.
     /// </summary>
-    public  static class CaseProviderStoreOff
+    public  static class FixtureProviderStoreOff
     {
         //Store Service Provider for each test case
         private static readonly ConcurrentDictionary<Type, IServiceProvider> ProviderDictionary = new();
@@ -22,20 +22,20 @@ namespace DataPreparation.Testing
         {
             ProviderDictionary[type] = serviceProvider;
         }
-        public static IServiceProvider? GetRegistered(Type testCase)
+        public static IServiceProvider? GetRegistered(Type testFixture)
         {
-            return ProviderDictionary.GetValueOrDefault(testCase);
+            return ProviderDictionary.GetValueOrDefault(testFixture);
         }
 
 
-        internal static void RegisterDataCollection(Type testCaseType, IServiceCollection serviceCollection)
+        internal static void RegisterDataCollection(Type testFixtureType, IServiceCollection serviceCollection)
         {
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            Register(testCaseType, serviceProvider);
+            Register(testFixtureType, serviceProvider);
 
         }
 
-        public static object? GetTestCaseServiceData(ITest test, Type dataPreparationType)
+        public static object? GetTestFixtureServiceData(ITest test, Type dataPreparationType)
         {
             if (dataPreparationType == null || test == null)
             {

@@ -28,7 +28,7 @@ namespace DataPreparation.Testing
                     [  
                         ProcessDataClassPreparation,
                         ProcessDataMethodPreparation,
-                        ProcessDataPreparationTestCases,
+                        ProcessDataPreparationTestFixtures,
                         ProcessFactories
                     ];
                     //Register Data Preparation classes
@@ -41,15 +41,15 @@ namespace DataPreparation.Testing
         
         private static bool ProcessFactories(Type type)
         {
-            if (type.GetInterface(nameof(IDataFactory)) == null) return false;
+            if (type.IsAssignableTo(typeof(IDataFactory)) == false) return false;
             
             BaseServiceCollectionStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, ServiceLifetime.Singleton)); // add Factory
             return true;
         }
 
-        private static bool ProcessDataPreparationTestCases(Type type)
+        private static bool ProcessDataPreparationTestFixtures(Type type)
         {
-            if(type.GetCustomAttribute<DataPreparationTestCaseAttribute>() is { } )
+            if(type.GetCustomAttribute<DataPreparationTestFixtureAttribute>() is { } )
             {
                 //Register method/class data preparation
                 foreach (var testMethod in type.GetMethods())

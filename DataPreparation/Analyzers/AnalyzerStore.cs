@@ -9,7 +9,7 @@ internal static class AnalyzerStore
 {
     static readonly Dictionary<Type, AnalyzerTestClassStore?> _analyzers = new();
 
-    internal static AnalyzerTestClassStore? AddOrGetAnalyzeTestCaseData(Type testClassType, string? sourceCodeString = null)
+    internal static AnalyzerTestClassStore? AddOrGetAnalyzeTestFixtureData(Type testClassType, string? sourceCodeString = null)
     {
         if (_analyzers.TryGetValue(testClassType, out var analyzer))
         {

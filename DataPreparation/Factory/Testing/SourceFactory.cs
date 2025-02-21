@@ -8,16 +8,16 @@ namespace DataPreparation.Factory.Testing;
 
 public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, IDisposable
 {
-    private readonly ConcurrentDictionary<Type, HistoryStore<long,IFactoryData>> _localDataCache = new(); //only for one test and one thread, what if user in test se more than one thread? 
-    private static readonly ConcurrentDictionary<Type,ThreadSafeCounter> GlobalIdCache = new(); // global id cache for all factories and threads
+    private readonly ConcurrentDictionary<Type, HistoryStore<long,IFactoryData>> _localDataCache = new();
+    private static readonly ThreadSafeCounter Counter = new(); 
     #region New
-    public T New<T, TDataFactory>(out long createdId, IDataParams? args = null) where TDataFactory : IDataFactory<T>
+    public T New<T, TDataFactory>(out long createdId, IDataParams? args = null) where TDataFactory : IDataFactory<T> where T : notnull
     {
         //Get the factory
         var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
         
         //Update the global data cache
-        createdId = GlobalIdCache.GetOrAdd(typeof(TDataFactory), new ThreadSafeCounter()).Increment();
+        createdId = Counter.Increment();
         
         var data = factory.Create(createdId,args);
         
@@ -31,7 +31,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
         return data;
     }
     
-    public IList<T> New<T, TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null) 
+    public IList<T> New<T, TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null) where T : notnull 
         where TDataFactory : IDataFactory<T>
     {   
         var argsList = argsEnumerable?.ToList() ?? new List<IDataParams?>();
@@ -50,7 +50,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
     #endregion
     #region Was
 
-    public IEnumerable<T> Was<T, TDataFactory>( out IEnumerable<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory<T>
+    public IEnumerable<T> Was<T, TDataFactory>( out IEnumerable<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory<T> where T : notnull
     {
         if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
         {
@@ -62,7 +62,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
     #endregion
     #region Get
 
-    public T? GetById<T, TDataFactory>(long createdId) where TDataFactory : IDataFactory<T>
+    public T? GetById<T, TDataFactory>(long createdId) where TDataFactory : IDataFactory<T> where T : notnull
     {
         if(_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
         {
@@ -75,7 +75,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
         return default;
     }
     
-    public T? Get<T, TDataFactory>(out long createdId) where TDataFactory : IDataFactory<T>
+    public T Get<T, TDataFactory>(out long createdId) where TDataFactory : IDataFactory<T> where T : notnull
     {
      
         if(_localDataCache.TryGetValue(typeof(TDataFactory), out var history))
@@ -90,7 +90,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
     }
     
     
-    public IList<T>? Get<T, TDataFactory>(int size, out IList<long> createdIds) where TDataFactory : IDataFactory<T>
+    public IList<T> Get<T, TDataFactory>(int size, out IList<long> createdIds) where TDataFactory : IDataFactory<T> where T : notnull
     {
         IList<T> retData = new List<T>();
         createdIds = new List<long>();
@@ -116,19 +116,24 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
     
     public void Dispose()
     {
-        foreach (var (dataType,historyStore) in _localDataCache)
+        foreach (var (factoryType, historyStore) in _localDataCache)
         {
             if (historyStore.IsEmpty()) continue;
-            
-            var factory = (serviceProvider.GetRequiredService(dataType) as IDataFactory) ?? throw new InvalidOperationException($"No factory found for {dataType}.");
-            foreach (var data in historyStore.GetAll(out var ids))
+            var factory = (serviceProvider.GetRequiredService(factoryType) as IDataFactorySync) ??
+                          throw new InvalidOperationException($"No factory found for {factoryType}.");
+
+            foreach (var data in historyStore.GetAll(out _))
             {
                 if (!factory.Delete(data.Id, data.Data, data.Args))
                 {
-                    Console.Error.WriteLine($"Failed to delete data for {dataType} with id {data.Id} and content {data.Data}");
+                    Console.Error.WriteLine(
+                        $"Failed to delete data for {factoryType} with id {data.Id} and content {data.Data}");
+                }
+                else
+                {
+                    Console.WriteLine($"Deleted data for {factoryType} with id {data.Id}");
                 }
             }
-
         }
         _localDataCache.Clear();
         

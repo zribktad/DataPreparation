@@ -2,11 +2,9 @@
 
 namespace DataPreparation.Testing
 {
-    public interface IDataPreparationCaseServices
+    public interface IDataPreparationTestServices
     {
         void DataPreparationServices(IServiceCollection serviceCollection);
-
     }
-
-
+    
 }
