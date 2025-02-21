@@ -27,7 +27,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
         {
             throw new InvalidOperationException($"Failed to add data to cache for {typeof(TDataFactory)}");
         }
-      
+        Console.WriteLine($"Created data for {typeof(TDataFactory)} with id {createdId}");
         return data;
     }
     
@@ -54,8 +54,10 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
     {
         if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
         {
+            Console.WriteLine($"Retrieved data for {typeof(TDataFactory)}");
             return data.GetAll(out createdIds).Select(o => o.Data).Cast<T>();
         }
+        Console.WriteLine($"No data found for {typeof(TDataFactory)}");
         createdIds = new List<long>();
         return new List<T>();
     }
@@ -72,6 +74,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
                 return ((factoryData as FactoryData<T>)!).GetData();
             }
         }
+        Console.WriteLine($"No data found for {typeof(TDataFactory)} with id {createdId}");
         return default;
     }
     
@@ -114,7 +117,8 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
     
     #region Dispose
     
-    public void Dispose()
+    
+    ~SourceFactory()
     {
         foreach (var (factoryType, historyStore) in _localDataCache)
         {
@@ -138,6 +142,12 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
         _localDataCache.Clear();
         
     }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+
     #endregion
     
     

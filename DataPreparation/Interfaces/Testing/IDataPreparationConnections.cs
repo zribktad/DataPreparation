@@ -3,6 +3,6 @@
 public interface IDataPreparationSetUpConnections
 {
 
-    public IEnumerable<DataBaseConnection> SetUpConnections();
+    public static abstract IEnumerable<DataBaseConnection> SetUpConnections();
 
 }

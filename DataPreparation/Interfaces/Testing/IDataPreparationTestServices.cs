@@ -4,7 +4,8 @@ namespace DataPreparation.Testing
 {
     public interface IDataPreparationTestServices
     {
-        void DataPreparationServices(IServiceCollection serviceCollection);
+        static abstract void  DataPreparationServices(IServiceCollection serviceCollection);
+        
     }
     
 }

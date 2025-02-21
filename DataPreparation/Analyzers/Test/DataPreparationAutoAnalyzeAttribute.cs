@@ -9,7 +9,7 @@ public class DataPreparationAutoAnalyzeAttribute : Attribute,ITestAction
     public void BeforeTest(ITest test)
     {
         
-        MethodAnalyzer.AnalyzeTestMethod(test.Fixture.GetType(),test.Method.MethodInfo);
+       // MethodAnalyzer.AnalyzeTestMethod(test.Fixture.GetType(),test.Method.MethodInfo);//TODO
       
     }
 

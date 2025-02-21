@@ -7,6 +7,7 @@ using DataPreparation.Testing;
 using DataPreparation.Factory.Testing;
 using DataPreparation.Testing.Factory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
@@ -34,40 +35,55 @@ namespace DataPreparation.Testing
         {
             // MethodAnalyzer.AnalyzeTestFixture(_filePath, test.Fixture.GetType()); //TODO: Analyze
             // MethodAnalyzer.AnalyzeTestMethod(t);
-            
-            IServiceCollection baseDataServiceCollection = DataRegister.GetBaseDataServiceCollection(test.Fixture.GetType().Assembly);
-            
             if (test.TypeInfo != null)
             {
-                var testFixtureInstance = Activator.CreateInstance(test.TypeInfo.Type);
-                if (testFixtureInstance == null)
+                if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationLoggerInitializer)))
                 {
-                    throw new Exception("Test case cannot be create, maybe not valid constructor");
+                    var builder =  test.TypeInfo.Type.GetMethod(nameof(IDataPreparationLoggerInitializer.InitializeDataPreparationTestLogger) )?.Invoke(null, null);
+                    if(builder is ILoggerFactory loggerFactory)
+                    {
+                        ILogger logger = loggerFactory.CreateLogger<object>();
+                        logger.LogInformation("Data Preparation Test Started***********************************");
+                    }
                 }
+                
+                IServiceCollection baseDataServiceCollection =
+                    DataRegister.GetBaseDataServiceCollection(test.Fixture.GetType().Assembly);
+                
 
-                if (testFixtureInstance is IDataPreparationTestServices servicesDataPreparation)
+                if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationTestServices)))
                 {
-                    servicesDataPreparation.DataPreparationServices(baseDataServiceCollection);
+                    test.TypeInfo.Type.GetMethod(nameof(IDataPreparationTestServices.DataPreparationServices))?.Invoke(null, [baseDataServiceCollection]);
                 }
-
-                if (testFixtureInstance is IDataPreparationSetUpConnections setUpConnections)
+                
+                if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationSetUpConnections)))
                 {
-                  var caseConnections =  setUpConnections.SetUpConnections(); //Todo: Implement
+                    test.TypeInfo.Type.GetMethod(nameof(IDataPreparationSetUpConnections.SetUpConnections))?.Invoke(null, null);
                 }
-
-            }
-
-            foreach (var testMethod in test.Tests)
-            {
-                if (TestStore.RegisterDataCollection((MethodBase)testMethod.Method.MethodInfo,
-                        baseDataServiceCollection))
-                {
-                    Console.Error.WriteLine($"Data preparation for {testMethod.Method.MethodInfo.Name} failed.");
-                }
-            }
+                
             
+                
+                
 
-        
+
+
+                foreach (var testMethod in test.Tests)
+                {
+                    if (TestStore.RegisterDataCollection((MethodBase)testMethod.Method.MethodInfo,
+                            baseDataServiceCollection))
+                    {
+                        Console.Error.WriteLine($"Data preparation for {testMethod.Method.MethodInfo.Name} failed.");
+
+
+                    }
+                }
+
+
+            }
+            else
+            {
+                throw new Exception("Test Fixture type not found");
+            }
         }
 
         /// <summary>
@@ -78,8 +94,8 @@ namespace DataPreparation.Testing
         {
             foreach (var testMethod in test.Tests)
             {
-                TestStore.DeleteProvider((MethodBase)testMethod.Method.MethodInfo);
-                TestStore.DeleteFactory((MethodBase)testMethod.Method.MethodInfo);
+                TestStore.DeleteProvider(testMethod.Method.MethodInfo);
+                TestStore.DeleteFactory(testMethod.Method.MethodInfo);
             }
         }
 
