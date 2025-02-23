@@ -3,18 +3,20 @@ using System.Reflection;
 using DataPreparation.Factory.Testing;
 using DataPreparation.Testing.Factory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework.Interfaces;
 
 namespace DataPreparation.Testing;
 
-internal static class TestStore
+public class TestStore
 {
     private static readonly ConcurrentDictionary<MethodBase, IServiceProvider> TestProviders = new();
     private static readonly ConcurrentDictionary<MethodBase, ISourceFactory> TestSourceFactories = new();
 
     #region SourceFactory
     
-    internal static ISourceFactory GetFactory(MethodBase method) => TestSourceFactories.GetOrAdd(method,Create);
+    internal static ISourceFactory GetOrCreateFactory(MethodBase method) => TestSourceFactories.GetOrAdd(method,Create);
 
     internal static ISourceFactory? DeleteFactory(MethodBase method)
     {
@@ -24,10 +26,12 @@ internal static class TestStore
         return factory;
     }
 
-    private static SourceFactory Create(MethodBase method)
+    private static ISourceFactory Create(MethodBase method)
     {
+        
         IServiceProvider serviceProvider = GetRegistered(method) ?? throw new InvalidOperationException($"No service provider found for {method}.");
-        return new(serviceProvider);
+        ILoggerFactory loggerFactory = FixtureStore.GetRegisteredLoggerFactory(method.ReflectedType) ??  NullLoggerFactory.Instance;;
+        return new SourceFactory(serviceProvider,loggerFactory.CreateLogger<ISourceFactory>());
     }
 
     #endregion

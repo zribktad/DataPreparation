@@ -23,7 +23,7 @@ namespace DataPreparation.Testing.Factory
         /// Method to be called before the test is executed.
         /// </summary>
         /// <param name="test">The test that is going to be executed.</param>
-        public  void BeforeTest(ITest test)
+        public void BeforeTest(ITest test)
         {
             var baseDataServiceCollection = FixtureStore.GetRegisteredService(test.Fixture.GetType());
             

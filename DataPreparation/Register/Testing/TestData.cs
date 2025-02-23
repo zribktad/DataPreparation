@@ -35,7 +35,7 @@ namespace DataPreparation.Provider
                 throw new InvalidOperationException($"This method should be called from a test method with [{nameof(FactoryTestAttribute)}].");
             }
             
-            return TestStore.GetFactory(methodBase ?? throw new InvalidOperationException($"{nameof(GetFactory)} was used outside of Test method ")) ?? throw new InvalidOperationException($"No Factory found for {methodBase}.");
+            return TestStore.GetOrCreateFactory(methodBase ?? throw new InvalidOperationException($"{nameof(GetFactory)} was used outside of Test method ")) ?? throw new InvalidOperationException($"No Factory found for {methodBase}.");
         }
       
     }

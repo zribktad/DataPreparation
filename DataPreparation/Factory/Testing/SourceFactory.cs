@@ -3,22 +3,25 @@ using DataPreparation.Data.Setup;
 using DataPreparation.Models.Data;
 using DataPreparation.Testing.Factory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NUnit.Engine;
 
 namespace DataPreparation.Factory.Testing;
 
-public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
+public class SourceFactory(IServiceProvider serviceProvider, ILogger<ISourceFactory> logger) : ISourceFactory
 {
     private readonly ConcurrentDictionary<Type, HistoryStore<long,IFactoryData>> _localDataCache = new();
     private static readonly ThreadSafeCounter Counter = new(); 
     #region New
     public T New<T, TDataFactory>(out long createdId, IDataParams? args = null) where TDataFactory : IDataFactory<T> where T : notnull
     {
+        logger.LogDebug($"[{nameof(New)}]: New data for {typeof(TDataFactory)} was called");
         //Get the factory
         var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
         
         //Update the global data cache
         createdId = Counter.Increment();
-        
+     
         var data = factory.Create(createdId,args);
         
         var dataCache = _localDataCache.GetOrAdd(typeof(TDataFactory),_ => new());
@@ -27,7 +30,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
         {
             throw new InvalidOperationException($"Failed to add data to cache for {typeof(TDataFactory)}");
         }
-        Console.WriteLine($"Created data for {typeof(TDataFactory)} with id {createdId}");
+        logger.LogInformation($"[{nameof(New)}]: Created data for {typeof(TDataFactory)} with id {createdId}");
         return data;
     }
     
@@ -44,7 +47,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
             createdIds.Add(createdId);
             items.Add(data);
         }
-
+        logger.LogInformation($"[{nameof(New)}]: Created {size} data for {typeof(TDataFactory)}");
         return items;
     }
     #endregion
@@ -54,10 +57,10 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
     {
         if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
         {
-            Console.WriteLine($"Retrieved data for {typeof(TDataFactory)}");
+            logger.LogInformation($"[{nameof(Was)}]: Retrieved data for {typeof(TDataFactory)}");
             return data.GetAll(out createdIds).Select(o => o.Data).Cast<T>();
         }
-        Console.WriteLine($"No data found for {typeof(TDataFactory)}");
+        logger.LogInformation($"[{nameof(Was)}]: No data found for {typeof(TDataFactory)}");
         createdIds = new List<long>();
         return new List<T>();
     }
@@ -69,12 +72,13 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
         if(_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
         {
             var factoryData = data.GetById(createdId);
-            if (factoryData == null)
+            if (factoryData != null)
             {
+                logger.LogInformation($"[{nameof(GetById)}]: Data for id {createdId} was found");
                 return ((factoryData as FactoryData<T>)!).GetData();
             }
         }
-        Console.WriteLine($"No data found for {typeof(TDataFactory)} with id {createdId}");
+        logger.LogInformation($"[{nameof(GetById)}]: No data found for {typeof(TDataFactory)} with id {createdId}");
         return default;
     }
     
@@ -85,9 +89,12 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
         {
             if (history.GetLatest(out var item,out createdId))
             {
+                logger.LogInformation($"[{nameof(Get)}]: Retrieved data for {typeof(TDataFactory)} with id {createdId}");
                 return (item as FactoryData<T>)!.GetData();
             }
         }
+
+        logger.LogInformation($"[{nameof(Get)}]: No data found for {typeof(TDataFactory)}");
         return New<T, TDataFactory>(out createdId);
         
     }
@@ -102,6 +109,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
         {
             var data = historyStore.GetLatest(size,out var ids).ToList();
             createdIds = ids.ToList();
+            logger.LogDebug($"[{nameof(Get)}]: Retrieved from history {data.Count} data for {typeof(TDataFactory)}");
             if (data.Count == size)
                 return data.Select(o => (o as FactoryData<T>)!.GetData()).ToList();
         }
@@ -111,6 +119,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
             retData.Insert(0, newItem); // Insert new data at the beginning
             createdIds.Insert(0, createdId); // Insert the new createdId at the beginning
         }
+        logger.LogInformation($"[{nameof(Get)}]: Retrieved {size} data for {typeof(TDataFactory)}");
         return retData;
     }
     #endregion
@@ -131,6 +140,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
 
     public void Dispose()
     {
+        logger.LogInformation("Disposing SourceFactory");
         foreach (var (factoryType, historyStore) in _localDataCache)
         {
             if (historyStore.IsEmpty()) continue;
@@ -141,16 +151,16 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
             {
                 if (!factory.Delete(data.Id, data.Data, data.Args))
                 {
-                    Console.Error.WriteLine(
-                        $"Failed to delete data for {factoryType} with id {data.Id} and content {data.Data}");
+                    logger.LogWarning($"Failed to delete data for {factoryType} with id {data.Id}");
                 }
                 else
                 {
-                    Console.WriteLine($"Deleted data for {factoryType} with id {data.Id}");
+                    logger.LogInformation($"Deleted data for {factoryType} with id {data.Id}");
                 }
             }
         }
         _localDataCache.Clear();
+        logger.LogInformation("Disposed SourceFactory");
     }
 
     #endregion

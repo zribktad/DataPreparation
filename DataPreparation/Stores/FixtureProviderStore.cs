@@ -14,7 +14,15 @@ namespace DataPreparation.Testing
 
     public  static class FixtureStore
     {
+        //Store TestStore for each test fixture
+        private static readonly ConcurrentDictionary<Type, TestStore> TestStores = new();
+        
+        public static TestStore GetOrCreateTestStore(Type testFixtureType)
+        {
+            return TestStores.GetOrAdd(testFixtureType,_ => new());
+        }
        
+        //store logger for test fixture
         private static readonly ConcurrentDictionary<Type, ILoggerFactory> LoggerFactoryCollections = new();
         public static bool RegisterLoggerFactory(Type testFixtureType, ILoggerFactory loggerFactory)
         {
