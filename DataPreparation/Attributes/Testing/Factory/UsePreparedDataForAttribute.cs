@@ -12,9 +12,9 @@ namespace DataPreparation.Testing.Factory
     /// Attribute to specify that prepared data should be used for the test method.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class UseFactory : Attribute, ITestAction
+    public class FactoryTestAttribute : TestAttribute, ITestAction
     {
-        public UseFactory()
+        public FactoryTestAttribute()
         {
         }
         
@@ -25,9 +25,13 @@ namespace DataPreparation.Testing.Factory
         /// <param name="test">The test that is going to be executed.</param>
         public  void BeforeTest(ITest test)
         {
-            // Prepare data for the test from attribute
-        
-       
+            var baseDataServiceCollection = FixtureStore.GetRegisteredService(test.Fixture.GetType());
+            
+            if (!TestStore.RegisterDataCollection(test.Method.MethodInfo, baseDataServiceCollection))
+            {
+                Console.Error.WriteLine($"Data preparation for {test.Method.MethodInfo.Name} failed.");
+            }
+
         }
 
         /// <summary>
@@ -36,7 +40,14 @@ namespace DataPreparation.Testing.Factory
         /// <param name="test">The test that has been executed.</param>
         public  void AfterTest(ITest test)
         {
-      
+            if (null == TestStore.DeleteProvider(test.Method.MethodInfo))
+            {
+                //TODO: Log
+            }
+            if(null == TestStore.DeleteFactory(test.Method.MethodInfo))
+            {
+                //TODO: Log
+            }
         }
 
        

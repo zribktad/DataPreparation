@@ -1,27 +1,28 @@
 using System.Diagnostics;
 using System.Reflection;
+using DataPreparation.Testing;
+using DataPreparation.Testing.Factory;
 using NUnit.Framework;
 
 namespace DataPreparation.Helpers;
 
 internal static class TestMethodHelper
 {
-    public static MethodBase? GetLatestTestMethod()
+    internal static MethodBase GetLatestTestMethod()
     {
         StackTrace stackTrace = new StackTrace();
-        MethodBase? methodInfo = null;
-
         foreach (var stackFrame in stackTrace.GetFrames())
         {
             MethodBase? method = stackFrame.GetMethod();
-            var testAttribute = method?.GetCustomAttribute<TestAttribute>();
-
-            if (testAttribute != null)
+            if (method?.GetCustomAttribute<TestAttribute>() != null)
             {
-                methodInfo = method;
-                break;
+                if(method.DeclaringType?.GetCustomAttribute<DataPreparationFixtureAttribute>() == null)
+                {
+                    throw new InvalidOperationException($"This method should be called from a test method in Fixture with [{nameof(DataPreparationFixtureAttribute)}].");
+                }
+                return method;
             }
         }
-        return methodInfo;
+        throw new InvalidOperationException("This method should be called from a test method.");
     }
 }

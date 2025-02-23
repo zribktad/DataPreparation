@@ -13,12 +13,10 @@ public static class DictionaryExtensions
             {
                 return existingValue;
             }
-            else
-            {
-                TValue newValue = newValueFactory();
-                dictionary[key] = newValue;
-                return newValue;
-            }
+
+            TValue newValue = newValueFactory();
+            dictionary[key] = newValue;
+            return newValue;
         }
     }
 }

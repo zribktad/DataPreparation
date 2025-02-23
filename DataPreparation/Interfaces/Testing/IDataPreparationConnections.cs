@@ -2,7 +2,5 @@
 
 public interface IDataPreparationSetUpConnections
 {
-
     public static abstract IEnumerable<DataBaseConnection> SetUpConnections();
-
 }

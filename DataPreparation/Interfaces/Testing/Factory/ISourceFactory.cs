@@ -7,6 +7,8 @@ namespace DataPreparation.Testing.Factory;
 /// </summary>
 public interface ISourceFactory: IDisposable, IAsyncDisposable
 {
+    // public object New<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactory => New<TDataFactory>(out _, args);
+    // public object New<TDataFactory>(out long createdId, IDataParams? args = null) where TDataFactory : IDataFactory;
     /// <summary>
     /// Creates a new instance of type T using the specified data factory.
     /// </summary>

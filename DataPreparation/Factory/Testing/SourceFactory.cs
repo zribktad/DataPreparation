@@ -21,7 +21,7 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
         
         var data = factory.Create(createdId,args);
         
-        var dataCache = _localDataCache.GetOrAdd(typeof(TDataFactory), new HistoryStore<long, IFactoryData>());
+        var dataCache = _localDataCache.GetOrAdd(typeof(TDataFactory),_ => new());
         
         if(!dataCache.TryAdd(createdId,new FactoryData<T?>(createdId,data, args)))
         {
@@ -117,7 +117,10 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
     
     #region Dispose
     
-    
+    ~SourceFactory()
+    {
+       
+    }
   
 
     public ValueTask DisposeAsync()

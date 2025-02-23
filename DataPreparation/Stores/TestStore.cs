@@ -7,16 +7,16 @@ using NUnit.Framework.Interfaces;
 
 namespace DataPreparation.Testing;
 
-public static class TestStore
+internal static class TestStore
 {
     private static readonly ConcurrentDictionary<MethodBase, IServiceProvider> TestProviders = new();
     private static readonly ConcurrentDictionary<MethodBase, ISourceFactory> TestSourceFactories = new();
 
     #region SourceFactory
     
-    internal static ISourceFactory GetFactory(MethodBase method) => TestSourceFactories.GetOrAdd(method,Create(method));
+    internal static ISourceFactory GetFactory(MethodBase method) => TestSourceFactories.GetOrAdd(method,Create);
 
-    public static ISourceFactory? DeleteFactory(MethodBase method)
+    internal static ISourceFactory? DeleteFactory(MethodBase method)
     {
         
         TestSourceFactories.TryRemove(method, out var factory);
@@ -41,12 +41,12 @@ public static class TestStore
         return provider;
     }
 
-    public static IServiceProvider? GetRegistered(MethodBase method) => TestProviders.GetValueOrDefault(method);
+    internal static IServiceProvider? GetRegistered(MethodBase method) => TestProviders.GetValueOrDefault(method);
 
 
     internal static bool RegisterDataCollection(MethodBase method, IServiceCollection serviceCollection) => Register(method, serviceCollection.BuildServiceProvider());
 
-    public static object? GetTestFixtureServiceData(MethodBase method, Type dataPreparationType)
+    internal static object? GetTestFixtureServiceData(MethodBase method, Type dataPreparationType)
     {
         if (dataPreparationType == null || method == null)
         {

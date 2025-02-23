@@ -18,7 +18,14 @@ namespace DataPreparation.Testing
             }
         }
 
-        public static IServiceCollection GetBaseDataServiceCollection(Assembly assembly)
+        internal static IServiceCollection GetBaseDataServiceCollection(Assembly assembly)
+        {
+            AnalyzeAssemblyProcessor(assembly);
+
+            return BaseServiceCollectionStore.GetBaseDataCollectionCopy(assembly) ?? throw new InvalidOperationException();
+        }
+
+        private static void AnalyzeAssemblyProcessor(Assembly assembly)
         {
             lock (assembly)
             {
@@ -31,14 +38,12 @@ namespace DataPreparation.Testing
                         ProcessDataPreparationTestFixtures,
                         ProcessFactories
                     ];
-                    //Register Data Preparation classes
+                    //RegisterService Data Preparation classes
                     RegisterProcessors(processors,  assembly.GetTypes());
                 }
             }
-            
-            return BaseServiceCollectionStore.GetBaseDataCollectionCopy(assembly) ?? throw new InvalidOperationException();
         }
-        
+
         private static bool ProcessFactories(Type type)
         {
             if (type.IsAssignableTo(typeof(IDataFactoryBase)) == false) return false;
@@ -49,9 +54,9 @@ namespace DataPreparation.Testing
 
         private static bool ProcessDataPreparationTestFixtures(Type type)
         {
-            if(type.GetCustomAttribute<DataPreparationTestFixtureAttribute>() is { } )
+            if(type.GetCustomAttribute<DataPreparationFixtureAttribute>() is { } )
             {
-                //Register method/class data preparation
+                //RegisterService method/class data preparation
                 foreach (var testMethod in type.GetMethods())
                 {
                     TestAttributeCountStore.AddAttributes(testMethod);
@@ -76,7 +81,7 @@ namespace DataPreparation.Testing
 
         private static bool ProcessDataClassPreparation(Type type)
         {
-            //Register Data Preparation Classes
+            //RegisterService Data Preparation Classes
             if (type.GetCustomAttribute<DataClassPreparationForAttribute>() is { } classAttribute )
             {
                 var classType = classAttribute.ClassType;

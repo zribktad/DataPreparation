@@ -251,7 +251,7 @@ public class ExampleTests
                 .FirstOrDefault(classDeclaration => classDeclaration.Identifier.Text == testFixtureType.Name
                                                     && classDeclaration.AttributeLists
                                                         .SelectMany(list => list.Attributes)
-                                                        .Any(attr => attr.Name.ToString() == nameof(DataPreparationTestFixtureAttribute).Replace("Attribute", "")));
+                                                        .Any(attr => attr.Name.ToString() == nameof(DataPreparationFixtureAttribute).Replace("Attribute", "")));
             
             if (testFixture == null)
             {

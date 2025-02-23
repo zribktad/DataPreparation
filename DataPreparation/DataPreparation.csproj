@@ -27,4 +27,10 @@
       <Folder Include="Unums\Testing\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="nunit.engine.api">
+        <HintPath>..\..\Swa\OrderService\OrderService.Boa\bin\Debug\net8.0\nunit.engine.api.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>
