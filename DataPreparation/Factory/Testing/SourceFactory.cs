@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DataPreparation.Factory.Testing;
 
-public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, IDisposable
+public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory
 {
     private readonly ConcurrentDictionary<Type, HistoryStore<long,IFactoryData>> _localDataCache = new();
     private static readonly ThreadSafeCounter Counter = new(); 
@@ -118,12 +118,20 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
     #region Dispose
     
     
-    ~SourceFactory()
+  
+
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    public void Dispose()
     {
         foreach (var (factoryType, historyStore) in _localDataCache)
         {
             if (historyStore.IsEmpty()) continue;
-            var factory = (serviceProvider.GetRequiredService(factoryType) as IDataFactorySync) ??
+            var factory = (serviceProvider.GetRequiredService(factoryType) as IDataFactory) ??
                           throw new InvalidOperationException($"No factory found for {factoryType}.");
 
             foreach (var data in historyStore.GetAll(out _))
@@ -140,12 +148,6 @@ public class SourceFactory(IServiceProvider serviceProvider) : ISourceFactory, I
             }
         }
         _localDataCache.Clear();
-        
-    }
-
-    public void Dispose()
-    {
-        throw new NotImplementedException();
     }
 
     #endregion

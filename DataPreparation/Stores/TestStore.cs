@@ -7,18 +7,20 @@ using NUnit.Framework.Interfaces;
 
 namespace DataPreparation.Testing;
 
-internal static class TestStore
+public static class TestStore
 {
     private static readonly ConcurrentDictionary<MethodBase, IServiceProvider> TestProviders = new();
     private static readonly ConcurrentDictionary<MethodBase, ISourceFactory> TestSourceFactories = new();
 
     #region SourceFactory
     
-    public static ISourceFactory GetFactory(MethodBase method) => TestSourceFactories.GetOrAdd(method,Create(method));
+    internal static ISourceFactory GetFactory(MethodBase method) => TestSourceFactories.GetOrAdd(method,Create(method));
 
-    internal static ISourceFactory? DeleteFactory(MethodBase method)
+    public static ISourceFactory? DeleteFactory(MethodBase method)
     {
+        
         TestSourceFactories.TryRemove(method, out var factory);
+        factory?.Dispose();
         return factory;
     }
 

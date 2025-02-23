@@ -41,7 +41,7 @@ namespace DataPreparation.Testing
         
         private static bool ProcessFactories(Type type)
         {
-            if (type.IsAssignableTo(typeof(IDataFactory)) == false) return false;
+            if (type.IsAssignableTo(typeof(IDataFactoryBase)) == false) return false;
             
             BaseServiceCollectionStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, ServiceLifetime.Singleton)); // add Factory
             return true;

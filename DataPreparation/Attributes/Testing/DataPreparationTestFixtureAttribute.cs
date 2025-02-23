@@ -42,7 +42,7 @@ namespace DataPreparation.Testing
                     var builder =  test.TypeInfo.Type.GetMethod(nameof(IDataPreparationLoggerInitializer.InitializeDataPreparationTestLogger) )?.Invoke(null, null);
                     if(builder is ILoggerFactory loggerFactory)
                     {
-                        ILogger logger = loggerFactory.CreateLogger<object>();
+                        ILogger logger = loggerFactory.CreateLogger<ISourceFactory>();
                         logger.LogInformation("Data Preparation Test Started***********************************");
                     }
                 }
@@ -69,7 +69,7 @@ namespace DataPreparation.Testing
 
                 foreach (var testMethod in test.Tests)
                 {
-                    if (TestStore.RegisterDataCollection((MethodBase)testMethod.Method.MethodInfo,
+                    if (!TestStore.RegisterDataCollection((MethodBase)testMethod.Method.MethodInfo,
                             baseDataServiceCollection))
                     {
                         Console.Error.WriteLine($"Data preparation for {testMethod.Method.MethodInfo.Name} failed.");

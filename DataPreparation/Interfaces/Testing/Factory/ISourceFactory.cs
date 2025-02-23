@@ -5,7 +5,7 @@ namespace DataPreparation.Testing.Factory;
 /// <summary>
 /// Interface for creating and retrieving data sources.
 /// </summary>
-public interface ISourceFactory
+public interface ISourceFactory: IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Creates a new instance of type T using the specified data factory.
