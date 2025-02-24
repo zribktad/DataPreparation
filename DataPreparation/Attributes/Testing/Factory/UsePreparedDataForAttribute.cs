@@ -12,9 +12,9 @@ namespace DataPreparation.Testing.Factory
     /// Attribute to specify that prepared data should be used for the test method.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class FactoryTestAttribute : TestAttribute, ITestAction
+    public class DataPreparationTestAttribute : TestAttribute, ITestAction
     {
-        public FactoryTestAttribute()
+        public DataPreparationTestAttribute()
         {
         }
         

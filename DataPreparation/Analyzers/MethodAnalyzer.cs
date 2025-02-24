@@ -450,7 +450,7 @@ public class ExampleTests
                     }
 
                     var methodInfo = MethodConvertor.GetInfo(calledMethodDef);
-                    if (methodInfo != null && DataTypeStore.HasMethodDataPreparationType(methodInfo))
+                    if (methodInfo != null && DataRelationStore.HasMethodDataPreparationType(methodInfo))
                     {
                         AnalyzeMethodCalls(calledMethodDef, calledMethodResult);
                     }

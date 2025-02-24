@@ -43,13 +43,11 @@ namespace DataPreparation.Testing
             var fixtureType = test.TypeInfo.Type;
             if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationLoggerInitializer)))
             {
-                var builder = fixtureType
-                    .GetMethod(nameof(IDataPreparationLoggerInitializer.InitializeDataPreparationTestLogger))
-                    ?.Invoke(null, null);
-                if (builder is ILoggerFactory loggerFactory)
+                var loggerFactory = TryCreateLoggerFactory(fixtureType);
+                if(loggerFactory != null)
                 {
-                    ILogger logger = loggerFactory.CreateLogger<ISourceFactory>();
                     FixtureStore.RegisterLoggerFactory(fixtureType, loggerFactory);
+                  
                 }
             }
 
@@ -71,6 +69,20 @@ namespace DataPreparation.Testing
 
             FixtureStore.RegisterService(fixtureType, baseDataServiceCollection);
             
+        }
+
+        private static ILoggerFactory? TryCreateLoggerFactory(Type fixtureType)
+        {
+            var builder = fixtureType
+                .GetMethod(nameof(IDataPreparationLoggerInitializer.InitializeDataPreparationTestLogger))
+                ?.Invoke(null, null);
+            ILoggerFactory? loggerFactory = null;
+            if (builder is ILoggerFactory factory )
+            {
+                loggerFactory = factory;
+            }
+
+            return loggerFactory;
         }
 
         /// <summary>

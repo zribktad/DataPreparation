@@ -26,7 +26,7 @@ namespace DataPreparation.Testing
         
         internal static void AddAttributes(MethodInfo methodInfo)
         {
-            AddAttributes<UsePreparedAttribute>(methodInfo);
+            AddSpecificAttributes<UsePreparedAttribute>(methodInfo);
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace DataPreparation.Testing
         /// </summary>
         /// <param name="methodInfo"></param>
         /// <typeparam name="T"></typeparam>
-        private static void AddAttributes<T>(MethodInfo methodInfo) where T : Attribute, ITestAction
+        private static void AddSpecificAttributes<T>(MethodInfo methodInfo) where T : Attribute, ITestAction
         {
-            var attributes = methodInfo.GetCustomAttributes<T>();
+            var attributes = methodInfo.GetCustomAttributes<T>().ToList();
             if (attributes.Any()) // Check if there are any attributes of the specified type
             {
                 if (!AttributesForTestStore.ContainsKey(methodInfo))

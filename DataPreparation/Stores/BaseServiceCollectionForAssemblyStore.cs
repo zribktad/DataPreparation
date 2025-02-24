@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataPreparation.Testing
 {
-    internal  static class BaseServiceCollectionStore
+    internal  static class BaseServiceCollectionForAssemblyStore
     {
         private static ConcurrentDictionary<Assembly, IServiceCollection> BaseDataCollection { get; } = new();
 

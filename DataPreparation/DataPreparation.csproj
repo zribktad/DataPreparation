@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Factory\Data\" />
+      <Folder Include="Stores\Data\" />
       <Folder Include="Unums\Testing\" />
     </ItemGroup>
 

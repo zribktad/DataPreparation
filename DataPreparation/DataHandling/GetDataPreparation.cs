@@ -83,7 +83,7 @@ namespace DataPreparation.DataHandling
         {
             if (methodInfo == null) return null;
 
-            var dataPreparationMethodType = DataTypeStore.GetMethodDataPreparationType(methodInfo);
+            var dataPreparationMethodType = DataRelationStore.GetMethodDataPreparationType(methodInfo);
             if (dataPreparationMethodType == null)
             {
                 Console.Error.WriteLine(
@@ -108,7 +108,7 @@ namespace DataPreparation.DataHandling
 
         private static object? Class(ITest test, Type classType)
         {
-            var dataPreparationClassType = DataTypeStore.GetClassDataPreparationType(classType);
+            var dataPreparationClassType = DataRelationStore.GetClassDataPreparationType(classType);
             if (dataPreparationClassType == null)
             {
                 Console.Error.WriteLine(

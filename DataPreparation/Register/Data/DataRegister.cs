@@ -22,14 +22,14 @@ namespace DataPreparation.Testing
         {
             AnalyzeAssemblyProcessor(assembly);
 
-            return BaseServiceCollectionStore.GetBaseDataCollectionCopy(assembly) ?? throw new InvalidOperationException();
+            return BaseServiceCollectionForAssemblyStore.GetBaseDataCollectionCopy(assembly) ?? throw new InvalidOperationException();
         }
 
         private static void AnalyzeAssemblyProcessor(Assembly assembly)
         {
             lock (assembly)
             {
-                if (!BaseServiceCollectionStore.ContainsBaseDataCollection(assembly))
+                if (!BaseServiceCollectionForAssemblyStore.ContainsBaseDataCollection(assembly))
                 {
                     List<Func<Type, bool>> processors =
                     [  
@@ -48,7 +48,7 @@ namespace DataPreparation.Testing
         {
             if (type.IsAssignableTo(typeof(IDataFactoryBase)) == false) return false;
             
-            BaseServiceCollectionStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, ServiceLifetime.Singleton)); // add Factory
+            BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, ServiceLifetime.Singleton)); // add FactoryObjects
             return true;
         }
 
@@ -72,8 +72,8 @@ namespace DataPreparation.Testing
             if ( type.GetCustomAttribute<DataMethodPreparationForAttribute>() is { } methodAttribute)
             {
                 var methodInfo = methodAttribute.MethodInfo;
-                DataTypeStore.SetMethodDataPreparationType(methodInfo,type);
-                BaseServiceCollectionStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, methodAttribute.Lifetime));
+                DataRelationStore.SetMethodDataPreparationType(methodInfo,type);
+                BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, methodAttribute.Lifetime));
                 return true;
             }
             return false;
@@ -85,8 +85,8 @@ namespace DataPreparation.Testing
             if (type.GetCustomAttribute<DataClassPreparationForAttribute>() is { } classAttribute )
             {
                 var classType = classAttribute.ClassType;
-                DataTypeStore.SetClassDataPreparationType(classType, type);
-                BaseServiceCollectionStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, classAttribute.Lifetime));
+                DataRelationStore.SetClassDataPreparationType(classType, type);
+                BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, classAttribute.Lifetime));
                 return true;
             }
             return false;
