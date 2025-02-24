@@ -5,6 +5,7 @@ using DataPreparation.Factory.Testing;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
 using DataPreparation.Factory.Testing;
+using DataPreparation.Helpers;
 using DataPreparation.Testing.Factory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -41,24 +42,30 @@ namespace DataPreparation.Testing
             }
 
             var fixtureType = test.TypeInfo.Type;
-            if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationLoggerInitializer)))
-            {
-                var loggerFactory = TryCreateLoggerFactory(fixtureType);
-                if(loggerFactory != null)
-                {
-                    FixtureStore.RegisterLoggerFactory(fixtureType, loggerFactory);
-                  
-                }
-            }
+         
+            //Register logger if not found NullLogger
+            var loggerFactory = LoggerHelper.CreateOrNullLogger(fixtureType);
+            FixtureStore.RegisterLoggerFactory(fixtureType, loggerFactory);
+            var logger = loggerFactory.CreateLogger(fixtureType);
+            logger.LogDebug("Data Preparation for {0} started", fixtureType.Name);
+            //Get copy of base data service collection
+            IServiceCollection baseDataServiceCollection = new DataRegister(loggerFactory).GetBaseDataServiceCollection(fixtureType.Assembly);
+          
 
-            IServiceCollection baseDataServiceCollection =
-                DataRegister.GetBaseDataServiceCollection(fixtureType.Assembly);
-
-
+           
             if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationTestServices)))
             {
-                test.TypeInfo.Type.GetMethod(nameof(IDataPreparationTestServices.DataPreparationServices))
-                    ?.Invoke(null, [baseDataServiceCollection]);
+                try
+                {
+                    test.TypeInfo.Type.GetMethod(nameof(IDataPreparationTestServices.DataPreparationServices))
+                        ?.Invoke(null, [baseDataServiceCollection]);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+              
             }
 
             if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationSetUpConnections)))
@@ -71,19 +78,7 @@ namespace DataPreparation.Testing
             
         }
 
-        private static ILoggerFactory? TryCreateLoggerFactory(Type fixtureType)
-        {
-            var builder = fixtureType
-                .GetMethod(nameof(IDataPreparationLoggerInitializer.InitializeDataPreparationTestLogger))
-                ?.Invoke(null, null);
-            ILoggerFactory? loggerFactory = null;
-            if (builder is ILoggerFactory factory )
-            {
-                loggerFactory = factory;
-            }
-
-            return loggerFactory;
-        }
+   
 
         /// <summary>
         /// Method to be called after the test is executed.

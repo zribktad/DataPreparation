@@ -2,13 +2,23 @@
 using DataPreparation.Data;
 using DataPreparation.Data.Setup;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NUnit.Framework;
 
 namespace DataPreparation.Testing
 {
-    internal static class DataRegister
+    internal class DataRegister
     {
-        private static void RegisterProcessors(List<Func<Type, bool>> processors, Type[] allTypes)
+        private ILogger _logger;
+
+        public DataRegister(ILoggerFactory loggerFactory)
         {
+            _logger = loggerFactory.CreateLogger<DataRegister>();;
+        }
+
+        private  void RegisterProcessors(List<Func<Type, bool>> processors, Type[] allTypes)
+        { 
+            _logger.LogDebug("Registering processors for {0} types", allTypes.Length);
             foreach (var type in allTypes)
             {
                 foreach (var processor in processors)
@@ -18,19 +28,22 @@ namespace DataPreparation.Testing
             }
         }
 
-        internal static IServiceCollection GetBaseDataServiceCollection(Assembly assembly)
+        internal IServiceCollection GetBaseDataServiceCollection(Assembly assembly)
         {
+            _logger.LogDebug("Analyzing process start for assembly {0}", assembly.FullName);
             AnalyzeAssemblyProcessor(assembly);
-
+            _logger.LogDebug("Analyzing process end for assembly {0}", assembly.FullName);
+        
             return BaseServiceCollectionForAssemblyStore.GetBaseDataCollectionCopy(assembly) ?? throw new InvalidOperationException();
         }
 
-        private static void AnalyzeAssemblyProcessor(Assembly assembly)
+        private void AnalyzeAssemblyProcessor(Assembly assembly)
         {
             lock (assembly)
             {
                 if (!BaseServiceCollectionForAssemblyStore.ContainsBaseDataCollection(assembly))
                 {
+                    _logger.LogDebug("Analyzing assembly {0}", assembly.FullName);
                     List<Func<Type, bool>> processors =
                     [  
                         ProcessDataClassPreparation,
@@ -40,11 +53,15 @@ namespace DataPreparation.Testing
                     ];
                     //RegisterService Data Preparation classes
                     RegisterProcessors(processors,  assembly.GetTypes());
+                    _logger.LogDebug("Assembly {0} analyzed", assembly.FullName);
+                }else
+                {
+                    _logger.LogDebug("Assembly {0} already analyzed", assembly.FullName);
                 }
             }
         }
 
-        private static bool ProcessFactories(Type type)
+        private bool ProcessFactories(Type type)
         {
             if (type.IsAssignableTo(typeof(IDataFactoryBase)) == false) return false;
             
@@ -52,7 +69,7 @@ namespace DataPreparation.Testing
             return true;
         }
 
-        private static bool ProcessDataPreparationTestFixtures(Type type)
+        private bool ProcessDataPreparationTestFixtures(Type type)
         {
             if(type.GetCustomAttribute<DataPreparationFixtureAttribute>() is { } )
             {
@@ -79,7 +96,7 @@ namespace DataPreparation.Testing
             return false;
         }
 
-        private static bool ProcessDataClassPreparation(Type type)
+        private bool ProcessDataClassPreparation(Type type)
         {
             //RegisterService Data Preparation Classes
             if (type.GetCustomAttribute<DataClassPreparationForAttribute>() is { } classAttribute )

@@ -13,6 +13,7 @@ public class TestStore
 {
     private static readonly ConcurrentDictionary<MethodBase, IServiceProvider> TestProviders = new();
     private static readonly ConcurrentDictionary<MethodBase, ISourceFactory> TestSourceFactories = new();
+    private static readonly ConcurrentDictionary<MethodBase, ILoggerFactory> TestLoggerFactories = new();
 
     #region SourceFactory
     
@@ -30,7 +31,7 @@ public class TestStore
     {
         
         IServiceProvider serviceProvider = GetRegistered(method) ?? throw new InvalidOperationException($"No service provider found for {method}.");
-        ILoggerFactory loggerFactory = FixtureStore.GetRegisteredLoggerFactory(method.ReflectedType) ??  NullLoggerFactory.Instance;;
+        ILoggerFactory loggerFactory = GetLoggerFactory((MethodInfo)method) ??  NullLoggerFactory.Instance;
         return new SourceFactory(serviceProvider,loggerFactory.CreateLogger<ISourceFactory>());
     }
 
@@ -73,4 +74,20 @@ public class TestStore
 
     }
     #endregion
+
+    #region LoggerFactory
+
+    public static bool RegisterLoggerFactory(MethodInfo methodMethodInfo, ILoggerFactory loggerFactory)
+    {
+      return  TestLoggerFactories.TryAdd(methodMethodInfo, loggerFactory);
+    }
+    public static ILoggerFactory? GetLoggerFactory(MethodInfo methodMethodInfo)
+    {
+        TestLoggerFactories.TryGetValue(methodMethodInfo, out var loggerFactory);
+        return loggerFactory;
+    }
+
+    #endregion
+
+    
 }

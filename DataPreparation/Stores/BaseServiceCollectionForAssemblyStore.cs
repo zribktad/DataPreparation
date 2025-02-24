@@ -20,6 +20,7 @@ namespace DataPreparation.Testing
 
         public static IServiceCollection? GetBaseDataCollectionCopy(Assembly assembly)
         {
+            
             var serviceCollection = BaseDataCollection.GetValueOrDefault(assembly);
             if (serviceCollection == null)
             {
