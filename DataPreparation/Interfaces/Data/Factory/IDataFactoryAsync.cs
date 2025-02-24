@@ -6,7 +6,7 @@ public interface IDataFactoryAsync : IDataFactoryBase // TODO
     Task<bool> Delete(long createId, object data, IDataParams? args);
 }
 
-public interface IDataFactoryAsync<T> : IDataFactoryAsync where T : notnull
+public interface IDataFactoryAsync<T> : IDataFactoryBase<T> ,IDataFactoryAsync where T : notnull
 {
     new Task<T> Create(long createId, IDataParams? args);
     Task<bool> Delete(long createId, T data, IDataParams? args);

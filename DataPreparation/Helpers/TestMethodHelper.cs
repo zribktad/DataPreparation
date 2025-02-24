@@ -10,6 +10,7 @@ internal static class TestMethodHelper
 {
     internal static MethodBase GetLatestTestMethod()
     {
+       var t =  TestContext.CurrentContext.Test.Properties;
         StackTrace stackTrace = new StackTrace();
         foreach (var stackFrame in stackTrace.GetFrames())
         {
@@ -18,11 +19,11 @@ internal static class TestMethodHelper
             {
                 if(method.DeclaringType?.GetCustomAttribute<DataPreparationFixtureAttribute>() == null)
                 {
-                    throw new InvalidOperationException($"This method should be called from a test method in Fixture with [{nameof(DataPreparationFixtureAttribute)}].");
+                    throw new InvalidOperationException($"This method should be called from a test method context in Fixture with [{nameof(DataPreparationFixtureAttribute)}].");
                 }
                 return method;
             }
         }
-        throw new InvalidOperationException("This method should be called from a test method.");
+        throw new InvalidOperationException("This method should be called from a test method context.");
     }
 }

@@ -20,8 +20,8 @@ namespace DataPreparation.Provider
         
         public static IServiceProvider GetProvider()
         {
+          
             var methodBase = TestMethodHelper.GetLatestTestMethod();
-            
             return  TestStore.GetRegistered(methodBase?? throw new InvalidOperationException($"{nameof(GetProvider)} was used outside of Test method ")) ?? throw new InvalidOperationException($"No service provider found for {methodBase}.");
         }
 

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text;
 
 namespace DataPreparation.Models.Data;
 
@@ -52,11 +53,11 @@ public class HistoryStore<TId,T> where TId : notnull
 
         //**** GET ALL ITEMS
         // Returns all items in the history, ordered by their sequence number (ascending).
-        public IEnumerable<T> GetAll(out IEnumerable<TId> ids)
+        public IEnumerable<T> GetAll(out IList<TId> ids)
         {
             var allItems= _history.OrderBy(pair => pair.Key)
                            .Select(pair => (pair.Value.id, pair.Value.item)).ToList();
-            ids = allItems.Select(pair => pair.id);
+            ids = allItems.Select(pair => pair.id).ToList();
             return allItems.Select(pair => pair.item);
         }
 
@@ -113,4 +114,15 @@ public class HistoryStore<TId,T> where TId : notnull
             _history.Clear();
             _idToSeq.Clear();
         }
-    }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.Append("Data in history:\n");
+            foreach (var entry in _history)
+            {
+                sb.Append($"CreatedId: {entry.Value.id}, Item: {entry.Value.item}\n");
+            }
+            return sb.ToString();
+        }
+}

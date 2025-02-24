@@ -3,23 +3,15 @@ using DataPreparation.Testing.Factory;
 
 namespace DataPreparation.Factory.Testing;
 
-public class FactoryData<T> : IFactoryData
+public class FactoryData(long id, object data, IDataParams? args) : IFactoryData
 {
-    public FactoryData(long id,T data ,IDataParams? args) 
-    {
-        Data = data ?? throw new ArgumentNullException(nameof(data));
-        Id = id;
-        Args = args;
-    }
+    public long Id { get; } = id;
+    public object Data { get; } = data ?? throw new ArgumentNullException(nameof(data));
+    public IDataParams? Args { get; } = args;
 
-    public long Id { get; }
-    public  object Data { get; }
-    public IDataParams? Args { get; }
-    
-    public  T GetData()
+    public  T GetData<T>()
     {
         if (Data is T data) return data;
-        
         throw new InvalidCastException($"Data is not of type {typeof(T)}");
     }
     

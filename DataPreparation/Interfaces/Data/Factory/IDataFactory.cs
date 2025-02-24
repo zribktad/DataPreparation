@@ -7,7 +7,7 @@ public interface IDataFactory : IDataFactoryBase // TODO
     bool Delete(long createId, object data, IDataParams? args);
     
 }
-public interface IDataFactory<T> : IDataFactory where T : notnull
+public interface IDataFactory<T> :IDataFactoryBase<T>, IDataFactory where T : notnull
 {
     new T Create(long createId, IDataParams? args);
     bool Delete(long createId, T data, IDataParams? args);
