@@ -15,7 +15,7 @@ namespace DataPreparation.Testing
         public IEnumerable GetData(IParameterInfo parameter)
         {
 
-          //  var caseProvider = TestStore.GetRegisteredService(parameter.Method.TypeInfo.Type);
+          //  var caseProvider = FixtureStore.GetRegisteredService(parameter.Method.TypeInfo.Type);
 
 
             //yield return caseProvider;

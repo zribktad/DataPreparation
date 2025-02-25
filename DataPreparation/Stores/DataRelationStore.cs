@@ -13,7 +13,7 @@ namespace DataPreparation.Testing
     /// <summary>
     /// Provides a store for data type preparation associated with test cases.
     /// </summary>
-    internal  static class DataRelationStore
+    internal abstract class DataRelationStore
     {
 
         public static Type? GetClassDataPreparationType(Type classType)

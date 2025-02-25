@@ -4,13 +4,11 @@ using DataPreparation.Testing;
 using DataPreparation.Testing.Factory;
 using NUnit.Framework;
 
-namespace DataPreparation.Helpers;
-
-internal static class TestMethodHelper
+namespace DataPreparation.Helpers; 
+class TestMethodHelper
 {
-    internal static MethodBase GetLatestTestMethod()
+    static MethodBase GetLatestTestMethod()
     {
-       var t =  TestContext.CurrentContext.Test.Properties;
        
         StackTrace stackTrace = new StackTrace();
         foreach (var stackFrame in stackTrace.GetFrames())

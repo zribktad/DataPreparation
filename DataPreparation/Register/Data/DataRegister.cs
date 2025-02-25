@@ -48,7 +48,6 @@ namespace DataPreparation.Testing
                     [  
                         ProcessDataClassPreparation,
                         ProcessDataMethodPreparation,
-                        ProcessDataPreparationTestFixtures,
                         ProcessFactories
                     ];
                     //RegisterService Data Preparation classes
@@ -68,21 +67,7 @@ namespace DataPreparation.Testing
             BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, ServiceLifetime.Singleton)); // add FactoryObjects
             return true;
         }
-
-        private bool ProcessDataPreparationTestFixtures(Type type)
-        {
-            if(type.GetCustomAttribute<DataPreparationFixtureAttribute>() is { } )
-            {
-                //RegisterService method/class data preparation
-                foreach (var testMethod in type.GetMethods())
-                {
-                    TestAttributeCountStore.AddAttributes(testMethod);
-                       
-                }
-                return true;
-            }
-            return false;
-        }
+        
 
         private static bool ProcessDataMethodPreparation(Type type)
         {

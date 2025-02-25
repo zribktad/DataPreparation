@@ -2,6 +2,7 @@
 using System.Reflection;
 using DataPreparation.Data;
 using DataPreparation.DataHandling;
+using DataPreparation.Models.Data;
 using DataPreparation.Provider;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -42,19 +43,19 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public override void BeforeTest(ITest test)
         {
+            
+            TestInfo testInfo = TestInfo.CreateTestInfo(test);
+            TestStore testStore = PreparationTest.CreateTestStore(testInfo);
+            
             // Prepare class data for the test from attribute
-            if (_useClassDataPreparation)
-            {
-                var classDataPreparation = GetDataPreparation.GetClassDataPreparation(test,_classType);
-                TestDataPreparationStore.AddDataPreparation(test.Method!.MethodInfo, classDataPreparation,_classParamsUpData,_classParamsDownData);
-            }
-            // Prepare method data for the test from attribute
-            var methodDataPreparation = GetDataPreparation.GetMethodDataPreparation(test,_classType,_methodName);
+            var preparedDataList = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, [_methodName]); 
+
             //add data to store
-            TestDataPreparationStore.AddDataPreparation(test.Method!.MethodInfo, methodDataPreparation,_paramsUpData,_paramsDownData);
+            testStore.PreparedData.AddDataPreparation(preparedDataList,_paramsUpData,_paramsDownData);
+            
             
             // Up data for the test if all data are prepared
-            TestDataHandler.DataUp(test.Method.MethodInfo);
+            TestDataHandler.DataUp(testStore);
         }
 
         /// <summary>
@@ -63,7 +64,10 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that has been executed.</param>
         public override void AfterTest(ITest test)
         {
-            TestDataHandler.DataDown(test.Method.MethodInfo);
+            TestInfo testInfo = TestInfo.CreateTestInfo(test);
+            var testStore = Store.GetTestStore(testInfo);
+            TestDataHandler.DataDown(testStore);
+            PreparationTest.RemoveTestStore(testStore);
         }
 
        

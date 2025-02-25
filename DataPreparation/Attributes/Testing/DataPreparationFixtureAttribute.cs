@@ -43,16 +43,14 @@ namespace DataPreparation.Testing
 
             var fixtureType = test.TypeInfo.Type;
          
-            //Register logger if not found NullLogger
+            //Get logger if not found NullLogger
             var loggerFactory = LoggerHelper.CreateOrNullLogger(fixtureType);
-            FixtureStore.RegisterLoggerFactory(fixtureType, loggerFactory);
             var logger = loggerFactory.CreateLogger(fixtureType);
+            
             logger.LogDebug("Data Preparation for {0} started", fixtureType.Name);
             //Get copy of base data service collection
             IServiceCollection baseDataServiceCollection = new DataRegister(loggerFactory).GetBaseDataServiceCollection(fixtureType.Assembly);
-          
-
-           
+            
             if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationTestServices)))
             {
                 try
@@ -62,7 +60,7 @@ namespace DataPreparation.Testing
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    logger.LogError(e,"Data Preparation Services failed to register");
                     throw;
                 }
               
@@ -74,7 +72,8 @@ namespace DataPreparation.Testing
                     ?.Invoke(null, null);
             }
 
-            FixtureStore.RegisterService(fixtureType, baseDataServiceCollection);
+            //create fixture store
+            Store.CreateFixtureStore(new(test), loggerFactory,baseDataServiceCollection);
             
         }
 
@@ -91,10 +90,9 @@ namespace DataPreparation.Testing
             {
                 throw new Exception("Test Fixture type not found after test");
             }
-
-            var fixtureType = test.TypeInfo.Type;
             
-            FixtureStore.RemoveService(fixtureType);
+            Store.RemoveFixtureStore(new(test));
+            
         }
 
         /// <summary>

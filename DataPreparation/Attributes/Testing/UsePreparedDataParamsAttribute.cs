@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using DataPreparation.DataHandling;
 using DataPreparation.Models;
+using DataPreparation.Models.Data;
 using DataPreparation.Provider;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -14,18 +15,18 @@ namespace DataPreparation.Testing
     public class UsePreparedDataParamsAttribute :UsePreparedAttribute
     {
        
-        public UsePreparedDataParamsAttribute(Type dataProviders,  [NotNull] object[] paramsUpData, [NotNull]object[] paramsDownData)
+        public UsePreparedDataParamsAttribute(Type preparedDataType,  [NotNull] object[] paramsUpData, [NotNull]object[] paramsDownData)
         {
-            _dataProviders = dataProviders ?? throw new ArgumentNullException(nameof(dataProviders));
+            _preparaDataType = preparedDataType ?? throw new ArgumentNullException(nameof(preparedDataType));
             _paramsUpData = paramsUpData ?? throw new ArgumentNullException(nameof(paramsUpData));
             _paramsDownData = paramsDownData ?? throw new ArgumentNullException(nameof(paramsDownData));
          
         }
         
-        public UsePreparedDataParamsAttribute(Type dataProviders,  object[] paramsUpData):this(dataProviders,paramsUpData,[])
+        public UsePreparedDataParamsAttribute(Type preparedDataType,  object[] paramsUpData):this(preparedDataType,paramsUpData,[])
         {
         }
-        public UsePreparedDataParamsAttribute(Type dataProviders):this(dataProviders,[],[])
+        public UsePreparedDataParamsAttribute(Type preparedDataType):this(preparedDataType,[],[])
         {
         }
        
@@ -37,13 +38,15 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public override void BeforeTest(ITest test)
         {
+            TestInfo testInfo = TestInfo.CreateTestInfo(test);
+            TestStore testStore = PreparationTest.CreateTestStore(testInfo);
             // Prepare data for the test from attribute
-            var preparedDataClassInstance = GetDataPreparation.PrepareData(test, _dataProviders);
+            var preparedDataClassInstance = GetDataPreparation.GetPreparedData(testStore, [_preparaDataType]);
             var preparedData = new PreparedData(preparedDataClassInstance,_paramsUpData,_paramsDownData);
             // Add the prepared data to the store
-            TestDataPreparationStore.AddDataPreparation(test.Method!.MethodInfo, preparedData);
+            testStore.PreparedData.AddDataPreparation(preparedData);           
             // Up data for the test if all data are prepared
-            TestDataHandler.DataUp(test.Method.MethodInfo);
+            TestDataHandler.DataUp(testStore);
         }
 
         /// <summary>
@@ -53,12 +56,15 @@ namespace DataPreparation.Testing
         public override void AfterTest(ITest test)
         {
             // Down data for the test
-            TestDataHandler.DataDown(test.Method!.MethodInfo);
+            TestInfo testInfo = TestInfo.CreateTestInfo(test);
+            var testStore = Store.GetTestStore(testInfo);
+            TestDataHandler.DataDown(testStore);
+            PreparationTest.RemoveTestStore(testStore);
         }
 
 
         
-        private readonly Type _dataProviders;
+        private readonly Type _preparaDataType;
         private readonly object[]? _paramsUpData;
         private readonly object[]? _paramsDownData;
 

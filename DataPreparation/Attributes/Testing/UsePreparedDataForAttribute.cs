@@ -43,12 +43,15 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public override void BeforeTest(ITest test)
         {
+            
+            TestInfo testInfo = TestInfo.CreateTestInfo(test);
+            var testStore = PreparationTest.CreateTestStore(testInfo);
             // Prepare data for the test from attribute
-            var preparedDataList = GetDataPreparation.DataPreparations(test, _useClassDataPreparation, _classType, _methodsNames); 
+            var preparedDataList = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, _methodsNames); 
             // Add the prepared data to the store
-            TestDataPreparationStore.AddDataPreparation(test.Method!.MethodInfo, preparedDataList);
+            testStore.PreparedData.AddDataPreparation(preparedDataList);
             // Up data for the test if all data are prepared
-            TestDataHandler.DataUp(test.Method.MethodInfo);
+            TestDataHandler.DataUp(testStore);
         }
 
         /// <summary>
@@ -57,7 +60,10 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that has been executed.</param>
         public override void AfterTest(ITest test)
         {
-            TestDataHandler.DataDown(test.Method.MethodInfo);
+            TestInfo testInfo = TestInfo.CreateTestInfo(test);
+            var testStore = Store.GetTestStore(testInfo);
+            TestDataHandler.DataDown(testStore);
+            PreparationTest.RemoveTestStore(testStore);
         }
 
        

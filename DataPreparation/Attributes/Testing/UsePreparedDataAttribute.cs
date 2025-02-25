@@ -27,12 +27,14 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public override void BeforeTest(ITest test)
         {
+            TestInfo testInfo = TestInfo.CreateTestInfo(test);
+            var testStore = PreparationTest.CreateTestStore(testInfo);
             // Prepare data for the test from attribute
-            var preparedDataList = GetDataPreparation.PrepareDataList(test, _dataProviders);
+            var preparedDataList = GetDataPreparation.GetPreparedData(testStore, _dataProviders);
             // Add the prepared data to the store
-            TestDataPreparationStore.AddDataPreparation(test.Method.MethodInfo, preparedDataList);
+            testStore.PreparedData.AddDataPreparation(preparedDataList);
             // Up data for the test if all data are prepared
-            TestDataHandler.DataUp(test.Method.MethodInfo);
+            TestDataHandler.DataUp(testStore);
         }
 
         /// <summary>
@@ -42,7 +44,10 @@ namespace DataPreparation.Testing
         public override void AfterTest(ITest test)
         {
             // Down data for the test
-            TestDataHandler.DataDown(test.Method.MethodInfo);
+            TestInfo testInfo = TestInfo.CreateTestInfo(test);
+            var testStore = Store.GetTestStore(testInfo);
+            TestDataHandler.DataDown(testStore);
+            PreparationTest.RemoveTestStore(testStore);
         }
 
 

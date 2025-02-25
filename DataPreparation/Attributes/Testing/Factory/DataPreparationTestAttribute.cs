@@ -3,6 +3,7 @@ using DataPreparation.Data;
 using DataPreparation.DataHandling;
 using DataPreparation.Helpers;
 using DataPreparation.Provider;
+using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
@@ -12,7 +13,7 @@ namespace DataPreparation.Testing.Factory
     /// <summary>
     /// Attribute to specify that prepared data should be used for the test method.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class DataPreparationTestAttribute : TestAttribute, ITestAction
     {
         public DataPreparationTestAttribute()
@@ -26,36 +27,26 @@ namespace DataPreparation.Testing.Factory
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-           
-            var loggerFactory = LoggerHelper.CreateOrNullLogger(test.Fixture.GetType());
-            TestStore.RegisterLoggerFactory(test.Method.MethodInfo, loggerFactory);
-            
-            var baseDataServiceCollection = FixtureStore.GetRegisteredService(test.Fixture.GetType());
-            
-            if (!TestStore.RegisterDataCollection(test.Method.MethodInfo, baseDataServiceCollection))
-            {
-                Console.Error.WriteLine($"Data preparation for {test.Method.MethodInfo.Name} failed.");
-            }
-
+            var testInfo = TestInfo.CreateTestInfo(test);
+            PreparationTest.CreateTestStore(testInfo);
         }
+
+   
 
         /// <summary>
         /// Method to be called after the test is executed.
         /// </summary>
         /// <param name="test">The test that has been executed.</param>
-        public  void AfterTest(ITest test)
+        public void AfterTest(ITest test)
         {
-            if (null == TestStore.DeleteProvider(test.Method.MethodInfo))
-            {
-                //TODO: Log
-            }
-            if(null == TestStore.DeleteFactory(test.Method.MethodInfo))
-            {
-                //TODO: Log
-            }
+            var testInfo = TestInfo.CreateTestInfo(test);
+            var testStore = Store.GetTestStore(testInfo);
+            PreparationTest.RemoveTestStore(testStore);
         }
 
-       
+    
+
+
         /// <summary>
         /// Gets the targets for the action.
         /// </summary>

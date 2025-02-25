@@ -22,7 +22,7 @@ internal static class LoggerHelper
                 }
             }
 #if DEBUG
-                Console.WriteLine($"Logger factory not found for {fixtureType}");
+                Console.WriteLine($"LoggerFactory factory not found for {fixtureType}");
 #endif
         }
         catch (Exception e)
@@ -34,5 +34,15 @@ internal static class LoggerHelper
         }
         
         return NullLoggerFactory.Instance;
+    }
+
+
+    internal static void Log( Action<ILogger> logAction,params ILogger?[] loggers)
+    {
+        foreach (var logger in loggers)
+        {
+            if(logger == null) continue;
+            logAction(logger);
+        }
     }
 }
