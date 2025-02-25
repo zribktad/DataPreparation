@@ -26,6 +26,7 @@ namespace DataPreparation.Testing.Factory
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
+           
             var loggerFactory = LoggerHelper.CreateOrNullLogger(test.Fixture.GetType());
             TestStore.RegisterLoggerFactory(test.Method.MethodInfo, loggerFactory);
             

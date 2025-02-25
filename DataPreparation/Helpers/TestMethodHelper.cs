@@ -11,6 +11,7 @@ internal static class TestMethodHelper
     internal static MethodBase GetLatestTestMethod()
     {
        var t =  TestContext.CurrentContext.Test.Properties;
+       
         StackTrace stackTrace = new StackTrace();
         foreach (var stackFrame in stackTrace.GetFrames())
         {

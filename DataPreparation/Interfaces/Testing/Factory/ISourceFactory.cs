@@ -13,26 +13,26 @@ public interface ISourceFactory : IDisposable
     // Creating new objects asynchronously
 
     #region New
-    public Task<object> NewAsync<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryAsync => NewAsync<TDataFactory>(out _, args);
-    public Task<object> NewAsync<TDataFactory>(out long createdId, IDataParams? args = null) where TDataFactory : IDataFactoryAsync;
-    public Task<T> NewAsync<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryAsync<T> where T : notnull => NewAsync<T, TDataFactory>(out _, args);
-    public Task<T> NewAsync<T, TDataFactory>(out long createdId, IDataParams? args = null) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
-    public Task<object[]> NewAsync<TDataFactory>(int size, IEnumerable<IDataParams?>? argsEnumerable = null) where TDataFactory : IDataFactoryAsync => NewAsync<TDataFactory>(size, out _, argsEnumerable);
-    public Task<object[]> NewAsync<TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null) where TDataFactory : IDataFactoryAsync;
-    public Task<T[]> NewAsync<T, TDataFactory>(int size, IEnumerable<IDataParams?>? argsEnumerable = null) where TDataFactory : IDataFactoryAsync<T> where T : notnull => NewAsync<T, TDataFactory>(size, out _, argsEnumerable);
-    public Task<T[]> NewAsync<T, TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
+    public Task<object> NewAsync<TDataFactory>(IDataParams? args = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync => NewAsync<TDataFactory>(out _, args, token);
+    public Task<object> NewAsync<TDataFactory>(out long createdId, IDataParams? args = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync;
+    public Task<T> NewAsync<T, TDataFactory>(IDataParams? args = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync<T> where T : notnull => NewAsync<T, TDataFactory>(out _, args, token);
+    public Task<T> NewAsync<T, TDataFactory>(out long createdId, IDataParams? args = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
+    public Task<object[]> NewAsync<TDataFactory>(int size, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync => NewAsync<TDataFactory>(size, out _, argsEnumerable, token);
+    public Task<object[]> NewAsync<TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync;
+    public Task<T[]> NewAsync<T, TDataFactory>(int size, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync<T> where T : notnull => NewAsync<T, TDataFactory>(size, out _, argsEnumerable, token);
+    public Task<T[]> NewAsync<T, TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
     
     #endregion
     // Retrieving or creating objects asynchronously
     #region Get
-    public Task<object> GetAsync<TDataFactory>() where TDataFactory : IDataFactoryAsync => GetAsync<TDataFactory>(out _);
-    public Task<object> GetAsync<TDataFactory>(out long createdId) where TDataFactory : IDataFactoryAsync;
-    public Task<T> GetAsync<T, TDataFactory>() where TDataFactory : IDataFactoryAsync<T> where T : notnull => GetAsync<T, TDataFactory>(out _);
-    public Task<T> GetAsync<T, TDataFactory>(out long createdId) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
-    public Task<object[]> GetAsync<TDataFactory>(int size, out IList<long> createdIds) where TDataFactory : IDataFactoryAsync;
-    public Task<object[]> GetAsync<TDataFactory>(int size) where TDataFactory : IDataFactoryAsync => GetAsync<TDataFactory>(size, out _);
-    public Task<T[]> GetAsync<T, TDataFactory>(int size, out IList<long> createdIds) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
-    public Task<T[]> GetAsync<T, TDataFactory>(int size) where TDataFactory : IDataFactoryAsync<T> where T : notnull => GetAsync<T, TDataFactory>(size, out _);
+    public Task<object> GetAsync<TDataFactory>(CancellationToken token = default) where TDataFactory : IDataFactoryAsync => GetAsync<TDataFactory>(out _,token);
+    public Task<object> GetAsync<TDataFactory>(out long createdId, CancellationToken token = default) where TDataFactory : IDataFactoryAsync;
+    public Task<T> GetAsync<T, TDataFactory>(CancellationToken token = default) where TDataFactory : IDataFactoryAsync<T> where T : notnull => GetAsync<T, TDataFactory>(out _, token);
+    public Task<T> GetAsync<T, TDataFactory>(out long createdId, CancellationToken token = default) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
+    public Task<object[]> GetAsync<TDataFactory>(int size, out IList<long> createdIds, CancellationToken token = default) where TDataFactory : IDataFactoryAsync;
+    public Task<object[]> GetAsync<TDataFactory>(int size, CancellationToken token = default) where TDataFactory : IDataFactoryAsync => GetAsync<TDataFactory>(size, out _, token);
+    public Task<T[]> GetAsync<T, TDataFactory>(int size, out IList<long> createdIds, CancellationToken token = default) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
+    public Task<T[]> GetAsync<T, TDataFactory>(int size, CancellationToken token = default) where TDataFactory : IDataFactoryAsync<T> where T : notnull => GetAsync<T, TDataFactory>(size, out _, token);
     #endregion
     #endregion
 

@@ -38,31 +38,31 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
     #endregion
     #region New Asynchronous Methods
-    public Task<object> NewAsync<TDataFactory>(out long createdId, IDataParams? args = null) where TDataFactory : IDataFactoryAsync
+    public Task<object> NewAsync<TDataFactory>(out long createdId, IDataParams? args = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
         logger.LogDebug($"[{nameof(New)}]: New data for {typeof(TDataFactory)} was called");
-        var data = CreateData<Task<object>,TDataFactory>( (factory, id, a ) => factory.Create(id,a),out createdId, args);
+        var data = CreateData<Task<object>,TDataFactory>( (factory, id, a ) => factory.Create(id,a,token),out createdId, args);
         logger.LogInformation($"[{nameof(New)}]: Created data for {typeof(TDataFactory)} with id {createdId}");
         return data;
     }
 
-    public Task<T> NewAsync<T, TDataFactory>(out long createdId, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryAsync<T>
+    public Task<T> NewAsync<T, TDataFactory>(out long createdId, IDataParams? args = null, CancellationToken token = default) where T : notnull where TDataFactory : IDataFactoryAsync<T>
     {
         logger.LogDebug($"[{nameof(New)}]: New data for {typeof(TDataFactory)} was called");
-        var data = CreateData<Task<T>,TDataFactory>( (factory, id, a ) => factory.Create(id,a),out createdId, args);
+        var data = CreateData<Task<T>,TDataFactory>( (factory, id, a ) => factory.Create(id,a,token),out createdId, args);
         logger.LogInformation($"[{nameof(New)}]: Created data for {typeof(TDataFactory)} with id {createdId}");
         return data;
     }
 
-    public Task<object[]> NewAsync<TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null) where TDataFactory : IDataFactoryAsync
+    public Task<object[]> NewAsync<TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
-        return Task.WhenAll( CreateData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a),size, out createdIds, argsEnumerable));
+        return Task.WhenAll( CreateData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds, argsEnumerable));
 
     }
 
-    public Task<T[]> NewAsync<T, TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null) where T : notnull where TDataFactory : IDataFactoryAsync<T>
+    public Task<T[]> NewAsync<T, TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where T : notnull where TDataFactory : IDataFactoryAsync<T>
     {
-        return Task.WhenAll( CreateData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a),size, out createdIds, argsEnumerable));
+        return Task.WhenAll( CreateData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a, token),size, out createdIds, argsEnumerable));
     }
     #endregion
     #endregion
@@ -91,24 +91,24 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
     #endregion
     #region Get Asynchronous Methods
-    public Task<object> GetAsync<TDataFactory>(out long createdId) where TDataFactory : IDataFactoryAsync
+    public Task<object> GetAsync<TDataFactory>(out long createdId, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
-        return GetData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a), out createdId);
+        return GetData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a,token), out createdId);
     }
 
-    public Task<T> GetAsync<T, TDataFactory>(out long createdId) where T : notnull where TDataFactory : IDataFactoryAsync<T>
+    public Task<T> GetAsync<T, TDataFactory>(out long createdId, CancellationToken token = default) where T : notnull where TDataFactory : IDataFactoryAsync<T>
     {
-        return GetData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a), out createdId);
+        return GetData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a,token), out createdId);
     }
 
-    public Task<object[]> GetAsync<TDataFactory>(int size, out IList<long> createdIds) where TDataFactory : IDataFactoryAsync
+    public Task<object[]> GetAsync<TDataFactory>(int size, out IList<long> createdIds, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
-        return Task.WhenAll( GetData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a),size, out createdIds));
+        return Task.WhenAll( GetData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds));
     }
 
-    public Task<T[]> GetAsync<T, TDataFactory>(int size, out IList<long> createdIds) where T : notnull where TDataFactory : IDataFactoryAsync<T>
+    public Task<T[]> GetAsync<T, TDataFactory>(int size, out IList<long> createdIds, CancellationToken token = default) where T : notnull where TDataFactory : IDataFactoryAsync<T>
     {
-        return Task.WhenAll( GetData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a),size, out createdIds));
+        return Task.WhenAll( GetData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds));
     }
     #endregion
     #endregion
@@ -312,10 +312,16 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         
         //Update the global data cache
         createdId = Counter.Increment();
+        //Create the data
         TRet data;
         try
         {
             data = createFunc(factory, createdId, args);
+        }
+        catch (OperationCanceledException ex)
+        {
+            logger.LogWarning(ex,$"Creation of new data was canceled for {typeof(TDataFactory)} with type {typeof(TRet)}");
+            throw;
         }
         catch (Exception e)
         {
@@ -334,19 +340,20 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)} with type {typeof(TRet)}");
             throw e;
         }
-
-        HistoryStore<long, IFactoryData> dataCache;
+        
+        //Get the local data history
+        HistoryStore<long, IFactoryData> historyStore;
         try
         {
-            dataCache = _localDataCache.GetOrAdd(typeof(TDataFactory),_ => new());
+            historyStore = _localDataCache.GetOrAdd(typeof(TDataFactory),_ => new());
         }
         catch (Exception e)
         {
             Dispose();
             throw new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}",e);
         }
-        
-        if(!dataCache.TryAdd(createdId,new FactoryData(createdId,data, args)))
+        //Update the local data history
+        if(!historyStore.TryAdd(createdId,new FactoryData(createdId,data, args)))
         {
             Dispose();
             var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");
