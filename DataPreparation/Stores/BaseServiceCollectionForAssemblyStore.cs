@@ -1,11 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace DataPreparation.Testing
 {
@@ -26,7 +22,7 @@ namespace DataPreparation.Testing
             {
                 return null;
             }
-            IServiceCollection copyServiceCollection = new ServiceCollection();
+            var copyServiceCollection = new ServiceCollection();
             foreach (var service in serviceCollection)
             {
                 copyServiceCollection.Add(service);
