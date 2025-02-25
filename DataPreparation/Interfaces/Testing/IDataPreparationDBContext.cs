@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPreparation
+namespace DataPreparation.Testing
 {
-    public static class TestData
+    public interface IDataPreparationDBContext
     {
-        public static IServiceProvider? ServiceProvider { get; set; }
     }
 }

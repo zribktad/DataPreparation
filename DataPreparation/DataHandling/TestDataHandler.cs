@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DataPreparation.Analyzers;
 using DataPreparation.Data;
+using DataPreparation.Runners;
 using NUnit.Framework.Internal;
 
 namespace DataPreparation.Testing
@@ -13,41 +15,49 @@ namespace DataPreparation.Testing
     {
         internal static void DataUp(MethodInfo testMethodInfo)
         {
-
-            TestAttributeStore.AddAttributeCount(testMethodInfo);
-            if (!TestAttributeStore.AreAllTestAttributesUp(testMethodInfo)) return;
-
-            var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
-            if (testData != null)
+            try
             {
+                TestAttributeCountStore.AddAttributeCount(testMethodInfo);
+                if (!TestAttributeCountStore.AreAllTestAttributesUp(testMethodInfo)) return;
+                
+                //analyse and results 
+                //var analysisResult = MethodAnalyzer.Analyze(testMethodInfo);
+                //MethodAnalyzer.Analyze(testMethodInfo);
+                
+                //analysisResult?.Print();
+                
+                var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
+                if (testData == null) return;
+                
                 Console.WriteLine($"Data for test {testMethodInfo.Name} starting up");
-                foreach (var data in testData)
-                {
-                    data.TestUpData();
-                }
+                RunnerTestData.Up(testData);
                 Console.WriteLine($"Data for test {testMethodInfo.Name} are up");
             }
-
-  
+            catch (Exception e)
+            {
+                throw;
+            }
         }
 
         internal static void DataDown(MethodInfo testMethodInfo)
         {
-
-            TestAttributeStore.RemoveAttributeCount(testMethodInfo);
-            if(!TestAttributeStore.AreAllTestAttributesDown(testMethodInfo)) return;
-
-            var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
-            
-            if (testData != null)
+            try
             {
-                Console.WriteLine($"Data for test {testMethodInfo.Name} starting down");
-                foreach (var data in testData)
-                {
-                    data.TestDownData();
-                }
 
+                TestAttributeCountStore.RemoveAttributeCount(testMethodInfo);
+                if(!TestAttributeCountStore.AreAllTestAttributesDown(testMethodInfo)) return;
+
+                var testData = TestDataPreparationStore.GetPreparedData(testMethodInfo);
+
+                if (testData == null) return;
+                
+                Console.WriteLine($"Data for test {testMethodInfo.Name} starting down");
+                RunnerTestData.Down(testData);
                 Console.WriteLine($"Data for test {testMethodInfo.Name} are down");
+            }
+            catch (Exception e)
+            {
+                throw;
             }
 
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +9,11 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DataPreparation.Testing
 {
-    internal  static class DataTypeStore
+    
+    /// <summary>
+    /// Provides a store for data type preparation associated with test cases.
+    /// </summary>
+    internal  static class DataRelationStore
     {
 
         public static Type? GetClassDataPreparationType(Type classType)
@@ -19,6 +24,10 @@ namespace DataPreparation.Testing
         {
             return MethodDataRegister.GetValueOrDefault(methodInfo);
         }
+        public static bool HasMethodDataPreparationType(MethodInfo methodInfo)
+        {
+            return MethodDataRegister.ContainsKey(methodInfo);
+        }
 
         public static void SetClassDataPreparationType(Type classType, Type data)
         {
@@ -28,8 +37,8 @@ namespace DataPreparation.Testing
         {
             MethodDataRegister[methodInfo] = data;
         }
-        private static readonly Dictionary<Type, Type> ClassDataRegister = new();
-        private static readonly Dictionary<MethodInfo, Type> MethodDataRegister = new();
+        private static readonly ConcurrentDictionary<Type, Type> ClassDataRegister = new();
+        private static readonly ConcurrentDictionary<MethodInfo, Type> MethodDataRegister = new();
 
     }
 }

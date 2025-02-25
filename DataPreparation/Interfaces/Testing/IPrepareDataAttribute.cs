@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using DataPreparation.Data;
 using NUnit.Framework;
 
-namespace DataPreparation.Interfaces.Testing
+namespace DataPreparation.Testing
 {
     internal interface IPrepareDataAttribute : ITestAction
     {

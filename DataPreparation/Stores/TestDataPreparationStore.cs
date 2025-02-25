@@ -1,57 +1,76 @@
-﻿using DataPreparation.Data;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using DataPreparation.Data;
+using DataPreparation.Models;
 
 namespace DataPreparation.Testing
 {
     /// <summary>
     /// A store for managing data preparation instances associated with specific methods.
     /// </summary>
-    internal class TestDataPreparationStore
+    internal static class TestDataPreparationStore
     {
+        private static readonly ConcurrentDictionary<MethodInfo, List<PreparedData>> DataPreparationTestStore = new();
 
-        private static readonly Dictionary<MethodInfo, List<IDataPreparation>> DataPreparationTestStore = new();
         //maybe TODO check if data are in the store
         /// <summary>
         /// Adds a single data preparation instance to the store for the specified method.
         /// </summary>
         /// <param name="methodInfo">The method information to associate with the data preparation instance.</param>
         /// <param name="data">The data preparation instance to add.</param>
-        internal static void AddDataPreparation(MethodInfo methodInfo, IDataPreparation data)
+        internal static void AddDataPreparation(MethodInfo methodInfo, PreparedData data)
         {
-            if (!DataPreparationTestStore.ContainsKey(methodInfo))
+            if (!DataPreparationTestStore.TryGetValue(methodInfo, out var preparations))
             {
-                DataPreparationTestStore[methodInfo] = new List<IDataPreparation>();
+                preparations = new List<PreparedData>();
+                DataPreparationTestStore[methodInfo] = preparations;
             }
-            DataPreparationTestStore[methodInfo].Add(data);
+
+            preparations.Add(data);
         }
+
         /// <summary>
         /// Adds a list of data preparation instances to the store for the specified method.
         /// </summary>
         /// <param name="methodInfo">The method information to associate with the data preparation instances.</param>
         /// <param name="data">The list of data preparation instances to add.</param>
-        internal static void AddDataPreparation(MethodInfo methodInfo, List<IDataPreparation> data)
+        private static void AddDataPreparation(MethodInfo methodInfo, List<PreparedData> data)
         {
-            if (!DataPreparationTestStore.ContainsKey(methodInfo))
+            if (!DataPreparationTestStore.TryGetValue(methodInfo, out var preparations))
             {
-                DataPreparationTestStore[methodInfo] = new List<IDataPreparation>();
+                preparations = new List<PreparedData>();
+                DataPreparationTestStore[methodInfo] = preparations;
             }
-            DataPreparationTestStore[methodInfo].AddRange(data);
+
+            preparations.AddRange(data);
         }
+
 
         /// <summary>
         /// Retrieves the list of data preparation instances associated with the specified method.
         /// </summary>
         /// <param name="methodInfo">The method information to look up.</param>
         /// <returns>A list of data preparation instances, or null if none are found.</returns>
-        public static List<IDataPreparation>? GetPreparedData(MethodInfo methodInfo)
+        internal static List<PreparedData>? GetPreparedData(MethodInfo methodInfo)
         {
-           return DataPreparationTestStore.GetValueOrDefault(methodInfo);
+            return DataPreparationTestStore.GetValueOrDefault(methodInfo);
         }
+        
+        internal static bool HasPreparedData(MethodInfo methodInfo)
+        {
+            return DataPreparationTestStore.GetValueOrDefault(methodInfo) != null;
+        }
+
+        internal static void AddDataPreparation(MethodInfo methodMethodInfo, object preparedMethodData, object[] upData, object[] downData)
+        {
+            AddDataPreparation(methodMethodInfo, new PreparedData(preparedMethodData, upData, downData));
+        }
+     
+        internal static void AddDataPreparation(MethodInfo methodMethodInfo, List<object> preparedDataList)
+        {
+            AddDataPreparation(methodMethodInfo, preparedDataList.Select(data => new PreparedData(data,[],[])).ToList());
+        }
+     
+     
     }
 }

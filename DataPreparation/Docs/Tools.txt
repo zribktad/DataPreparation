@@ -1,0 +1,8 @@
+﻿docker run -it --rm --network host postgres:latest psql -h localhost -U ear -d OrderService  // create /connect to the database in docker
+docker exec -it docker_container /bin/bash //connect to runnig -  docker ps
+psql -U ear -l // print all databases
+psql -U ear -d OrderService // connect to database
+pg_dump -U ear -Fc -Z 9 --file=file.dump OrderService // create dump without connect to DB 
+pg_restore -U ear -d OrderService file.dump // restore dump pg_restore -U <username> -d <database_name> <file.dump>
+find / -name file.dump 2> dev/null //find all dump files
+ "DefaultConnection": "Host=localhost;Port=5432;Database=OrderService;Username=ear;Password=ear"
