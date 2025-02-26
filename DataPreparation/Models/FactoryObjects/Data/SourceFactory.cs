@@ -41,7 +41,8 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     public Task<object> NewAsync<TDataFactory>(out long createdId, IDataParams? args = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
         logger.LogDebug($"[{nameof(New)}]: New data for {typeof(TDataFactory)} was called");
-        var data = CreateData<Task<object>,TDataFactory>( (factory, id, a ) => factory.Create(id,a,token),out createdId, args);
+        createdId = 0;
+        var data = CreateDataAsync<object,TDataFactory>((factory, id, a ) =>  factory.Create(id,a,token), args);
         logger.LogInformation($"[{nameof(New)}]: Created data for {typeof(TDataFactory)} with id {createdId}");
         return data;
     }
@@ -49,14 +50,15 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     public Task<T> NewAsync<T, TDataFactory>(out long createdId, IDataParams? args = null, CancellationToken token = default) where T : notnull where TDataFactory : IDataFactoryAsync<T>
     {
         logger.LogDebug($"[{nameof(New)}]: New data for {typeof(TDataFactory)} was called");
-        var data = CreateData<Task<T>,TDataFactory>( (factory, id, a ) => factory.Create(id,a,token),out createdId, args);
+        createdId = 0;
+        var data = CreateDataAsync<T,TDataFactory>(async (factory, id, a ) =>await factory.Create(id,a,token), args);
         logger.LogInformation($"[{nameof(New)}]: Created data for {typeof(TDataFactory)} with id {createdId}");
         return data;
     }
 
     public Task<object[]> NewAsync<TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
-        return Task.WhenAll( CreateData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds, argsEnumerable));
+        return Task.WhenAll( CreateDataAsync<object,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds, argsEnumerable));
 
     }
 
@@ -307,6 +309,85 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         try
         {
             data = createFunc(factory, createdId, args);
+        }
+        catch (OperationCanceledException ex)
+        {
+            logger.LogWarning(ex,$"Creation of new data was canceled for {typeof(TDataFactory)} with type {typeof(TRet)}");
+            throw;
+        }
+        catch (Exception e)
+        {
+           Dispose();
+           var ex = new InvalidOperationException($"Failed to create data. Create method throw exception for {typeof(TDataFactory)}" +
+                                                 $" with type {typeof(TRet)}, id {createdId} and arguments {args}",e);
+           logger.LogError(ex,$"Creation of new data failed for {typeof(TDataFactory)} with type {typeof(TRet)}");
+           throw ex;
+        }
+        
+        if(data == null)
+        {
+            Dispose();
+            var e = new InvalidOperationException($"Failed to create data. Create method returned null for {typeof(TDataFactory)}" +
+                                                  $" with type {typeof(TRet)}, id {createdId} and arguments {args}");
+            logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)} with type {typeof(TRet)}");
+            throw e;
+        }
+        
+        //Get the local data history
+        HistoryStore<long, IFactoryData> historyStore;
+        try
+        {
+            historyStore = _localDataCache.GetOrAdd(typeof(TDataFactory),_ => new());
+        }
+        catch (Exception e)
+        {
+            Dispose();
+            throw new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}",e);
+        }
+        //Update the local data history
+        if(!historyStore.TryAdd(createdId,new FactoryData(createdId,data, args)))
+        {
+            Dispose();
+            var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");
+            logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)} with type {typeof(TRet)}");
+            throw e;
+        }
+        logger.LogDebug($"[{nameof(CreateData)}]: Created data for {typeof(TDataFactory)} with id {createdId} and type {typeof(TRet)}");
+
+        return data;
+    }
+    private IList<Task<TRet>> CreateData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null)
+        where TDataFactory : IDataFactoryBase where TRet : notnull
+    {
+        logger.LogDebug($"[{nameof(New)}]: Creation of {size} data for {typeof(TDataFactory)} with was called");
+        
+        var argsList = argsEnumerable?.ToList() ?? new List<IDataParams?>();
+        createdIds = new List<long>();
+        var items = new List<TRet>();
+
+        for (int i = 0; i < size; i++)
+        {
+            var args = argsList.ElementAtOrDefault(i);
+            var data =   CreateData(createFunc,out var createdId, args);
+            createdIds.Add(createdId);
+            items.Add(data);
+        }
+        logger.LogDebug($"[{nameof(New)}]: Created {size} data for {typeof(TDataFactory)}");
+        return items;
+    }
+     private async Task<TRet> CreateDataAsync<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, Task<TRet>> createFunc, IDataParams? args = null) where TDataFactory : IDataFactoryBase where TRet : notnull
+    {
+        logger.LogDebug($"[{nameof(CreateData)}]: Creation of data for {typeof(TDataFactory)}  with type {typeof(TRet)} was called");
+        //Get the factory
+        var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
+        
+        //Update the global data cache
+        var createdId = Counter.Increment();
+        //Create the data
+        TRet data;
+        try
+        {
+            data = await createFunc(factory, createdId, args);
         }
         catch (OperationCanceledException ex)
         {

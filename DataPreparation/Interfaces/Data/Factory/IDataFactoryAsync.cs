@@ -10,8 +10,14 @@ public interface IDataFactoryAsync<T> : IDataFactoryBase<T> ,IDataFactoryAsync w
 {
     new Task<T> Create(long createId, IDataParams? args, CancellationToken token = default);
     Task<bool> Delete(long createId, T data, IDataParams? args);
-    Task<object> IDataFactoryAsync.Create(long createId, IDataParams? args, CancellationToken token) => Create(createId, args,token).ContinueWith(t => (object)t.Result);
+    async Task<object> IDataFactoryAsync.Create(long createId, IDataParams? args, CancellationToken token)
+    {
+        var task = Create(createId, args, token);
+        return task.IsCompletedSuccessfully
+            ? Task.FromResult(task.Result as object)!   
+            : await task;
+    }
 
-    Task<bool> IDataFactoryAsync.Delete(long createId, object data, IDataParams? args) => Delete(createId, data, args);
+    Task<bool> IDataFactoryAsync.Delete(long createId, object data, IDataParams? args) => Delete(createId, (T)data, args);
 
 }
