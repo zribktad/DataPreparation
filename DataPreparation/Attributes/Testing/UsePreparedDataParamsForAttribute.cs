@@ -48,10 +48,10 @@ namespace DataPreparation.Testing
             TestStore testStore = PreparationTest.CreateTestStore(testInfo);
             
             // Prepare class data for the test from attribute
-            var preparedDataList = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, [_methodName]); 
-
+            var preparedData = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, [_methodName]); 
+            if(preparedData.Count == 0) return;
             //add data to store
-            testStore.PreparedData.AddDataPreparation(preparedDataList,_paramsUpData,_paramsDownData);
+            testStore.PreparedData.AddDataPreparation(preparedData[0],_paramsUpData,_paramsDownData);
             
             
             // Up data for the test if all data are prepared

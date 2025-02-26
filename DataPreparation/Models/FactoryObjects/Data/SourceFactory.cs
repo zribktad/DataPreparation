@@ -189,11 +189,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     #endregion
     #region Dispose
     
-    public ValueTask DisposeAsync()
-    {
-        Dispose();
-        return ValueTask.CompletedTask;
-    }
 
     public void Dispose()
     {

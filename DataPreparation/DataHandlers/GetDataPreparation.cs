@@ -60,7 +60,7 @@ namespace DataPreparation.DataHandling
             else
             {
                 var preparedData = testStore.ServiceProvider.GetService(preparedDataType);
-                if (preparedData == null)
+                if (preparedData == null) //if invalid operation exception missing some for creation of this type
                 {
                     Console.Error.WriteLine(
                         $"Prepared data for type {preparedDataType.FullName} in test {testStore} not registered.");

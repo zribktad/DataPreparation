@@ -41,10 +41,10 @@ namespace DataPreparation.Testing
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
             TestStore testStore = PreparationTest.CreateTestStore(testInfo);
             // Prepare data for the test from attribute
-            var preparedDataClassInstance = GetDataPreparation.GetPreparedData(testStore, [_preparaDataType]);
-            var preparedData = new PreparedData(preparedDataClassInstance,_paramsUpData,_paramsDownData);
+            var preparedDataClassInstanceInList = GetDataPreparation.GetPreparedData(testStore, [_preparaDataType]);
             // Add the prepared data to the store
-            testStore.PreparedData.AddDataPreparation(preparedData);           
+            if(preparedDataClassInstanceInList.Count == 0) return;
+            testStore.PreparedData.AddDataPreparation(preparedDataClassInstanceInList[0],_paramsUpData,_paramsDownData);           
             // Up data for the test if all data are prepared
             TestDataHandler.DataUp(testStore);
         }
