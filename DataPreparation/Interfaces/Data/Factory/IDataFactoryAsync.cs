@@ -14,8 +14,8 @@ public interface IDataFactoryAsync<T> : IDataFactoryBase<T> ,IDataFactoryAsync w
     {
         var task = Create(createId, args, token);
         return task.IsCompletedSuccessfully
-            ? Task.FromResult(task.Result as object)!   
-            : await task;
+            ? task.Result
+            : await task.ConfigureAwait(false);
     }
 
     Task<bool> IDataFactoryAsync.Delete(long createId, object data, IDataParams? args) => Delete(createId, (T)data, args);

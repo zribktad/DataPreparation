@@ -9,7 +9,6 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace DataPreparation.Factory.Testing;
 
-
 public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : ISourceFactory
 {
     private readonly ConcurrentDictionary<Type, HistoryStore<long,IFactoryData>> _localDataCache = new();
@@ -56,13 +55,13 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
     public Task<object[]> NewAsync<TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
-        return Task.WhenAll( NewDataASync<object,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds, argsEnumerable));
+        return Task.WhenAll( NewDataAsync<object,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds, argsEnumerable));
 
     }
 
     public Task<T[]> NewAsync<T, TDataFactory>(int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null, CancellationToken token = default) where T : notnull where TDataFactory : IDataFactoryAsync<T>
     {
-        return Task.WhenAll( NewData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a, token),size, out createdIds, argsEnumerable));
+        return Task.WhenAll( NewDataAsync<T,TDataFactory>((factory, id, a) => factory.Create(id, a, token),size, out createdIds, argsEnumerable));
     }
     #endregion
     #endregion
@@ -93,28 +92,37 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     #region Get Asynchronous Methods
     public Task<object> GetAsync<TDataFactory>(out long createdId, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
-        return GetData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a,token), out createdId);
+        return GetDataAsync<object,TDataFactory>((factory, id, a) => factory.Create(id, a,token), out createdId);
     }
 
     public Task<T> GetAsync<T, TDataFactory>(out long createdId, CancellationToken token = default) where T : notnull where TDataFactory : IDataFactoryAsync<T>
     {
-        return GetData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a,token), out createdId);
+        return GetDataAsync<T,TDataFactory>((factory, id, a) => factory.Create(id, a,token), out createdId);
     }
 
     public Task<object[]> GetAsync<TDataFactory>(int size, out IList<long> createdIds, CancellationToken token = default) where TDataFactory : IDataFactoryAsync
     {
-        return Task.WhenAll( GetData<Task<object>,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds));
+        return Task.WhenAll( GetDataAsync<object,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds));
     }
 
     public Task<T[]> GetAsync<T, TDataFactory>(int size, out IList<long> createdIds, CancellationToken token = default) where T : notnull where TDataFactory : IDataFactoryAsync<T>
     {
-        return Task.WhenAll( GetData<Task<T>,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds));
+        return Task.WhenAll( GetDataAsync<T,TDataFactory>((factory, id, a) => factory.Create(id, a,token),size, out createdIds));
     }
     #endregion
     #endregion
     #region Was
-    #region Was Synchronous Methods
-    public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory
+    
+    public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase
+    {
+        return WasData<TDataFactory>(out createdIds);
+    }
+    
+    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryBase<T>
+    {
+        return WasData<TDataFactory>(out createdIds).Cast<T>().ToList();
+    }
+    private IList<object> WasData<TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryBase
     {
         if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
         {
@@ -125,37 +133,59 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         createdIds = [];
         return [];
     }
-
-    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactory<T>
-    {
-        return Was<TDataFactory>(out createdIds, args).Cast<T>().ToList();
-    }
-    #endregion
-    #region Was Asynchronous Methods
-    
-    public Task<object[]> WasAsync<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryAsync
-    {
-        return WasData<object,TDataFactory>(out createdIds);
-    }
-
-    private Task<TRet[]> WasData<TRet,TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryAsync
-    {
-        if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
-        {
-            logger.LogInformation($"[{nameof(Was)}]: Retrieved data for {typeof(TDataFactory)}");
-            return Task.WhenAll( data.GetAll(out createdIds).Select(o => o.Data).Cast<Task<TRet>>());
-        }
-        logger.LogInformation($"[{nameof(Was)}]: No data found for {typeof(TDataFactory)}");
-        createdIds = [];
-        return Task.FromResult<TRet[]>([]);
-    }
-
-    public Task<T[]> WasAsync<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryAsync<T>
-    {
-        return WasData<T,TDataFactory>(out createdIds);
-    }
-    
-    #endregion
+    // #region Was Synchronous Methods
+    // public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory
+    // {
+    //     if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
+    //     {
+    //         logger.LogInformation($"[{nameof(Was)}]: Retrieved data for {typeof(TDataFactory)}");
+    //         return data.GetAll(out createdIds).Select(o => o.Data).ToList();
+    //     }
+    //     logger.LogInformation($"[{nameof(Was)}]: No data found for {typeof(TDataFactory)}");
+    //     createdIds = [];
+    //     return [];
+    // }
+    //
+    // public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactory<T>
+    // {
+    //     return Was<TDataFactory>(out createdIds, args).Cast<T>().ToList();
+    // }
+    // #endregion
+    // #region Was Asynchronous Methods
+    // public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory
+    // {
+    //     if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
+    //     {
+    //         logger.LogInformation($"[{nameof(Was)}]: Retrieved data for {typeof(TDataFactory)}");
+    //         return data.GetAll(out createdIds).Select(o => o.Data).ToList();
+    //     }
+    //     logger.LogInformation($"[{nameof(Was)}]: No data found for {typeof(TDataFactory)}");
+    //     createdIds = [];
+    //     return [];
+    // }
+    // public Task<object[]> WasAsync<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryAsync
+    // {
+    //     return WasData<object,TDataFactory>(out createdIds);
+    // }
+    //
+    // private Task<TRet[]> WasData<TRet,TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryAsync
+    // {
+    //     if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
+    //     {
+    //         logger.LogInformation($"[{nameof(Was)}]: Retrieved data for {typeof(TDataFactory)}");
+    //         return Task.WhenAll( data.GetAll(out createdIds).Select(o => o.Data).Cast<Task<TRet>>());
+    //     }
+    //     logger.LogInformation($"[{nameof(Was)}]: No data found for {typeof(TDataFactory)}");
+    //     createdIds = [];
+    //     return Task.FromResult<TRet[]>([]);
+    // }
+    //
+    // public Task<T[]> WasAsync<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryAsync<T>
+    // {
+    //     return WasData<T,TDataFactory>(out createdIds);
+    // }
+    //
+    // #endregion
     #endregion
     #region Other Methods
     #region GetById
@@ -174,6 +204,8 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         logger.LogInformation($"[{nameof(GetById)}]: No data found for {typeof(TDataFactory)} with id {createdId}");
         return default;
     }
+    
+
     public T? GetById<T, TDataFactory>(long createdId) where TDataFactory : IDataFactory<T> where T : notnull
     {
        var foundData =  GetById<TDataFactory>(createdId);
@@ -273,7 +305,10 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     #endregion
     
     #region Helper Methods
+
+    #region New data
     
+    //list
     private IList<TRet> NewData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null)
         where TDataFactory : IDataFactoryBase where TRet : notnull
     {
@@ -293,7 +328,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         logger.LogDebug($"[{nameof(New)}]: Created {size} data for {typeof(TDataFactory)}");
         return items;
     }
-    
+    //one
     private TRet NewData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,out long createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
         logger.LogDebug($"[{nameof(NewDataAsync)}]: Creation of data for {typeof(TDataFactory)}  with type {typeof(TRet)} was called");
@@ -314,11 +349,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         {
             data = createFunc(factory, createdId, args);
         }
-        catch (OperationCanceledException ex)
-        {
-            logger.LogWarning(ex,$"Creation of new data was canceled for {typeof(TDataFactory)} with type {typeof(TRet)}");
-            throw;
-        }
         catch (Exception e)
         {
             Dispose();
@@ -333,10 +363,8 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
         return data;
     }
-
-
-
-    private IList<Task<TRet>> NewDataASync<TRet,TDataFactory>(Func<TDataFactory, long, IDataParams?, Task<TRet>> createFunc,int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null)
+    //list
+    private IList<Task<TRet>> NewDataAsync<TRet,TDataFactory>(Func<TDataFactory, long, IDataParams?, Task<TRet>> createFunc,int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null)
         where TDataFactory : IDataFactoryBase where TRet : notnull
     {
         logger.LogDebug($"[{nameof(New)}]: Creation of {size} data for {typeof(TDataFactory)} with was called");
@@ -357,6 +385,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         logger.LogDebug($"[{nameof(New)}]: Created {size} data for {typeof(TDataFactory)}");
         return items;
     }
+    //one
     private  Task<TRet> NewDataAsync<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, Task<TRet>> createFunc, out long createdId ,IDataParams? args = null) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
         //Get the factory
@@ -374,7 +403,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         TRet data;
         try
         {
-            data = await createFunc(factory, createdId, args);
+            data = await createFunc(factory, createdId, args).ConfigureAwait(false);
         }
         catch (OperationCanceledException ex)
         {
@@ -431,53 +460,17 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         }
     }
 
-
+    #endregion
+    #region Get data
     private TRet GetData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,out long createdId) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
-        if(_localDataCache.TryGetValue(typeof(TDataFactory), out var history))
-        {
-            if (history.GetLatest(out var item,out createdId))
-            {
-                logger.LogInformation($"[{nameof(Get)}]: Retrieved data for {typeof(TDataFactory)} with id {createdId}");
-                if ((item as FactoryData)!.Data is not TRet data)
-                {
-                    Dispose();
-                    throw CastExeption(logger,
-                        $"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.");
-                }
-
-                return data;
-            }
-        }
-
-        logger.LogInformation($"[{nameof(Get)}]: No data found for {typeof(TDataFactory)}");
+        if (GetLatest<TRet, TDataFactory>(out createdId, out var ret)) return ret!;
+        logger.LogDebug($"[{nameof(Get)}]: No created data found for {typeof(TDataFactory)}");
         return NewData(createFunc,out createdId);
     }
-    
     private IList<TRet> GetData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,int size, out IList<long> createdIds) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
-        IList<TRet> retData = new List<TRet>();
-        createdIds = new List<long>();
-        
-        if(_localDataCache.TryGetValue(typeof(TDataFactory), out var historyStore))
-        {
-            var data = historyStore.GetLatest(size,out var ids).ToList();
-            createdIds = ids.ToList();
-            logger.LogDebug($"[{nameof(Get)}]: Retrieved from history {data.Count} data for {typeof(TDataFactory)}");
-            if (data.Count == size)
-            {
-                var enumData = data.Select(o => o.Data);
-                try
-                {
-                    return enumData.Cast<TRet>().ToList();
-                }
-                catch (InvalidCastException e)
-                {
-                    Dispose();
-                    throw CastExeption(logger,$"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.",e);
-                }
-            }
-        }
+        if (GetLatest<TRet, TDataFactory>(size, out createdIds, out IList<TRet> retData)) return retData;
         while (retData.Count < size)
         {
             var newItem = NewData(createFunc,out var createdId);
@@ -487,6 +480,79 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         logger.LogInformation($"[{nameof(Get)}]: Retrieved {size} data for {typeof(TDataFactory)}");
         return retData;
     }
+    
+    private Task<TRet> GetDataAsync<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, Task<TRet>> createFunc,out long createdId) where TDataFactory : IDataFactoryBase where TRet : notnull
+    {
+        if (GetLatest<TRet, TDataFactory>(out createdId, out var ret)) return Task.FromResult(ret)!;
+        logger.LogDebug($"[{nameof(Get)}]: No created data found for {typeof(TDataFactory)}");
+        return NewDataAsync(createFunc,out createdId);
+    }
+    private IList<Task<TRet>> GetDataAsync<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, Task<TRet>> createFunc,int size, out IList<long> createdIds) where TDataFactory : IDataFactoryBase where TRet : notnull
+    {
+        var ret = GetLatest<TRet, TDataFactory>(size, out createdIds, out var latestData) ;
+        
+        IList<Task<TRet>> retData = latestData.Select(Task.FromResult).ToList();
+        if(ret) return retData;
+        
+        while (retData.Count < size)
+        {
+            var newItem = NewData(createFunc,out var createdId);
+            retData.Insert(0, newItem); // Insert new data at the beginning
+            createdIds.Insert(0, createdId); // Insert the new createdId at the beginning
+        }
+        logger.LogInformation($"[{nameof(Get)}]: Retrieved {size} data for {typeof(TDataFactory)}");
+        return retData;
+    }
+    private bool GetLatest<TRet, TDataFactory>(out long createdId, out TRet? ret)
+        where TDataFactory : IDataFactoryBase where TRet : notnull
+    {
+        if(_localDataCache.TryGetValue(typeof(TDataFactory), out var history))
+        {
+            if (history.GetLatest(out var item,out createdId))
+            {
+                logger.LogDebug($"[{nameof(Get)}]: Retrieved data for {typeof(TDataFactory)} with id {createdId}");
+                if ((item as FactoryData)!.Data is not TRet data)
+                {
+                    Dispose();
+                    throw CastExeption(logger,
+                        $"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.");
+                }
+
+                ret = data;
+                return true;
+            }
+        }
+        
+        createdId = -1;
+        ret = default;
+        return false;
+    }
+
+    private bool GetLatest<TRet, TDataFactory>(int size, out IList<long> createdIds, out IList<TRet> retData) where TDataFactory : IDataFactoryBase where TRet : notnull
+    {
+        if(_localDataCache.TryGetValue(typeof(TDataFactory), out var historyStore))
+        {
+            var data = historyStore.GetLatest(size,out var ids).ToList();
+            logger.LogDebug($"[{nameof(Get)}]: Retrieved from history {data.Count} data for {typeof(TDataFactory)}");
+            var enumData = data.Select(o => o.Data);
+            try
+            {
+                retData = enumData.Cast<TRet>().ToList();
+                createdIds = ids.ToList();
+                return data.Count == size;
+            }
+            catch (InvalidCastException e)
+            {
+                Dispose();
+                throw CastExeption(logger,$"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.",e);
+            }
+        }
+        createdIds = new List<long>();
+        retData = new List<TRet>();
+        return false;
+    }
+
+    #endregion
     private  Exception CastExeption(ILogger log,string text, Exception? exception = null)
     {
         var ex = new InvalidCastException(text,exception);

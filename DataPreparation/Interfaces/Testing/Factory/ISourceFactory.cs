@@ -72,18 +72,22 @@ public interface ISourceFactory : IDisposable
     // Historical data
 
     #region Was
-    #region Asynchronous Methods
-    public Task<object[]> WasAsync<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryAsync => WasAsync<TDataFactory>(out _, args);
-    public Task<object[]> WasAsync<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryAsync;
-    public Task<T[]> WasAsync<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryAsync<T> where T : notnull => WasAsync<T, TDataFactory>(out _, args);
-    public Task<T[]> WasAsync<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
-    #endregion
-    #region Synchronous Methods
-    public IList<object> Was<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactory => Was<TDataFactory>(out _, args);
-    public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory;
-    public IList<T> Was<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactory<T> where T : notnull => Was<T, TDataFactory>(out _, args);
-    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory<T> where T : notnull;
-    #endregion
+    public IList<object> Was<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryBase => Was<TDataFactory>(out _, args);
+    public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase;
+    public IList<T> Was<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull => Was<T, TDataFactory>(out _, args);
+    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull;
+    //#region Asynchronous Methods
+    // public Task<object[]> WasAsync<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryAsync => WasAsync<TDataFactory>(out _, args);
+    // public Task<object[]> WasAsync<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryAsync;
+    // public Task<T[]> WasAsync<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryAsync<T> where T : notnull => WasAsync<T, TDataFactory>(out _, args);
+    // public Task<T[]> WasAsync<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryAsync<T> where T : notnull;
+    // #endregion
+    // #region Synchronous Methods
+    // public IList<object> Was<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactory => Was<TDataFactory>(out _, args);
+    // public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory;
+    // public IList<T> Was<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactory<T> where T : notnull => Was<T, TDataFactory>(out _, args);
+    // public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory<T> where T : notnull;
+    // #endregion
     #endregion
     #endregion
 }
