@@ -4,7 +4,7 @@ using DataPreparation.Data.Setup;
 namespace DataPreparation.Testing.Factory;
 
 /// <summary>
-/// Interface for creating and retrieving data sources.
+/// Interface for creating and retrieving data for test.
 /// </summary>
 public interface ISourceFactory : IDisposable
 {

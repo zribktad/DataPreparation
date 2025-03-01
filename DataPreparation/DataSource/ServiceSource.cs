@@ -1,25 +1,37 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections;
+using DataPreparation.Provider;
+using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 
 namespace DataPreparation.Testing
 {
-   //Not for use
-    internal class ServiceSource:Attribute,IParameterDataSource
+    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = true, Inherited = false)]
+    internal class ServiceSource:NUnitAttribute, IParameterDataSource
     {
         public IEnumerable GetData(IParameterInfo parameter)
         {
+            var provider = PreparationContext.GetProvider();
+            
+            yield return provider;
+        }
+    }
+    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = true, Inherited = false)]
+    internal class FactorySourceAttribute : NUnitAttribute, IParameterDataSource
+    {
+        public FactorySourceAttribute()
+        {
+           
+        }
+        public IEnumerable GetData(IParameterInfo parameter)
+        {
 
-          //  var caseProvider = FixtureStore.GetRegisteredService(parameter.Method.TypeInfo.Type);
 
-
-            //yield return caseProvider;
-            return null;
+            // TestInfo testInfo = null;
+            //
+            // PreparationTest.CreateTestStore(testInfo);
+            yield return null;
+            yield return null;
+           // yield return PreparationContext.GetFactory();;
         }
     }
 }

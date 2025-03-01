@@ -1,3 +1,4 @@
+using System.Reflection;
 using DataPreparation.Helpers;
 using DataPreparation.Models.Data;
 using DataPreparation.Testing;
@@ -12,9 +13,9 @@ public abstract class PreparationTest
         var testStore = Store.GetTestStore(testInfo);
         if(testStore != null)  return testStore;
       
-        var loggerFactory = LoggerHelper.CreateOrNullLogger(testInfo.Test.Fixture?.GetType());
+        var loggerFactory = LoggerHelper.CreateOrNullLogger(testInfo.FixtureInfo.Type);
 
-        var dataPreparationAttributes = AttributeHelper.GetAttributes(testInfo.Test.Method.MethodInfo, 
+        var dataPreparationAttributes = AttributeHelper.GetAttributes(testInfo.Method.MethodInfo, 
             typeof(UsePreparedAttribute));
         
         return Store.CreateTestStore(testInfo,loggerFactory,dataPreparationAttributes);

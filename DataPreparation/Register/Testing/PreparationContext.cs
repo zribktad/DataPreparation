@@ -16,9 +16,15 @@ using NUnit.Framework;
 
 namespace DataPreparation.Provider
 {
+    /// <summary>
+    /// Provides context for data preparation in a testing environment.
+    /// </summary>
     public static class PreparationContext
     {
         
+        /// <summary>
+        /// Returns the service provider from the current test context.
+        /// </summary>
         public static IServiceProvider GetProvider()
         {
           
@@ -29,9 +35,10 @@ namespace DataPreparation.Provider
             }
             return  currentTestStore.ServiceProvider;
         }
-
- 
-
+        
+        /// <summary>
+        /// Returns the source factory from the current test context.
+        /// </summary>
         public static ISourceFactory GetFactory()
         {
             var currentTestStore = Store.GetTestStore(new ContextTestInfo (TestContext.CurrentContext.Test));

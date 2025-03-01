@@ -417,7 +417,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     }
     private IList<TRet> GetData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,int size, out IList<long> createdIds) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
-        if (GetLatest<TRet, TDataFactory>(size, out createdIds, out IList<TRet> retData)) return retData;
+        if (GetLatest<TRet, TDataFactory>(size, out createdIds, out var retData)) return retData;
         while (retData.Count < size)
         {
             var newItem = NewData(createFunc,out var createdId);

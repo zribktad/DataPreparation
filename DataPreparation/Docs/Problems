@@ -1,0 +1,4 @@
+- parametricke testy rekurzivne prehladavanie - solved
+-Id testov - solved
+- CurentCotentext
+-Factory source ma ID len parent testu nie subtestu - nemozem teda vytvorit separatne prostredie pre subtesty

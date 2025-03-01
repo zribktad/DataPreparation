@@ -13,7 +13,7 @@ namespace DataPreparation.Testing.Factory
     /// <summary>
     /// Attribute to specify that prepared data should be used for the test method.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Method,Inherited = false)]
     public class DataPreparationTestAttribute : TestAttribute, ITestAction
     {
         public DataPreparationTestAttribute()
@@ -27,7 +27,7 @@ namespace DataPreparation.Testing.Factory
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-            var testInfo = TestInfo.CreateTestInfo(test);
+             var testInfo = TestInfo.CreateTestInfo(test);
             PreparationTest.CreateTestStore(testInfo);
         }
 
