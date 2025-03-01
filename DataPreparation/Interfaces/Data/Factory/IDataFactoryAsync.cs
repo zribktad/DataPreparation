@@ -8,7 +8,7 @@ public interface IDataFactoryAsync : IDataFactoryBase // TODO
 
 public interface IDataFactoryAsync<T> : IDataFactoryBase<T> ,IDataFactoryAsync where T : notnull
 {
-    new Task<T> Create(long createId, IDataParams? args, CancellationToken token = default);
+    Task<T> Create(long createId, IDataParams? args, CancellationToken token = default);
     Task<bool> Delete(long createId, T data, IDataParams? args);
     async Task<object> IDataFactoryAsync.Create(long createId, IDataParams? args, CancellationToken token)
     {

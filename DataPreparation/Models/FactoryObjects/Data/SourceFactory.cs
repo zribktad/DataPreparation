@@ -133,59 +133,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         createdIds = [];
         return [];
     }
-    // #region Was Synchronous Methods
-    // public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory
-    // {
-    //     if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
-    //     {
-    //         logger.LogInformation($"[{nameof(Was)}]: Retrieved data for {typeof(TDataFactory)}");
-    //         return data.GetAll(out createdIds).Select(o => o.Data).ToList();
-    //     }
-    //     logger.LogInformation($"[{nameof(Was)}]: No data found for {typeof(TDataFactory)}");
-    //     createdIds = [];
-    //     return [];
-    // }
-    //
-    // public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactory<T>
-    // {
-    //     return Was<TDataFactory>(out createdIds, args).Cast<T>().ToList();
-    // }
-    // #endregion
-    // #region Was Asynchronous Methods
-    // public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactory
-    // {
-    //     if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
-    //     {
-    //         logger.LogInformation($"[{nameof(Was)}]: Retrieved data for {typeof(TDataFactory)}");
-    //         return data.GetAll(out createdIds).Select(o => o.Data).ToList();
-    //     }
-    //     logger.LogInformation($"[{nameof(Was)}]: No data found for {typeof(TDataFactory)}");
-    //     createdIds = [];
-    //     return [];
-    // }
-    // public Task<object[]> WasAsync<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryAsync
-    // {
-    //     return WasData<object,TDataFactory>(out createdIds);
-    // }
-    //
-    // private Task<TRet[]> WasData<TRet,TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryAsync
-    // {
-    //     if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
-    //     {
-    //         logger.LogInformation($"[{nameof(Was)}]: Retrieved data for {typeof(TDataFactory)}");
-    //         return Task.WhenAll( data.GetAll(out createdIds).Select(o => o.Data).Cast<Task<TRet>>());
-    //     }
-    //     logger.LogInformation($"[{nameof(Was)}]: No data found for {typeof(TDataFactory)}");
-    //     createdIds = [];
-    //     return Task.FromResult<TRet[]>([]);
-    // }
-    //
-    // public Task<T[]> WasAsync<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryAsync<T>
-    // {
-    //     return WasData<T,TDataFactory>(out createdIds);
-    // }
-    //
-    // #endregion
     #endregion
     #region Other Methods
     #region GetById
@@ -496,7 +443,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         
         while (retData.Count < size)
         {
-            var newItem = NewData(createFunc,out var createdId);
+            var newItem = NewDataAsync(createFunc,out var createdId);
             retData.Insert(0, newItem); // Insert new data at the beginning
             createdIds.Insert(0, createdId); // Insert the new createdId at the beginning
         }
