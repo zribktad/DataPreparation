@@ -10,13 +10,16 @@ public class HistoryStore<T> where T : notnull
         //**** CONCURRENT DICTIONARY TO STORE HISTORY ITEMS WITH SEQUENCE AS KEY
         // Key: sequence number, Value: Tuple (original id, item)
         private readonly ConcurrentDictionary<long, T> _history = new();
+        private readonly ConcurrentStack<T> _stack = new();
 
         //**** ADD ITEM
         // Adds a new item with a given id to the history.
         // Returns the unique sequence number assigned to this entry.
         public bool TryAdd(long id, T item)
         {
-            return _history.TryAdd(id,  item);
+            var ret = _history.TryAdd(id,  item);
+            _stack.Push(item);   
+            return ret;
         }
 
       

@@ -76,5 +76,11 @@ public interface ISourceFactory : IDisposable
     public IList<T> Was<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull => Was<T, TDataFactory>(out _, args);
     public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull;
     #endregion
+    
+    #region Register
+    public bool Register<T,TDataFactory>(T data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull;
+    //public bool Register<T,TDataFactory>(T data, long createdId) where TDataFactory : IDataRegisterAsync<T> where T : notnull;
+
+    #endregion
     #endregion
 }

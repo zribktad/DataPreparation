@@ -12,6 +12,7 @@ namespace DataPreparation.Factory.Testing;
 public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : ISourceFactory
 {
     private readonly ConcurrentDictionary<Type, HistoryStore<IFactoryData>> _localDataCache = new();
+    private readonly ConcurrentStack<IFactoryData> _createdHistory = new();
     private static readonly ThreadSafeCounter Counter = new(); 
     
     #region New
@@ -122,6 +123,21 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         return WasData<TDataFactory>(out createdIds).Cast<T>().ToList();
     }
+
+    public bool Register<T, TDataFactory>(T data, out long? createdId,IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryBase<T>
+    {
+        var id = Counter.Increment();
+        createdId = null;
+        var factoryBase = serviceProvider.GetService<TDataFactory>() ??
+                          throw new InvalidOperationException($"No factory or register found for {typeof(TDataFactory)}");
+        if (AddDataToHistory<TDataFactory>(id, args, data, factoryBase))
+        {
+            createdId = id;
+            return true;
+        }
+        return false;
+    }
+
     private IList<object> WasData<TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryBase
     {
         if (_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
@@ -173,12 +189,13 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         logger.LogInformation("Disposing SourceFactory");
         ExceptionAggregator exceptionAggregator = new ExceptionAggregator();
-        var historyData = HistoryStore<IFactoryData>.MergeDesc(_localDataCache.Values);
-        foreach (var data in historyData)
+        int createdHistoryCount = _createdHistory.Count;
+        for (int i = 0; i < createdHistoryCount; i++)
         {
-            switch (data.FactoryBase)
+            _createdHistory.TryPop(out var data);
+            switch (data?.FactoryBase)
             {
-                case IDataFactory factorySync:
+                case IDataRegister factorySync:
                 {
                         try
                         {
@@ -201,7 +218,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
                         }
                         break;
                 }
-                case IDataFactoryAsync factoryAsync:
+                case IDataRegisterAsync factoryAsync:
                         try
                         {
                             if (factoryAsync.Delete(data.Id, data.Data, data.Args).GetAwaiter().GetResult())
@@ -222,7 +239,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
                             exceptionAggregator.Add(ex);
                         }
                         break;
-                default:
+               default:
                     var exception = new InvalidOperationException($"No correct factory type found for data: {data}. Cannot delete data. Create a factory that implements {nameof(IDataFactory)} or {nameof(IDataFactoryAsync)}.");
                     logger.LogWarning(exception,$"Error on Dispose with created data: {data}");
                     exceptionAggregator.Add(exception);
@@ -358,7 +375,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         return data;
     }
     
-    private void AddDataToHistory<TDataFactory>(long createdId, IDataParams? args, object data, IDataFactoryBase factoryBase)
+    private bool AddDataToHistory<TDataFactory>(long createdId, IDataParams? args, object data, IDataFactoryBase factoryBase)
         where TDataFactory : IDataFactoryBase
     {
         if(data == null)
@@ -369,6 +386,10 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)}");
             throw e;
         }
+
+        IFactoryData factoryData =  new FactoryData(createdId, data, args, factoryBase);
+        
+        _createdHistory.Push(factoryData);
         
         //Get the local data history
         HistoryStore< IFactoryData> historyStore;
@@ -378,19 +399,20 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         }
         catch (Exception e)
         {
-          
-            logger.LogError("Failed to add data to history for {typeof(TDataFactory)}",e);
+            logger.LogError("Failed to create history for {typeof(TDataFactory)}",e);
             Dispose();
-            throw new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}",e);
+            throw new InvalidOperationException($"Failed to create history for {typeof(TDataFactory)}",e);
         }
         //Update the local data history
-        if(!historyStore.TryAdd(createdId,new FactoryData(createdId,data, args,factoryBase)))
+        if(!historyStore.TryAdd(createdId,factoryData))
         {
             Dispose();
             var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");
             logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)} with type {data.GetType()}");
             throw e;
         }
+
+        return true;
     }
 
     #endregion
