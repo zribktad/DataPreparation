@@ -173,72 +173,58 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         logger.LogInformation("Disposing SourceFactory");
         ExceptionAggregator exceptionAggregator = new ExceptionAggregator();
-        foreach (var (factoryType, historyStore) in _localDataCache)
+        var historyData = HistoryStore<IFactoryData>.MergeDesc(_localDataCache.Values);
+        foreach (var data in historyData)
         {
-            if (historyStore.IsEmpty()) continue;
-            var factory = serviceProvider.GetService(factoryType);
-            if (factory == null)
-            {
-                var ex  =exceptionAggregator.Add(new InvalidOperationException($"No factory service found for {factoryType}. Data will not be deleted. Data: {historyStore}"));
-                logger.LogWarning(ex,$"Error on Dispose data {factoryType} with created data: {historyStore}");
-                continue;
-            }
-            switch (factory)
+            switch (data.FactoryBase)
             {
                 case IDataFactory factorySync:
                 {
-                    foreach (var data in historyStore.GetAll(out _))
-                    {
                         try
                         {
                             if (factorySync.Delete(data.Id, data.Data, data.Args))
                             {
-                                logger.LogInformation($"Deleted data for {factoryType} with id {data.Id}");
+                                logger.LogInformation($"Deleted data for {factorySync.GetType()} with id {data.Id}");
                             }
                             else
                             {
-                                var ex = new InvalidOperationException($"Failed to delete data for {factoryType} with id {data.Id} and arguments {data.Args}");
-                                logger.LogError(ex, $"Failed to delete data for {factoryType} with id {data.Id}");
+                                var ex = new InvalidOperationException($"Failed to delete data for {factorySync.GetType()} with id {data.Id} and arguments {data.Args}");
+                                logger.LogError(ex, $"Failed to delete data for {factorySync.GetType()} with id {data.Id}");
                                 exceptionAggregator.Add(ex);
                             }
                         }
                         catch (Exception e)
                         {
-                            logger.LogError(e,$"Error on Dispose data {factoryType} with created data: {historyStore}");
-                            var ex = new InvalidOperationException($"Failed to delete data for {factoryType} with id {data.Id} and arguments {data.Args}",e);
+                            logger.LogError(e,$"Error on Dispose data {factorySync.GetType()} with created data: {factorySync.GetType()}");
+                            var ex = new InvalidOperationException($"Failed to delete data for {factorySync.GetType()} with id {data.Id} and arguments {data.Args}",e);
                             exceptionAggregator.Add(ex);
                         }
-                    }
-
-                    break;
+                        break;
                 }
                 case IDataFactoryAsync factoryAsync:
-                    foreach (var data in historyStore.GetAll(out _))
-                    {
                         try
                         {
                             if (factoryAsync.Delete(data.Id, data.Data, data.Args).GetAwaiter().GetResult())
                             {
-                                logger.LogInformation($"Deleted data for {factoryType} with id {data.Id}");
+                                logger.LogInformation($"Deleted data for {factoryAsync.GetType()} with id {data.Id}");
                             }
                             else
                             {
-                                var ex = new InvalidOperationException($"Failed to delete data for {factoryType} with id {data.Id} and arguments {data.Args}");
-                                logger.LogError(ex, $"Failed to delete data for {factoryType} with id {data.Id}");
+                                var ex = new InvalidOperationException($"Failed to delete data for {factoryAsync.GetType()} with id {data.Id} and arguments {data.Args}");
+                                logger.LogError(ex, $"Failed to delete data for {factoryAsync.GetType()} with id {data.Id}");
                                 exceptionAggregator.Add(ex);
                             }
                         }
                         catch (Exception e)
                         {
-                            logger.LogError(e,$"Error on Dispose data {factoryType} with created data: {historyStore}");
-                            var ex = new InvalidOperationException($"Failed to delete data for {factoryType} with id {data.Id} and arguments {data.Args}",e);
+                            logger.LogError(e,$"Error on Dispose data {factoryAsync.GetType()} with created data: {factoryAsync.GetType()}");
+                            var ex = new InvalidOperationException($"Failed to delete data for {factoryAsync.GetType()} with id {data.Id} and arguments {data.Args}",e);
                             exceptionAggregator.Add(ex);
                         }
-                    }
-                    break;
+                        break;
                 default:
-                    var exception = new InvalidOperationException($"No correct factory type found for {factoryType}. Cannot delete data. Create a factory that implements {nameof(IDataFactory)} or {nameof(IDataFactoryAsync)}.");
-                    logger.LogWarning(exception,$"Error on Dispose data {factoryType} with created data: {historyStore}");
+                    var exception = new InvalidOperationException($"No correct factory type found for data: {data}. Cannot delete data. Create a factory that implements {nameof(IDataFactory)} or {nameof(IDataFactoryAsync)}.");
+                    logger.LogWarning(exception,$"Error on Dispose with created data: {data}");
                     exceptionAggregator.Add(exception);
                     break;
             }
@@ -305,7 +291,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             throw ex;
         }
         
-        AddDataToHistory<TDataFactory>(createdId, args, data);
+        AddDataToHistory<TDataFactory>(createdId, args, data,factory);
         logger.LogDebug($"[{nameof(NewDataAsync)}]: Created data for {typeof(TDataFactory)} with id {createdId} and type {typeof(TRet)}");
 
         return data;
@@ -366,13 +352,13 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             throw ex;
         }
         
-        AddDataToHistory<TDataFactory>(createdId, args, data);
+        AddDataToHistory<TDataFactory>(createdId, args, data,factory);
         logger.LogDebug($"[{nameof(NewDataAsync)}]: Created data for {typeof(TDataFactory)} with id {createdId} and type {typeof(TRet)}");
 
         return data;
     }
     
-    private void AddDataToHistory<TDataFactory>(long createdId, IDataParams? args, object data)
+    private void AddDataToHistory<TDataFactory>(long createdId, IDataParams? args, object data, IDataFactoryBase factoryBase)
         where TDataFactory : IDataFactoryBase
     {
         if(data == null)
@@ -398,7 +384,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             throw new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}",e);
         }
         //Update the local data history
-        if(!historyStore.TryAdd(createdId,new FactoryData(createdId,data, args)))
+        if(!historyStore.TryAdd(createdId,new FactoryData(createdId,data, args,factoryBase)))
         {
             Dispose();
             var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");

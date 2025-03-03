@@ -69,7 +69,7 @@ public class HistoryStore<T> where T : notnull
         
         
         //**** Merge all history stores according descending order of keys
-        static IList<T> MergeLatest(IEnumerable<HistoryStore<T>> historyStores)
+        public static IList<T> MergeDesc(IEnumerable<HistoryStore<T>> historyStores)
         {
             return historyStores.SelectMany(store => store._history).OrderByDescending(pair => pair.Key).Select(pair => pair.Value).ToList();
         }
