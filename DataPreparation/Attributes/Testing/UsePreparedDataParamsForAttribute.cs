@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using DataPreparation.Data;
-using DataPreparation.DataHandling;
+using DataPreparation.DataHandlers;
 using DataPreparation.Models.Data;
 using DataPreparation.Provider;
 using NUnit.Framework;
@@ -55,7 +55,8 @@ namespace DataPreparation.Testing
             
             
             // Up data for the test if all data are prepared
-            TestDataHandler.DataUp(testStore);
+            DataPreparationHandler.DataUp(testStore);
+            throw new Exception("Test failed");
         }
 
         /// <summary>
@@ -66,7 +67,7 @@ namespace DataPreparation.Testing
         {
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
             var testStore = Store.GetTestStore(testInfo);
-            TestDataHandler.DataDown(testStore);
+            DataPreparationHandler.DataDown(testStore);
             PreparationTest.RemoveTestStore(testStore);
         }
 

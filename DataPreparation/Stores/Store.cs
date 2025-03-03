@@ -14,46 +14,45 @@ using Microsoft.Extensions.Logging;
 namespace DataPreparation.Testing
 {
 
-    internal abstract class Store
+    internal static class Store
     {
         //Store FixtureStore for each test fixture
-        private static readonly ConcurrentDictionary<FixtureInfo, FixtureStore> _fixtureStores = new();
+        private static readonly ConcurrentDictionary<FixtureInfo, FixtureStore> FixtureStores = new();
         
         internal static bool CreateFixtureStore(FixtureInfo fixtureInfo,ILoggerFactory loggerFactory,IServiceCollection serviceCollection)
         {
-            loggerFactory.CreateLogger<Store>().LogDebug("Creating FixtureStore for {0}", fixtureInfo);
-            var ret =  _fixtureStores.TryAdd(fixtureInfo, new(fixtureInfo,loggerFactory,serviceCollection));
-            loggerFactory.CreateLogger<Store>().LogDebug("FixtureStore for {0} created", fixtureInfo);
+            loggerFactory.CreateLogger(typeof(Store)).LogTrace("Creating FixtureStore for {0}", fixtureInfo);
+            var ret =  FixtureStores.TryAdd(fixtureInfo, new(fixtureInfo,loggerFactory,serviceCollection));
+            loggerFactory.CreateLogger(typeof(Store)).LogTrace("FixtureStore for {0} created", fixtureInfo);
             return ret;
         }
-        internal static FixtureStore GetFixtureStore(FixtureInfo fixtureInfo)
+
+        private static FixtureStore GetFixtureStore(FixtureInfo fixtureInfo)
         {
-            return _fixtureStores[fixtureInfo];
+            return FixtureStores[fixtureInfo];
         }
         
         internal static bool RemoveFixtureStore(FixtureInfo fixtureInfo)
         {
-            return _fixtureStores.TryRemove(fixtureInfo, out _);
+            return FixtureStores.TryRemove(fixtureInfo, out _);
         }
         
         #region PreparedData
         internal static TestStore CreateTestStore(TestInfo testContextTestInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
         {
-            var testLogger = loggerFactory.CreateLogger<Store>();
-            testLogger.LogDebug("Test data initialization for {0} started", testContextTestInfo);
+            var testLogger = loggerFactory.CreateLogger(typeof(Store));
+            testLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
 
-            if (_fixtureStores.TryGetValue(testContextTestInfo.FixtureInfo, out var fixtureStore))
+            if (FixtureStores.TryGetValue(testContextTestInfo.FixtureInfo, out var fixtureStore))
             {
-                var fixtureLogger = fixtureStore.LoggerFactory.CreateLogger<Store>();
-                fixtureLogger.LogDebug("Test data initialization for {0} started", testContextTestInfo);
+                var fixtureLogger = fixtureStore.LoggerFactory.CreateLogger(nameof(Store));
+                fixtureLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
 
                 if (!fixtureStore.CreateTestStore(testContextTestInfo, loggerFactory,dataPreparationAttributes))
                 {
-                    LoggerHelper.Log(logger => logger.LogDebug("Test data initialization for {0} already exists", testContextTestInfo),
+                    LoggerHelper.Log(logger => logger.LogTrace("Test data initialization for {0} already exists", testContextTestInfo),
                         fixtureLogger,testLogger);
                 }
-
-                fixtureLogger.LogDebug("Test data initialization for {0} ended", testContextTestInfo);
             }
             else
             {
@@ -61,14 +60,14 @@ namespace DataPreparation.Testing
                 throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for { testContextTestInfo.FixtureInfo}.");
             }
             LoggerHelper.Log(logger => logger.LogDebug("Test data initialization for {0} ended", testContextTestInfo), 
-                fixtureStore.LoggerFactory.CreateLogger<Store>(),testLogger);
+                fixtureStore.LoggerFactory.CreateLogger(typeof(Store)),testLogger);
   
             return GetTestStore(testContextTestInfo)!;
         }
 
-        internal static TestStore? GetTestStore(ContextTestInfo testInfo)
+        internal static TestStore GetTestStore(ContextTestInfo testInfo)
         {
-            foreach (var fixtureStore in _fixtureStores.Values)
+            foreach (var fixtureStore in FixtureStores.Values)
             {
                 var testStore = fixtureStore.GetTestStore(testInfo);
                 if (testStore !=  null)
@@ -86,9 +85,9 @@ namespace DataPreparation.Testing
         }
         
 
-        public static TestStore RemoveTestStore(TestInfo testInfo)
+        public static TestStore? RemoveTestStore(TestInfo testInfo)
         {
-            if (_fixtureStores.TryGetValue(testInfo.FixtureInfo, out var fixtureStore))
+            if (FixtureStores.TryGetValue(testInfo.FixtureInfo, out var fixtureStore))
             {
                return fixtureStore.RemoveTestStore(testInfo);
             }

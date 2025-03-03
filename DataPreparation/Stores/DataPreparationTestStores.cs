@@ -2,44 +2,44 @@
 using System.Reflection;
 using DataPreparation.Data;
 using DataPreparation.Models;
+using Microsoft.Extensions.Logging;
 
 namespace DataPreparation.Testing
 {
     /// <summary>
     /// A store for managing data preparation instances associated with specific methods.
     /// </summary>
-    public class DataPreparationTestStores
+    public class DataPreparationTestStores(ILoggerFactory loggerFactory)
     {
-        private readonly List<PreparedData> _dataPreparations = new();
+        private readonly List<PreparedData> _preparation = new();
+        private readonly Stack<PreparedData>  _processed = new();
+        private readonly ILogger _logger = loggerFactory.CreateLogger<DataPreparationTestStores>();
         
-    
-        internal void AddDataPreparation( PreparedData data)
+        public void PushProcessed( PreparedData data)
         {
-            _dataPreparations.Add(data);
+            _processed.Push(data);
         }
-        
-        private void AddDataPreparation(List<PreparedData> data)
+        public bool TryPopProcessed(out PreparedData? data)
         {
-            _dataPreparations.AddRange(data);
+            return _processed.TryPop(out data);
         }
-        
-        internal  List<PreparedData> GetAll()
+        internal  List<PreparedData> GetPreparation()
         {
-            return _dataPreparations;
+            return _preparation;
         }
-        internal  bool HasPreparedData()
-        {
-            return _dataPreparations.Count > 0;
-        }
-
         internal void AddDataPreparation( object preparedMethodData, object[] upData, object[] downData)
         {
-            AddDataPreparation( new PreparedData(preparedMethodData, upData, downData));
+            _logger.LogTrace($"Adding data preparation instance with type {preparedMethodData.GetType().Name}.");
+            _preparation.Add( new PreparedData(preparedMethodData, upData, downData,loggerFactory));
         }
      
         internal void AddDataPreparation( List<object> preparedDataList)
         {
-            AddDataPreparation( preparedDataList.Select(data => new PreparedData(data,[],[])).ToList());
+            _preparation.AddRange( preparedDataList.Select(data =>
+            {
+                _logger.LogTrace($"Adding data preparation instance with type {data.GetType().Name}.");
+                return new PreparedData(data, [], [], loggerFactory);
+            }).ToList());
         }
      
      

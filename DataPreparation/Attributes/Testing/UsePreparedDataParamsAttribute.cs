@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using DataPreparation.DataHandling;
+using DataPreparation.DataHandlers;
 using DataPreparation.Models;
 using DataPreparation.Models.Data;
 using DataPreparation.Provider;
@@ -46,7 +46,7 @@ namespace DataPreparation.Testing
             if(preparedDataClassInstanceInList.Count == 0) return;
             testStore.PreparedData.AddDataPreparation(preparedDataClassInstanceInList[0],_paramsUpData,_paramsDownData);           
             // Up data for the test if all data are prepared
-            TestDataHandler.DataUp(testStore);
+            DataPreparationHandler.DataUp(testStore);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace DataPreparation.Testing
             // Down data for the test
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
             var testStore = Store.GetTestStore(testInfo);
-            TestDataHandler.DataDown(testStore);
+            DataPreparationHandler.DataDown(testStore);
             PreparationTest.RemoveTestStore(testStore);
         }
 

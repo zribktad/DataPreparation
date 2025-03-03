@@ -1,118 +1,142 @@
 using System.Reflection;
 using DataPreparation.Data;
+using Microsoft.Extensions.Logging;
 
 namespace DataPreparation.Models;
 
 public class PreparedData
 {
-    private readonly object _preparedDataClass;
+    private readonly object _preparedDataInstance;
      private readonly object[] _paramsUpData;
      private readonly object[] _paramsDownData;
      private readonly MethodInfo? _runUpMethod;
      private readonly MethodInfo? _runDownMethod;
+     private readonly ILogger _logger;
     
-    public PreparedData(object preparedDataClass, object[] paramsUpData, object[] paramsDownData)
+    public PreparedData(object preparedDataInstance, object[] paramsUpData, object[] paramsDownData, ILoggerFactory logger)
     {
-        _preparedDataClass = preparedDataClass;
+        _preparedDataInstance = preparedDataInstance;
         _paramsUpData = paramsUpData;
         _paramsDownData = paramsDownData;
+        _logger = logger.CreateLogger<PreparedData>();
 
-        if (_preparedDataClass == null)
+        if (_preparedDataInstance == null)
         {
-            throw new ArgumentNullException("PreparedData cannot be null");
+            _logger.LogError("Instance of prepared data is null");
+            throw new ArgumentNullException("Instance of prepared data is null");
         }
-        if( _preparedDataClass is  IDataPreparation)
+        if( _preparedDataInstance is  IDataPreparation)
         {
             return;
         }
-        
-        var methods = _preparedDataClass.GetType().GetMethods();
+        _logger.LogTrace("Checking of {preparedDataInstance} for UpData and DownData methods and parameters", _preparedDataInstance.GetType().Name);
+        var methods = _preparedDataInstance.GetType().GetMethods();
         foreach (var method in methods)
         {
             if(method.GetCustomAttribute<UpDataAttribute>() != null)
             {
-                CheckParams(method, _paramsUpData);
+                CheckParams(method, _paramsUpData,_logger);
                 _runUpMethod = method;
             }
             else if(method.GetCustomAttribute<DownDataAttribute>() != null)
             {
-                CheckParams(method, _paramsDownData);
+                CheckParams(method, _paramsDownData,_logger);
                 _runDownMethod = method;
             }
             
         }
+        _logger.LogDebug($"Prepared data of type {preparedDataInstance.GetType()} has been checked for UpData and DownData methods and parameters");
     }
-
-    private void CheckParams(MethodInfo method, object[]? paramsData)
+    //Check types and make conversion from string to int, long, etc.
+   private static void CheckParams(MethodInfo method, object[]? paramsData, ILogger logger)
     {
-        // Get expected parameter types directly from the method signature
         var expectedTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
 
-        
-        // Check parameter null
         if (paramsData == null)
         {
-            if(expectedTypes.Length == 0)
+            if (expectedTypes.Length > 0)
             {
-                return;
+                var e = new ArgumentException(
+                    $"Incorrect number of parameters for '{method.Name}'. Expected: {expectedTypes.Length}, provided: 0.");
+                logger.LogError(e,"Error while checking parameters");
+                throw e;
             }
-            throw new ArgumentException(
-                $"Incorrect number of parameters for '{method.Name}'. Expected: {expectedTypes.Length}, provided: 0.");
+            return;
         }
 
-      
-        // Check parameter count
         if (expectedTypes.Length != paramsData.Length)
         {
-            throw new ArgumentException(
+            var e  =new ArgumentException(
                 $"Incorrect number of parameters for '{method.Name}'. Expected: {expectedTypes.Length}, provided: {paramsData.Length}.");
+            logger.LogError(e,"Error while checking parameters");
+            throw e;
         }
 
-        // Check parameter types
         for (int i = 0; i < paramsData.Length; i++)
         {
-            if (paramsData[i].GetType() != expectedTypes[i])
+            var expectedType = expectedTypes[i];
+            var param = paramsData[i];
+
+            if (expectedType.IsInstanceOfType(param))   continue; // It's either exact match or convertible (e.g., int to long)
+            try
             {
-                throw new ArgumentException(
+                // Attempt conversion
+                paramsData[i] = Convert.ChangeType(param, expectedType);
+                logger.LogDebug($"Parameter at position {i + 1} in '{method.Name}' has been converted to {expectedType.Name}");
+            }
+            catch
+            {
+                var e  = new ArgumentException(
                     $"Parameter at position {i + 1} in '{method.Name}' has incorrect type. " +
-                    $"Expected: {expectedTypes[i].Name}, but got: {paramsData[i].GetType().Name}.");
+                    $"Expected: {expectedType.Name}, but got: {param.GetType().Name}.");
+                logger.LogError(e,"Error while checking parameters");
+                throw e;
             }
         }
     }
 
-
-
-    public async Task RunUp()
+    public Task RunUp()
     {
-        if( _preparedDataClass is IDataPreparation dataPreparation)
+        _logger.LogTrace($"Running UpData for {_preparedDataInstance.GetType().Name}");
+        if( _preparedDataInstance is IDataPreparation dataPreparation)
         {
             dataPreparation.TestUpData();
-            return;
+            return Task.CompletedTask;
         }
         
-        if(_runUpMethod == null)   return; 
+        if(_runUpMethod == null)
+        {
+            _logger.LogWarning($"No UpData method found in {_preparedDataInstance.GetType().Name}");
+            return Task.CompletedTask;
+        }
         
-        var result= _runUpMethod.Invoke(_preparedDataClass, _paramsUpData);
+        var result= _runUpMethod.Invoke(_preparedDataInstance, _paramsUpData);
         
         if (result is Task task)
         {
-            await task;
+           return  task;
         }
-        
+        return Task.CompletedTask;
     }
-    public async Task RunDown()
+    public  Task RunDown()
     {
-        if( _preparedDataClass is IDataPreparation dataPreparation)
+        _logger.LogTrace($"Running DownData for {_preparedDataInstance.GetType().Name}");
+        if( _preparedDataInstance is IDataPreparation dataPreparation)
         {
             dataPreparation.TestDownData();
-            return;
+            return Task.CompletedTask;
         }
-        if(_runDownMethod == null)   return; 
-        var result= _runDownMethod.Invoke(_preparedDataClass, _paramsDownData);
+        if(_runDownMethod == null)
+        {
+            _logger.LogWarning($"No DownData method found in {_preparedDataInstance.GetType().Name}");
+            return Task.CompletedTask;
+        }
+        var result= _runDownMethod.Invoke(_preparedDataInstance, _paramsDownData);
         
         if (result is Task task)
         {
-            await task;
+            return task;
         }
+        return Task.CompletedTask;
     }
 }
