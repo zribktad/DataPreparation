@@ -2,3 +2,10 @@
 -Id testov - solved
 - CurentCotentext
 -Factory source ma ID len parent testu nie subtestu - nemozem teda vytvorit separatne prostredie pre subtesty
+
+
+ - 2 migracne scripty pre 2 databazy Desing Context
+ dotnet ef migrations add InitialPostgres --context  PostgresOrderServiceContext --output-dir Migrations/PostgreSQL
+dotnet ef migrations add InitialCreate --context SqliteOrderServiceContext --output-dir Migrations/SqliteMigrations   
+
+public konstruktor pre Factories     

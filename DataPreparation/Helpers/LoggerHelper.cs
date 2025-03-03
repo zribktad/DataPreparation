@@ -22,7 +22,7 @@ internal static class LoggerHelper
                 }
             }
 #if DEBUG
-                Console.WriteLine($"LoggerFactory factory not found for {fixtureType}");
+                Console.WriteLine($"LoggerFactory factory not found for {fixtureType} use NullLoggerFactory");
 #endif
         }
         catch (Exception e)

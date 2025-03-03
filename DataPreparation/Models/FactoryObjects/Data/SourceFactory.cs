@@ -11,7 +11,7 @@ namespace DataPreparation.Factory.Testing;
 
 public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : ISourceFactory
 {
-    private readonly ConcurrentDictionary<Type, HistoryStore<long,IFactoryData>> _localDataCache = new();
+    private readonly ConcurrentDictionary<Type, HistoryStore<IFactoryData>> _localDataCache = new();
     private static readonly ThreadSafeCounter Counter = new(); 
     
     #region New
@@ -385,7 +385,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         }
         
         //Get the local data history
-        HistoryStore<long, IFactoryData> historyStore;
+        HistoryStore< IFactoryData> historyStore;
         try
         {
             historyStore = _localDataCache.GetOrAdd(typeof(TDataFactory),_ => new());
@@ -411,13 +411,18 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     #region Get data
     private TRet GetData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,out long createdId) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
-        if (GetLatest<TRet, TDataFactory>(out createdId, out var ret)) return ret!;
+        if (TryGetLatest<TRet, TDataFactory>(out long? id, out var ret))
+        {
+            createdId = id!.Value;
+            return ret!;
+        }
+
         logger.LogDebug($"[{nameof(Get)}]: No created data found for {typeof(TDataFactory)}");
         return NewData(createFunc,out createdId);
     }
     private IList<TRet> GetData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,int size, out IList<long> createdIds) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
-        if (GetLatest<TRet, TDataFactory>(size, out createdIds, out var retData)) return retData;
+        if (TryGetLatest<TRet, TDataFactory>(size, out createdIds, out var retData)) return retData;
         while (retData.Count < size)
         {
             var newItem = NewData(createFunc,out var createdId);
@@ -430,13 +435,18 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     
     private Task<TRet> GetDataAsync<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, Task<TRet>> createFunc,out long createdId) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
-        if (GetLatest<TRet, TDataFactory>(out createdId, out var ret)) return Task.FromResult(ret)!;
+        if (TryGetLatest<TRet, TDataFactory>(out long? id, out var ret))
+        {
+            createdId = id!.Value;
+            return Task.FromResult(ret)!;
+        }
+
         logger.LogDebug($"[{nameof(Get)}]: No created data found for {typeof(TDataFactory)}");
         return NewDataAsync(createFunc,out createdId);
     }
     private IList<Task<TRet>> GetDataAsync<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, Task<TRet>> createFunc,int size, out IList<long> createdIds) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
-        var ret = GetLatest<TRet, TDataFactory>(size, out createdIds, out var latestData) ;
+        var ret = TryGetLatest<TRet, TDataFactory>(size, out createdIds, out var latestData) ;
         
         IList<Task<TRet>> retData = latestData.Select(Task.FromResult).ToList();
         if(ret) return retData;
@@ -450,7 +460,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         logger.LogInformation($"[{nameof(Get)}]: Retrieved {size} data for {typeof(TDataFactory)}");
         return retData;
     }
-    private bool GetLatest<TRet, TDataFactory>(out long createdId, out TRet? ret)
+    private bool TryGetLatest<TRet, TDataFactory>(out long? createdId, out TRet? ret)
         where TDataFactory : IDataFactoryBase where TRet : notnull
     {
         if(_localDataCache.TryGetValue(typeof(TDataFactory), out var history))
@@ -470,12 +480,12 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             }
         }
         
-        createdId = -1;
+        createdId = null;
         ret = default;
         return false;
     }
 
-    private bool GetLatest<TRet, TDataFactory>(int size, out IList<long> createdIds, out IList<TRet> retData) where TDataFactory : IDataFactoryBase where TRet : notnull
+    private bool TryGetLatest<TRet, TDataFactory>(int size, out IList<long> createdIds, out IList<TRet> retData) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
         if(_localDataCache.TryGetValue(typeof(TDataFactory), out var historyStore))
         {

@@ -6,5 +6,4 @@ pg_dump -U ear -Fc -Z 9 --file=file.dump OrderService // create dump without con
 pg_restore -U ear -d OrderService file.dump // restore dump pg_restore -U <username> -d <database_name> <file.dump>
 find / -name file.dump 2> dev/null //find all dump files
  "DefaultConnection": "Host=localhost;Port=5432;Database=OrderService;Username=ear;Password=ear"
- 
- 
+  

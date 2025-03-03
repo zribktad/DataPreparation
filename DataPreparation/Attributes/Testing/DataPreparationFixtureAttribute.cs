@@ -23,10 +23,10 @@ namespace DataPreparation.Testing
         /// <summary>
         /// Initializes a new instance of the <see cref="DataPreparationFixtureAttribute"/> class.
         /// </summary>
-        public DataPreparationFixtureAttribute([CallerFilePath]string filePath = "")
-        {
-            _filePath= filePath;
-        }
+        // public DataPreparationFixtureAttribute([CallerFilePath]string filePath = "")
+        // {
+        //     _filePath= filePath;
+        // }
 
         /// <summary>
         /// Method to be called before the test is executed.
