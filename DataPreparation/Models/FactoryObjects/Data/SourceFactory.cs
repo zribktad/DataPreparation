@@ -473,7 +473,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         if(_localDataCache.TryGetValue(typeof(TDataFactory), out var history))
         {
-            if (history.GetLatest(out var item,out createdId))
+            if (history.TryGetLatest(out var item,out createdId))
             {
                 logger.LogDebug($"[{nameof(Get)}]: Retrieved data for {typeof(TDataFactory)} with id {createdId}");
                 if ((item as FactoryData)!.Data is not TRet data)
@@ -497,7 +497,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         if(_localDataCache.TryGetValue(typeof(TDataFactory), out var historyStore))
         {
-            var data = historyStore.GetLatest(size,out var ids).ToList();
+            historyStore.TryGetLatest(size, out var data, out var ids);
             logger.LogDebug($"[{nameof(Get)}]: Retrieved from history {data.Count} data for {typeof(TDataFactory)}");
             var enumData = data.Select(o => o.Data);
             try

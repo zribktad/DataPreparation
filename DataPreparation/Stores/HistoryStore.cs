@@ -1,105 +1,173 @@
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Text;
 
 namespace DataPreparation.Models.Data;
 
-
+/// <summary>
+/// A thread-safe history store that allows adding items, retrieving by ID, and retrieving the latest items.
+/// </summary>
+/// <typeparam name="T">The type of the item stored in the history store.</typeparam>
 public class HistoryStore<T> where T : notnull
 {
     
-        //**** CONCURRENT DICTIONARY TO STORE HISTORY ITEMS WITH SEQUENCE AS KEY
-        // Key: sequence number, Value: Tuple (original id, item)
-        private readonly ConcurrentDictionary<long, T> _history = new();
-        private readonly ConcurrentStack<T> _stack = new();
+    /// <summary>
+    /// The dictionary used to store items by their unique ID.
+    /// </summary>
+    private readonly ConcurrentDictionary<long, HistoryItem<T>> _itemsById = new();
 
-        //**** ADD ITEM
-        // Adds a new item with a given id to the history.
-        // Returns the unique sequence number assigned to this entry.
-        public bool TryAdd(long id, T item)
+    /// <summary>
+    /// The stack used to maintain the order of items for popping the latest.
+    /// </summary>
+    private readonly ConcurrentStack<HistoryItem<T>> _stack = new();
+    
+
+
+    /// <summary>
+    /// Adds a new item to the history store.
+    /// </summary>
+    /// <param name="id">The unique identifier of the item to add.</param>
+    /// <param name="item">The item to add to the history store.</param>
+    public bool TryAdd(long id, T item)
+    {
+        var historyItem = new HistoryItem<T>(id, item);
+        if (_itemsById.TryAdd(id, historyItem))
         {
-            var ret = _history.TryAdd(id,  item);
-            _stack.Push(item);   
-            return ret;
+            _stack.Push(historyItem);  
+            return true;
         }
+        return false;
+    }
 
-      
-        //**** GET ITEM BY ORIGINAL ID
-        // Retrieves an item from the history by its original id.
-        public T? GetById(long id)
-        {
-            return _history.GetValueOrDefault(id);
-        }
+  
+    /// <summary>
+    /// Retrieves an item from the history store by its ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the item to retrieve.</param>
+    /// <returns>The item associated with the given ID, or null if not found.</returns>
+    public T? GetById(long id)
+    {
+        return _itemsById.TryGetValue(id, out var item) ? item.Value : default;
+    }
 
-        //**** GET ALL ITEMS
-        // Returns all items in the history, ordered by their sequence number (ascending).
-        public IList<T> GetAll(out IList<long> ids)
-        {
-            var allItems = _history.OrderBy(pair => pair.Key).ToList();
-            ids = allItems.Select(pair => pair.Key).ToList();
-            return allItems.Select(pair => pair.Value).ToList();
-        }
+    /// <summary>
+    /// Retrieves the latest <paramref name="count"/> number of items from the history store and their IDs.
+    /// </summary>
+    /// <param name="count">The number of latest items to retrieve.</param>
+    /// <param name="items">A list of the latest items in the history store.</param>
+    /// <param name="ids">A list of IDs associated with the latest items.</param>
+    public bool TryGetLatest(int count, out List<T> items, out List<long> ids)
+    {
+        items = new List<T>();
+        ids = new List<long>();
 
-        //**** GET LATEST ITEMS
-        // Returns the latest 'n' items from the history (if fewer exist, returns all),
-        // ordered by their sequence number (oldest to newest).
-        public IList<T> GetLatest(int n, out IList<long> ids)
-        {
-            var latestItems = _history.OrderByDescending(pair => pair.Key)
-                .Take(n).ToList();
-            ids = latestItems.Select(pair => pair.Key).ToList();
-            return latestItems.Select(pair => pair.Value).ToList();
-        }
-
-        public bool IsEmpty() => _history.IsEmpty;
-     
-
-        //**** GET LATEST ITEM
-        // Returns the latest item in the history and its id, if it exists.
-        public bool GetLatest(out T? item, out long? id)
-        {
-            if(!IsEmpty())
-            {
-                var latestEntry = _history.OrderByDescending(pair => pair.Key).FirstOrDefault();
-                item = latestEntry.Value;
-                id = latestEntry.Key;
-                return true;
-            }
-
-            item = default;
-            id = default;
+        if (_stack.IsEmpty)
             return false;
+
+        var latestItems = _stack.Take(count).ToList();
+        items = latestItems.Select(item => item.Value).ToList();
+        ids = latestItems.Select(item => item.Id).ToList();
+        
+        return count == items.Count;
+    }
+    
+    /// <summary>
+    /// Retrieves the latest item from the history store and its ID.
+    /// </summary>
+    /// <param name="item">The latest item in the history store.</param>
+    /// <param name="id">The ID associated with the latest item.</param>
+    public bool TryGetLatest(out T? item, out long? id)
+    {
+        item = default;
+        id = default;
+
+        if (_stack.IsEmpty)
+            return false;
+
+        if (_stack.TryPeek(out var latestItem))
+        {
+            item = latestItem.Value;
+            id = latestItem.Id;
+            return true;
         }
         
-        
-        //**** Merge all history stores according descending order of keys
-        public static IList<T> MergeDesc(IEnumerable<HistoryStore<T>> historyStores)
-        {
-            return historyStores.SelectMany(store => store._history).OrderByDescending(pair => pair.Key).Select(pair => pair.Value).ToList();
-        }
-      
-        //**** CLEANUP ITEM
-        // Removes an item from the history by its original id.
-        // Returns true if the item was successfully removed.
-        public bool CleanupItem(long id)
-        {
-            return _history.TryRemove(id, out _);
-        }
+        return false;
+    }
 
-        //**** CLEANUP ALL
-        // Clears the entire history.
-        public void CleanupAll()
+    /// <summary>
+    /// Pops the last item from the history store and removes it.
+    /// </summary>
+    /// <returns>The value of the popped item, or null if the stack is empty.</returns>
+    public T? Pop()
+    {
+        if (_stack.TryPop(out var item))
         {
-            _history.Clear();
+            _itemsById.TryRemove(item.Id, out _); // Removing item by ID
+            return item.Value;
         }
+        return default; // If the stack is empty
+    }
 
-        public override string ToString()
+    public IList<T> GetAll(out IList<long> ids)
+    {
+        var sortedItems = _itemsById.OrderBy(pair => pair.Key).ToList();
+        ids = sortedItems.Select(pair => pair.Key).ToList();
+        return sortedItems.Select(pair => pair.Value.Value).ToList();
+    }
+
+    
+    //**** CLEANUP ALL
+    // Clears the entire history.
+    public void CleanupAll()
+    {
+        _stack.Clear();
+        _itemsById.Clear();
+    }
+    
+
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.Append("Remaining data:\n");
+        foreach (var entry in _stack)
         {
-            var sb = new StringBuilder();
-            sb.Append("Data:\n");
-            foreach (var entry in _history)
-            {
-                sb.Append($"CreatedId: {entry.Key}, Item: {entry.Value}\n");
-            }
-            return sb.ToString();
+            sb.Append($"{entry.Value.ToString()}\n");
         }
+        return sb.ToString();
+    }
+    
+}
+
+/// <summary>
+/// Represents an item in the history, containing an ID and a value.
+/// </summary>
+/// <typeparam name="T">The type of the value stored in the history item.</typeparam>
+public class HistoryItem<T> where T : notnull
+{
+    /// <summary>
+    /// Gets the ID of the history item.
+    /// </summary>
+    public long Id { get; }
+
+    /// <summary>
+    /// Gets the value of the history item.
+    /// </summary>
+    public T Value { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HistoryItem{T}"/> class.
+    /// </summary>
+    /// <param name="id">The unique identifier of the history item.</param>
+    /// <param name="value">The value associated with the history item.</param>
+    public HistoryItem(long id, T value)
+    {
+        Id = id;
+        Value = value;
+    }
+
+    /// <summary>
+    /// Returns a string representation of the history item.
+    /// </summary>
+    /// <returns>A string that represents the current history item.</returns>
+    public override string ToString() => $"[{Id}] {Value}";
 }
