@@ -187,7 +187,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
     public void Dispose()
     {
-        logger.LogInformation("Disposing SourceFactory");
+        logger.LogDebug("Factory disposing");
         ExceptionAggregator exceptionAggregator = new ExceptionAggregator();
         int createdHistoryCount = _createdHistory.Count;
         for (int i = 0; i < createdHistoryCount; i++)
@@ -248,8 +248,10 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             
         }
         _localDataCache.Clear();
+        _createdHistory.Clear();
+        
         if(exceptionAggregator.HasExceptions)  throw exceptionAggregator.Get()!;
-        logger.LogInformation("Disposed SourceFactory");
+        logger.LogInformation("Factory disposed - Data deleted");
     }
 
     #endregion
