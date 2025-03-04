@@ -1,0 +1,41 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+# Visual Studio directory
+.vs/
+
+# Build directories
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+
+
+# Other common files
+*.htm
+*.dll
+*.pdb
+*.exe
+*.appx
+*.appxbundle
+*.msi
+*.suo
+*.user
+*.userprefs
+*.sln.docstates
+*.cache
+*.log
+*.ncb
+*.aps
+*.pch
+*.ipch
+*.tlog
+*.idb
+*.ilk
+
+# Rider files
+.idea/
+
+# NuGet packages
+*.nupkg

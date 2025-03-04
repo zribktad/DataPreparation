@@ -1,0 +1,18 @@
+using Boa.Constrictor.Screenplay;
+
+namespace OrderService.Boa.CustomerService.Abilities;
+
+public class UseCustomerService : IAbility
+{
+    public Services.ICustomerService Service { get; }
+
+    public UseCustomerService(Services.ICustomerService service)
+    {
+        Service = service;
+    }
+
+    public static UseCustomerService With(Services.ICustomerService service)
+    {
+        return new UseCustomerService(service);
+    }
+}

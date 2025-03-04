@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  orderservice:
+    image: kimldavi/orderservice:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      - DB_CONNECTION=Host=postgres;Port=5432;Database=OrderService;Username=ear;Password=ear
+
+  postgres:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: ear
+      POSTGRES_PASSWORD: ear
+      POSTGRES_DB: OrderService
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

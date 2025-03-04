@@ -4,6 +4,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPreparation", "DataPrep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPreparation.UnitTests", "DataPreparation.UnitTests\DataPreparation.UnitTests.csproj", "{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{A40F8C79-0534-4249-A98A-2AEE0DD3954E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService", "Examples\OrderService\OrderService\OrderService.csproj", "{51819E7B-EDE7-4113-A13E-A149A906500D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService.Boa", "Examples\OrderService\OrderService.Boa\OrderService.Boa.csproj", "{465C9E02-22EF-46C9-B7B0-BAC56925A019}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService.Test", "Examples\OrderService\OrderService.Test\OrderService.Test.csproj", "{A3BE8BF4-08EE-4787-AA0D-588A5133C786}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService.DataTest", "Examples\OrderService\OrderService.DataTest\OrderService.DataTest.csproj", "{35280A02-43F9-4511-980A-9A1F8F469B7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +28,27 @@ Global
 		{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55DBC5FD-B372-4972-B1C5-FA0EA8BE006A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51819E7B-EDE7-4113-A13E-A149A906500D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51819E7B-EDE7-4113-A13E-A149A906500D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51819E7B-EDE7-4113-A13E-A149A906500D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51819E7B-EDE7-4113-A13E-A149A906500D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{465C9E02-22EF-46C9-B7B0-BAC56925A019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{465C9E02-22EF-46C9-B7B0-BAC56925A019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{465C9E02-22EF-46C9-B7B0-BAC56925A019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{465C9E02-22EF-46C9-B7B0-BAC56925A019}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3BE8BF4-08EE-4787-AA0D-588A5133C786}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3BE8BF4-08EE-4787-AA0D-588A5133C786}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3BE8BF4-08EE-4787-AA0D-588A5133C786}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3BE8BF4-08EE-4787-AA0D-588A5133C786}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35280A02-43F9-4511-980A-9A1F8F469B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35280A02-43F9-4511-980A-9A1F8F469B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35280A02-43F9-4511-980A-9A1F8F469B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35280A02-43F9-4511-980A-9A1F8F469B7E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{51819E7B-EDE7-4113-A13E-A149A906500D} = {A40F8C79-0534-4249-A98A-2AEE0DD3954E}
+		{465C9E02-22EF-46C9-B7B0-BAC56925A019} = {A40F8C79-0534-4249-A98A-2AEE0DD3954E}
+		{A3BE8BF4-08EE-4787-AA0D-588A5133C786} = {A40F8C79-0534-4249-A98A-2AEE0DD3954E}
+		{35280A02-43F9-4511-980A-9A1F8F469B7E} = {A40F8C79-0534-4249-A98A-2AEE0DD3954E}
 	EndGlobalSection
 EndGlobal
