@@ -1,0 +1,43 @@
+stages:
+  - build
+  - test
+  - deploy
+
+image: mcr.microsoft.com/dotnet/sdk:latest 
+
+variables:
+  BUILD_DIR: "build"
+  BUILD_NAME: "kimldavi/orderservice:latest"
+
+cache:
+  paths:
+    - $BUILD_DIR/
+
+
+build:
+  stage: build
+  script:
+    - dotnet build -o $BUILD_DIR/ OrderService.sln
+  artifacts:
+    paths:
+      - $BUILD_DIR/
+
+test:
+  stage: test
+  script:
+    - dotnet test --configuration Release OrderService.Test/OrderService.Test.csproj
+  artifacts:
+    paths:
+      - OrderService.Test/TestResults
+
+deploy:
+  image: docker:latest
+  environment: production
+  stage: deploy
+  services:
+    - docker:dind
+  script:
+    - docker login -u $DOCKER_HUB_SWA_LOGIN -p $DOCKER_HUB_SWA_TOKEN
+    - docker build -t $BUILD_NAME .
+    - docker push $BUILD_NAME
+
