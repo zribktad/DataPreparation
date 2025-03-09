@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using DataPreparation.Data;
 using DataPreparation.DataHandlers;
+using DataPreparation.Models.Data;
 using DataPreparation.Provider;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -45,7 +46,7 @@ namespace DataPreparation.Testing
         {
             
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = PreparationTest.CreateTestStore(testInfo);
+            var testStore = TestStore.CreateTestStore(testInfo);
             // Prepare data for the test from attribute
             var preparedDataList = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, _methodsNames); 
             // Add the prepared data to the store
@@ -63,7 +64,7 @@ namespace DataPreparation.Testing
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
             var testStore = Store.GetTestStore(testInfo);
             DataPreparationHandler.DataDown(testStore);
-            PreparationTest.RemoveTestStore(testStore);
+            TestStore.RemoveTestStore(testStore);
         }
 
        

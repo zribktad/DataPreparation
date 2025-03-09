@@ -66,11 +66,11 @@ namespace DataPreparation.Testing
               
             }
 
-            if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationSetUpConnections)))
-            {
-                test.TypeInfo.Type.GetMethod(nameof(IDataPreparationSetUpConnections.SetUpConnections))
-                    ?.Invoke(null, null);
-            }
+            // if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationSetUpConnections)))
+            // {
+            //     test.TypeInfo.Type.GetMethod(nameof(IDataPreparationSetUpConnections.SetUpConnections))
+            //         ?.Invoke(null, null);
+            // }
 
             //create fixture store
             Store.CreateFixtureStore(new(test), loggerFactory,baseDataServiceCollection);

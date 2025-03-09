@@ -10,8 +10,8 @@ namespace DataPreparation.Testing
         internal static void DataUp(TestStore testStore)
         {
           
-            testStore.AttributeUsing.IncrementAttrributeCountUp();
-            if (!testStore.AttributeUsing.IsAllUpAttributesRun()) return;
+            testStore.AttributeUsingCounter.IncrementAttrributeCountUp();
+            if (!testStore.AttributeUsingCounter.IsAllUpAttributesRun()) return;
             
             //analyse and results 
             //var analysisResult = MethodAnalyzer.Analyze(testMethodInfo);

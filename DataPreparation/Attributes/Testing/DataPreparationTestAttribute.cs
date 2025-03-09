@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using DataPreparation.Data;
 using DataPreparation.Helpers;
+using DataPreparation.Models.Data;
 using DataPreparation.Provider;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
@@ -27,7 +28,7 @@ namespace DataPreparation.Testing.Factory
         public void BeforeTest(ITest test)
         {
              var testInfo = TestInfo.CreateTestInfo(test);
-            PreparationTest.CreateTestStore(testInfo);
+             TestStore.CreateTestStore(testInfo);
         }
 
    
@@ -40,7 +41,7 @@ namespace DataPreparation.Testing.Factory
         {
             var testInfo = TestInfo.CreateTestInfo(test);
             var testStore = Store.GetTestStore(testInfo);
-            PreparationTest.RemoveTestStore(testStore);
+            TestStore.RemoveTestStore(testStore);
         }
 
     

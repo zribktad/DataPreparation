@@ -3,9 +3,9 @@ using NUnit.Framework;
 
 namespace DataPreparation.Helpers;
 
-public class AttributeHelper
+internal static class AttributeHelper
 {
-    public static IList<Attribute> GetAttributes(MethodInfo methodInfo,params Type[] attributeTypes)
+    internal static IList<Attribute> GetAttributes(MethodInfo methodInfo,params Type[] attributeTypes)
     {
         List<Attribute> attributes = new ();
         foreach(var attributeType in attributeTypes)
