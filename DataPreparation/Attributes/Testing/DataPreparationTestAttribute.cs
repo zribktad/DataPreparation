@@ -28,7 +28,7 @@ namespace DataPreparation.Testing.Factory
         public void BeforeTest(ITest test)
         {
              var testInfo = TestInfo.CreateTestInfo(test);
-             TestStore.CreateTestStore(testInfo);
+             TestStore.InitializeTestStore(testInfo);
         }
 
    

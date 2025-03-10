@@ -23,7 +23,8 @@ using OrderService.Services;
 namespace OrderService.Boa;
 
 [DataPreparationFixture]
-public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, IDataPreparationLoggerInitializer
+[Parallelizable(ParallelScope.All)]
+public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, IDataPreparationLogger, IBeforeTest
 {
     private SqliteOrderServiceContext _context;
     private SqliteConnection _connection;
@@ -53,7 +54,7 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
     #region DataPreparationServices
 
     static SqliteConnection serviceConnection = new("DataSource=:memory:");
-    public static void DataPreparationServices(IServiceCollection serviceCollection)
+    public  void DataPreparationServices(IServiceCollection serviceCollection)
     {
         //_context.Database.EnsureCreated();
         serviceConnection.Open();
@@ -69,10 +70,9 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
         serviceCollection.AddScoped<IOrderStatusService, Services.OrderStatusService>();
         serviceCollection.AddScoped<IOrderItemService, OrderItemService>();
         serviceCollection.AddScoped<ICustomerService, Services.CustomerService>();
-        
     }
     
-    public static ILoggerFactory InitializeDataPreparationTestLogger()
+    public  ILoggerFactory InitializeDataPreparationTestLogger()
     {
         return LoggerFactory.Create(builder =>
         {
@@ -80,6 +80,19 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
             builder.AddDebug();
             builder.AddConsole();
         });
+        
+    }
+    
+    public void BeforeTest(IServiceProvider testProvider)
+    {
+        try
+        {
+            testProvider.GetRequiredService<OrderServiceContext>().Database.EnsureCreated();
+        }
+        catch (Exception e)
+        {
+           
+        }
         
     }
     
@@ -269,5 +282,6 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
         _connection?.Dispose(); // Dispose the connection once all tests are done
     }
 
-  
+
+    
 }

@@ -19,9 +19,9 @@ using Microsoft.Extensions.Logging;
 namespace OrderService.Boa;
 
 [DataPreparationFixture]
-public class OrderServiceBoaTestFixture:IDataPreparationLoggerInitializer
+public class OrderServiceBoaTestFixture:IDataPreparationLogger
 {
-    public static ILoggerFactory InitializeDataPreparationTestLogger()
+    public  ILoggerFactory InitializeDataPreparationTestLogger()
     {
         return LoggerFactory.Create(builder =>
         {

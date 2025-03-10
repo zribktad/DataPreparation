@@ -59,7 +59,7 @@ namespace DataPreparation.Testing
                 testLogger.LogError("No {0} found for {1}.", typeof(DataPreparationFixtureAttribute), testContextTestInfo.FixtureInfo);
                 throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for { testContextTestInfo.FixtureInfo}.");
             }
-            LoggerHelper.Log(logger => logger.LogDebug("Test data initialization for {0} ended", testContextTestInfo), 
+            LoggerHelper.Log(logger => logger.LogDebug("Test data initialization for {0} created", testContextTestInfo), 
                 fixtureStore.LoggerFactory.CreateLogger(typeof(Store)),testLogger);
   
             return GetTestStore(testContextTestInfo)!;

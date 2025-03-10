@@ -16,7 +16,6 @@ namespace DataPreparation.Testing
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class UsePreparedDataParamsForAttribute : UsePreparedAttribute
     {
-       
         public UsePreparedDataParamsForAttribute(Type classType,  string methodName,[NotNull] object[] paramsUpData, [NotNull]object[] paramsDownData)
         {
             _classType = classType ?? throw new ArgumentNullException(nameof(classType));
@@ -45,7 +44,7 @@ namespace DataPreparation.Testing
         {
             
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            TestStore testStore = TestStore.CreateTestStore(testInfo);
+            TestStore testStore = TestStore.InitializeTestStore(testInfo);
             
             // Prepare class data for the test from attribute
             var preparedData = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, [_methodName]); 

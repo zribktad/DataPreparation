@@ -46,7 +46,7 @@ namespace DataPreparation.Testing
         {
             
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = TestStore.CreateTestStore(testInfo);
+            var testStore = TestStore.InitializeTestStore(testInfo);
             // Prepare data for the test from attribute
             var preparedDataList = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, _methodsNames); 
             // Add the prepared data to the store

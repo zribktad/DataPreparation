@@ -48,41 +48,35 @@ public class PreparedData
         _logger.LogDebug($"Prepared data of type {preparedDataInstance.GetType()} has been checked for UpData and DownData methods and parameters");
     }
     //Check types and make conversion from string to int, long, etc.
-   private static void CheckParams(MethodInfo method, object[]? paramsData, ILogger logger)
+   private static object[] CheckParams(MethodInfo method, object[]? paramsData, ILogger logger)
     {
         var expectedTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
-
-        if (paramsData == null)
+        var lenParams = paramsData?.Length ?? 0;
+        if (expectedTypes.Length < lenParams)
         {
-            if (expectedTypes.Length > 0)
-            {
-                var e = new ArgumentException(
-                    $"Incorrect number of parameters for '{method.Name}'. Expected: {expectedTypes.Length}, provided: 0.");
-                logger.LogError(e,"Error while checking parameters");
-                throw e;
-            }
-            return;
-        }
-
-        if (expectedTypes.Length != paramsData.Length)
-        {
-            var e  =new ArgumentException(
-                $"Incorrect number of parameters for '{method.Name}'. Expected: {expectedTypes.Length}, provided: {paramsData.Length}.");
+            var e =  new ArgumentException(
+                $"Incorrect number of parameters for '{method.Name}'. Expected: {expectedTypes.Length}, provided: {paramsData?.Length}.");
             logger.LogError(e,"Error while checking parameters");
             throw e;
         }
+        
+        IList<object> newParams = new List<object>();
 
-        for (int i = 0; i < paramsData.Length; i++)
+        for (int i = 0; i < lenParams; i++)
         {
             var expectedType = expectedTypes[i];
             var param = paramsData[i];
 
-            if (expectedType.IsInstanceOfType(param))   continue; // It's either exact match or convertible (e.g., int to long)
+            if (expectedType.IsInstanceOfType(param))
+            {
+                newParams.Add(param);
+                continue; // It's either exact match or convertible (e.g., int to long)
+            }
+
             try
             {
+                newParams.Add(Convert.ChangeType(param, expectedType));
                 // Attempt conversion
-                paramsData[i] = Convert.ChangeType(param, expectedType);
-                logger.LogDebug($"Parameter at position {i + 1} in '{method.Name}' has been converted to {expectedType.Name}");
             }
             catch
             {
@@ -93,6 +87,13 @@ public class PreparedData
                 throw e;
             }
         }
+
+        while (expectedTypes.Length > newParams.Count)
+        {
+            newParams.Add(default);
+            logger.LogWarning("Argument {0} in method {1} is missing. Default value use", newParams.Count, method.Name);
+        }
+        return newParams.ToArray();
     }
 
     public Task RunUp()

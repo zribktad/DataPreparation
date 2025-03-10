@@ -31,17 +31,24 @@ public class TestStore
         return "Store for " + TestInfo;
     }
     
-    public static TestStore CreateTestStore(TestInfo testInfo)
+    public static TestStore InitializeTestStore(TestInfo testInfo)
     {
         var testStore = Store.GetTestStore(testInfo);
         if(testStore != null)  return testStore;
       
-        var loggerFactory = LoggerHelper.CreateOrNullLogger(testInfo.FixtureInfo.Type);
+        var loggerFactory = LoggerHelper.CreateOrNullLogger(testInfo.FixtureInfo);
 
         var dataPreparationAttributes = AttributeHelper.GetAttributes(testInfo.Method.MethodInfo, 
             typeof(UsePreparedAttribute));
+        testStore = Store.CreateTestStore(testInfo,loggerFactory,dataPreparationAttributes);
         
-        return Store.CreateTestStore(testInfo,loggerFactory,dataPreparationAttributes);
+        if(testInfo.FixtureInfo.Instance is IBeforeTest beforeTest)
+        {
+            beforeTest.BeforeTest(testStore.ServiceProvider);
+        }
+        
+        
+        return testStore;
     }
     
     public static TestStore? RemoveTestStore(TestStore? testStore)
@@ -49,6 +56,10 @@ public class TestStore
         if (testStore != null)
         {
             testStore.SourceFactory.Dispose();
+            if(testStore.TestInfo.FixtureInfo.Instance is IBeforeTest beforeTest)
+            {
+                beforeTest.BeforeTest(testStore.ServiceProvider);
+            }
             return Store.RemoveTestStore(testStore.TestInfo);
         }
         return testStore;

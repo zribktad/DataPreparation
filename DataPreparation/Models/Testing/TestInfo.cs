@@ -33,7 +33,7 @@ public class TestInfo :ContextTestInfo
         {
             test = test.Parent;
         }
-        FixtureInfo fixtureInfo = new (test.Parent );
+        FixtureInfo fixtureInfo = new (test.Parent);
         TestInfo testInfo = new (start_test,fixtureInfo);
  
         return testInfo;

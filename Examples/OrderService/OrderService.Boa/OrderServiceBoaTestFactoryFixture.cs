@@ -23,13 +23,13 @@ namespace OrderService.Boa;
 
 [DataPreparationFixture]
 //TODO [Parallelizable(ParallelScope.All)]
-public class OrderServiceBoaTestFactoryFixture:IDataPreparationLoggerInitializer, IDataPreparationTestServices
+public class OrderServiceBoaTestFactoryFixture:IDataPreparationLogger, IDataPreparationTestServices
 {
-    public static void DataPreparationServices(IServiceCollection serviceCollection)
+    public  void DataPreparationServices(IServiceCollection serviceCollection)
     {
       
     }
-    public static ILoggerFactory InitializeDataPreparationTestLogger()
+    public  ILoggerFactory InitializeDataPreparationTestLogger()
     {
         return LoggerFactory.Create(builder =>
         {

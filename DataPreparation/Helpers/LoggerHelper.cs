@@ -6,23 +6,20 @@ namespace DataPreparation.Helpers;
 
 internal static class LoggerHelper
 {
-    internal static ILoggerFactory CreateOrNullLogger(Type fixtureType)
+    internal static ILoggerFactory CreateOrNullLogger(FixtureInfo fixtureInfo)
     {
         try
         {
-            if (fixtureType.IsAssignableTo(typeof(IDataPreparationLoggerInitializer)))
+            if (fixtureInfo.Instance is IDataPreparationLogger dataPreparationLoggerInitializer)
             {
-                var builder = fixtureType
-                    .GetMethod(nameof(IDataPreparationLoggerInitializer.InitializeDataPreparationTestLogger))
-                    ?.Invoke(null, null);
-
-                if (builder is ILoggerFactory factory)
+                var builder =dataPreparationLoggerInitializer.InitializeDataPreparationTestLogger();
+                if (builder is { } factory)
                 {
                     return factory;
                 }
             }
 #if DEBUG
-                Console.WriteLine($"LoggerFactory factory not found for {fixtureType} use NullLoggerFactory");
+                Console.WriteLine($"LoggerFactory factory not found for {fixtureInfo.GetType()} use NullLoggerFactory");
 #endif
         }
         catch (Exception e)

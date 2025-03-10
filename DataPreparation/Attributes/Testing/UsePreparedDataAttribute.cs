@@ -29,7 +29,7 @@ namespace DataPreparation.Testing
         public override void BeforeTest(ITest test)
         {
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = TestStore.CreateTestStore(testInfo);
+            var testStore = TestStore.InitializeTestStore(testInfo);
             // Prepare data for the test from attribute
             var preparedDataList = GetDataPreparation.GetPreparedData(testStore, _dataProviders);
             // Add the prepared data to the store
