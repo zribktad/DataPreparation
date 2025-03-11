@@ -89,7 +89,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
     
         //how to ppair CustomerIde with CustomerRepository, OrderItems with OrderRepository?
         Services.OrderService orderService = new Services.OrderService(
-            testData.New<IRepository<Order>,OrderMockRepositoryFactory>(new ObjectsParams(orderDto)), testData.New<IRepository<Customer>,CustomerMockRepositoryFactory>(), null);
+            testData.New<IRepository<Order>,OrderMockRepositoryFactory>(new ListParams(orderDto)), testData.New<IRepository<Customer>,CustomerMockRepositoryFactory>(), null);
         //or if we use injection setup orderReposiroty and customerRepository according the UseOrderService (Can)
         orderService = PreparationContext.GetProvider().GetService<Services.OrderService>(); // how to setup to return Order with good ID
         //orderDTO is not in OrderRepository, but OrderRepository is  defined method for insert and get by id and for CustomerRepository is defined method for get by id
@@ -119,8 +119,8 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         OrderDTO orderDto = PreparationContext.GetFactory().New<OrderDTO,OrderDtoFactory>();
         
         Services.OrderService _orderService = new Services.OrderService(
-                    PreparationContext.GetFactory().New<IRepository<Order>,OrderMockRepositoryFactory>(ObjectsParams.Use(orderDto)), 
-                 PreparationContext.GetFactory().New<IRepository<Customer>,CustomerMockRepositoryFactory>(ObjectsParams.Use(customer)), 
+                    PreparationContext.GetFactory().New<IRepository<Order>,OrderMockRepositoryFactory>(ListParams.Use(orderDto)), 
+                 PreparationContext.GetFactory().New<IRepository<Customer>,CustomerMockRepositoryFactory>(ListParams.Use(customer)), 
                     null);
         IActor _actor = new Actor("OrderTester", new ConsoleLogger());
         _actor.Can(UseOrderService.With(_orderService));
@@ -146,8 +146,8 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         var customer = factory.New<Customer,CustomerFactory>();
         OrderDTO orderDto = factory.Get<OrderDTO,OrderDtoFactory>();
         Services.OrderService orderService = new Services.OrderService(
-            factory.New<IRepository<Order>, OrderMockRepositoryFactory>(ObjectsParams.Use(orderDto)), 
-            factory.New<IRepository<Customer>, CustomerMockRepositoryFactory>(ObjectsParams.Use(customer)), 
+            factory.New<IRepository<Order>, OrderMockRepositoryFactory>(ListParams.Use(orderDto)), 
+            factory.New<IRepository<Customer>, CustomerMockRepositoryFactory>(ListParams.Use(customer)), 
             null);
         
         IActor actor = new Actor("OrderTester", new ConsoleLogger());

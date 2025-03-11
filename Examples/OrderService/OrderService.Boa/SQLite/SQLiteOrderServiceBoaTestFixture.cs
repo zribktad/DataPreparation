@@ -257,7 +257,7 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
         
         // *********** Create Order with created customer ***********
         //Aranage Order
-        var orderDto = await PreparationContext.GetFactory().NewAsync<OrderDTO, OrderDtoFactoryAsync>();//(ObjectsParams.Use(createdCustomer)); //add customer to order
+        var orderDto = await PreparationContext.GetFactory().NewAsync<OrderDTO, OrderDtoFactoryAsync>();//(ListParams.Use(createdCustomer)); //add customer to order
         var createTask = CreateOrderTask.For(orderDto);
         actor.AttemptsTo(createTask);
         factory.Register<Order, OrderRegisterAsync>(createTask.CreatedOrder, out _); //this is for data dependency using new register
