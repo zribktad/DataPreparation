@@ -68,6 +68,8 @@ public interface ISourceFactory : IDisposable
     #region GetById
     public T? GetById<T, TDataFactory>(long createdId) where TDataFactory : IDataFactory<T> where T : notnull;
     public object? GetById<TDataFactory>(long createdId) where TDataFactory : IDataFactory;
+    public object? GetById(long createdId);
+
     #endregion
     // Historical data
     #region Was
@@ -80,6 +82,9 @@ public interface ISourceFactory : IDisposable
     #region Register
     public bool Register<T,TDataFactory>(T data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull;
     public bool Register<T,TDataFactory>(T data, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull => Register<T,TDataFactory>(data, out _, args);
+    
+    public bool Register<TDataFactory>(object data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase;
+    public bool Register<TDataFactory>(object data, IDataParams? args = null) where TDataFactory : IDataFactoryBase => Register<TDataFactory>(data, out _, args);
     #endregion
     #endregion
 }

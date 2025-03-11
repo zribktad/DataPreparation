@@ -126,6 +126,11 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
     public bool Register<T, TDataFactory>(T data, out long? createdId,IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryBase<T>
     {
+        return Register<TDataFactory>(data, out createdId, args);
+    }
+
+    public bool Register<TDataFactory>(object data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase
+    {
         var id = Counter.Increment();
         createdId = null;
         var factoryBase = serviceProvider.GetService<TDataFactory>() ??
@@ -260,7 +265,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
     #region New data
     
-    //list
     private IList<TRet> NewData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null)
         where TDataFactory : IDataFactoryBase where TRet : notnull
     {
@@ -269,6 +273,15 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         var argsList = argsEnumerable?.ToList() ?? new List<IDataParams?>();
         createdIds = new List<long>();
         var items = new List<TRet>();
+        
+        if(size < argsList.Count)
+        {
+            logger.LogWarning($"[{nameof(New)}]: Size of requested items is smaller than the number of arguments. Only {size} data will be created");
+        }
+        else if(size > argsList.Count)
+        {
+            logger.LogInformation($"[{nameof(New)}]: Size of requested items is bigger than the number of arguments. Some items will be without arguments");
+        }
 
         for (int i = 0; i < size; i++)
         {
@@ -280,7 +293,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         logger.LogDebug($"[{nameof(New)}]: Created {size} data for {typeof(TDataFactory)}");
         return items;
     }
-    //one
     private TRet NewData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,out long createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
         logger.LogDebug($"[{nameof(NewDataAsync)}]: Creation of data for {typeof(TDataFactory)}  with type {typeof(TRet)} was called");
@@ -325,6 +337,15 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         var argsList = argsEnumerable?.ToList() ?? new List<IDataParams?>();
         createdIds = new List<long>();
         var items = new List<Task<TRet>>();
+           
+        if(size < argsList.Count)
+        {
+            logger.LogWarning($"[{nameof(New)}]: Size of requested items is smaller than the number of arguments. Only {size} data will be created");
+        }
+        else if(size > argsList.Count)
+        {
+            logger.LogInformation($"[{nameof(New)}]: Size of requested items is bigger than the number of arguments. Some items will be without arguments");
+        }
         
         for (int i = 0; i < size; i++)
         {
