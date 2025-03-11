@@ -114,12 +114,12 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     #endregion
     #region Was
     
-    public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase
+    public IList<object> Was<TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryBase
     {
         return WasData<TDataFactory>(out createdIds);
     }
     
-    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryBase<T>
+    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds) where T : notnull where TDataFactory : IDataFactoryBase<T>
     {
         return WasData<TDataFactory>(out createdIds).Cast<T>().ToList();
     }
@@ -520,7 +520,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     }
 
     #endregion
-    private  Exception CastExeption(ILogger log,string text, Exception? exception = null)
+    private  InvalidCastException CastExeption(ILogger log,string text, Exception? exception = null)
     {
         var ex = new InvalidCastException(text,exception);
         log.LogError(ex,"Error in cast:");

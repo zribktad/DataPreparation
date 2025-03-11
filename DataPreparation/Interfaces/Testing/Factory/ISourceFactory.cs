@@ -71,10 +71,10 @@ public interface ISourceFactory : IDisposable
     #endregion
     // Historical data
     #region Was
-    public IList<object> Was<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryBase => Was<TDataFactory>(out _, args);
-    public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase;
-    public IList<T> Was<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull => Was<T, TDataFactory>(out _, args);
-    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull;
+    public IList<object> Was<TDataFactory>() where TDataFactory : IDataFactoryBase => Was<TDataFactory>(out _);
+    public IList<object> Was<TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryBase;
+    public IList<T> Was<T, TDataFactory>() where TDataFactory : IDataFactoryBase<T> where T : notnull => Was<T, TDataFactory>(out _);
+    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryBase<T> where T : notnull;
     #endregion
     
     #region Register
