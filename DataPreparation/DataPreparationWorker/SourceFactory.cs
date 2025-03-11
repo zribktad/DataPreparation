@@ -160,19 +160,30 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     
     public object? GetById<TDataFactory>(long createdId) where TDataFactory : IDataFactory
     {
-        if(_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
-        {
-            var factoryData = data.GetById(createdId);
-            if (factoryData != null)
-            {
-                logger.LogInformation($"[{nameof(GetById)}]: Data for id {createdId} was found");
-                return factoryData.Data;
-            }
-        }
-        logger.LogInformation($"[{nameof(GetById)}]: No data found for {typeof(TDataFactory)} with id {createdId}");
-        return default;
+        var data = GetDataByIdFromFactory(typeof(TDataFactory),createdId);
+        logger.LogInformation(data != null
+            ? $"[{nameof(GetById)}]: Data for id {createdId} was found"
+            : $"[{nameof(GetById)}]: No data found for {typeof(TDataFactory)} with id {createdId}");
+
+        return data;
     }
     
+    public object? GetById(long createdId)
+    {
+        foreach (var (factoryType,_) in _localDataCache)
+        {
+            var data = GetDataByIdFromFactory(factoryType,createdId);
+            if(data != null)
+            {
+                logger.LogInformation($"[{nameof(GetById)}]: Data for id {createdId} was found");
+                return data;
+            }
+        }
+
+        logger.LogInformation($"[{nameof(GetById)}]: No data found for id {createdId}");
+        return default;
+    }
+
 
     public T? GetById<T, TDataFactory>(long createdId) where TDataFactory : IDataFactory<T> where T : notnull
     {
@@ -540,6 +551,22 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         return false;
     }
 
+    #endregion
+
+    #region GetById
+    private object? GetDataByIdFromFactory(Type factoryType,long createdId)
+    {
+        if(_localDataCache.TryGetValue(factoryType, out var data))
+        {
+            var factoryData = data.GetById(createdId);
+            if (factoryData != null)
+            {
+                return factoryData.Data;
+            }
+        }
+        return default;
+    }
+    
     #endregion
     private  InvalidCastException CastExeption(ILogger log,string text, Exception? exception = null)
     {
