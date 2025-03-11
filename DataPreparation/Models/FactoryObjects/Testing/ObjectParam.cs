@@ -2,11 +2,11 @@
 
 namespace DataPreparation.Factory.Testing;
 
-public record  ObjectParam(object Record) : IDataParams
+public record  ObjectParam(object Args) : IDataParams
 {
     public bool Find<T>(out T? result, Func<T, bool>? predicate = null)
     {
-        if (Record is T t && (predicate == null || predicate(t)))
+        if (Args is T t && (predicate == null || predicate(t)))
         {
             result = t;
             return true;

@@ -173,7 +173,7 @@ namespace OrderService.DataTest.Database
             using (var command = new NpgsqlCommand("SELECT COUNT(*) FROM \"Customers\" WHERE \"Name\" = 'Test Customer for Rollback';", connection))
             {
                 var count = (long)command.ExecuteScalar();
-                Assert.That(count, Is.EqualTo(countExpected), "Record should not be present after rollback.");
+                Assert.That(count, Is.EqualTo(countExpected), "Args should not be present after rollback.");
             }
 
         }
