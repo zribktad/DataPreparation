@@ -65,7 +65,7 @@ namespace DataPreparation.Testing
         public override void AfterTest(ITest test)
         {
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = Store.GetTestStore(testInfo);
+            var testStore = TestStore.Get(testInfo);
             DataPreparationHandler.DataDown(testStore);
             TestStore.RemoveTestStore(testStore);
         }

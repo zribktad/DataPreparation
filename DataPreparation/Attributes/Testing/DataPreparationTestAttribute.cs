@@ -40,7 +40,7 @@ namespace DataPreparation.Testing.Factory
         public void AfterTest(ITest test)
         {
             var testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = Store.GetTestStore(testInfo);
+            var testStore = TestStore.Get(testInfo);
             TestStore.RemoveTestStore(testStore);
         }
 

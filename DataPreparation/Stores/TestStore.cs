@@ -1,3 +1,4 @@
+using DataPreparation.Data;
 using DataPreparation.Factory.Testing;
 using DataPreparation.Helpers;
 using DataPreparation.Testing;
@@ -33,14 +34,14 @@ public class TestStore
     
     public static TestStore InitializeTestStore(TestInfo testInfo)
     {
-        var testStore = Store.GetTestStore(testInfo);
+        var testStore = Get(testInfo);
         if(testStore != null)  return testStore;
       
         var loggerFactory = LoggerHelper.CreateOrNullLogger(testInfo.FixtureInfo);
 
         var dataPreparationAttributes = AttributeHelper.GetAttributes(testInfo.Method.MethodInfo, 
             typeof(UsePreparedAttribute));
-        testStore = Store.CreateTestStore(testInfo,loggerFactory,dataPreparationAttributes);
+        testStore = CreateTestStore(testInfo,loggerFactory,dataPreparationAttributes);
         
         if(testInfo.FixtureInfo.Instance is IBeforeTest beforeTest)
         {
@@ -60,10 +61,71 @@ public class TestStore
             {
                 beforeTest.BeforeTest(testStore.ServiceProvider);
             }
-            return Store.RemoveTestStore(testStore.TestInfo);
+            return RemoveTestStore(testStore.TestInfo);
         }
         return testStore;
     }
+    
+    
+       #region Test Store
+        private static TestStore CreateTestStore(TestInfo testContextTestInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
+        {
+            var testLogger = loggerFactory.CreateLogger(typeof(Store));
+            testLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
+
+            if (Store.GetFixtureStore(testContextTestInfo.FixtureInfo) is { } fixtureStore)
+            {
+                var fixtureLogger = fixtureStore.LoggerFactory.CreateLogger(nameof(Store));
+                fixtureLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
+
+                if (!fixtureStore.CreateTestStore(testContextTestInfo, loggerFactory,dataPreparationAttributes))
+                {
+                    LoggerHelper.Log(logger => logger.LogTrace("Test data initialization for {0} already exists", testContextTestInfo),
+                        fixtureLogger,testLogger);
+                }
+            }
+            else
+            {
+                testLogger.LogError("No {0} found for {1}.", typeof(DataPreparationFixtureAttribute), testContextTestInfo.FixtureInfo);
+                throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for { testContextTestInfo.FixtureInfo}.");
+            }
+            LoggerHelper.Log(logger => logger.LogDebug("Test data initialization for {0} created", testContextTestInfo), 
+                fixtureStore.LoggerFactory.CreateLogger(typeof(Store)),testLogger);
+  
+            return Get(testContextTestInfo)!;
+        }
+
+        internal static TestStore Get(ContextTestInfo testInfo)
+        {
+            foreach (var fixtureStore in  Store.GetFixtureStores())
+            {
+                var testStore = fixtureStore.GetTestStore(testInfo);
+                if (testStore !=  null)
+                {
+                    return testStore;
+                }
+            }
+
+            throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for {testInfo}.");
+        }
+        private static TestStore? Get(TestInfo testInfo)
+        {
+            var store =  Store.GetFixtureStore(testInfo.FixtureInfo).GetTestStore(testInfo);
+            return store;
+        }
+        
+
+        public static TestStore? RemoveTestStore(TestInfo testInfo)
+        {
+            if (Store.GetFixtureStore(testInfo.FixtureInfo) is { } fixtureStore)
+            {
+               return fixtureStore.RemoveTestStore(testInfo);
+            }
+
+            throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for {testInfo.FixtureInfo}.");
+
+        }
+        #endregion
     
     
    
