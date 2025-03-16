@@ -17,7 +17,7 @@ public class FixtureStore(
 {
     public FixtureInfo FixtureInfo { get; init; } = fixtureInfo;
 
-    private readonly ConcurrentDictionary<ContextTestInfo, TestStore> _testData = new();
+    private readonly ConcurrentDictionary<ContextTestInfo, TestStore> _testData = new ();
     public ILoggerFactory LoggerFactory { get; } = loggerFactoryFactory;
 
     public bool CreateTestStore(TestInfo testInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)

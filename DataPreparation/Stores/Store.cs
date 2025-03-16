@@ -37,7 +37,7 @@ namespace DataPreparation.Testing
             return FixtureStores.TryRemove(fixtureInfo, out _);
         }
         
-        #region PreparedData
+        #region Test Store
         internal static TestStore CreateTestStore(TestInfo testContextTestInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
         {
             var testLogger = loggerFactory.CreateLogger(typeof(Store));

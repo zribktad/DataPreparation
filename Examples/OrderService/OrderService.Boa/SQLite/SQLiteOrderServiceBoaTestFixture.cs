@@ -23,7 +23,6 @@ using OrderService.Services;
 namespace OrderService.Boa;
 
 [DataPreparationFixture]
-[Parallelizable(ParallelScope.All)]
 public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, IDataPreparationLogger, IBeforeTest
 {
     private SqliteOrderServiceContext _context;
