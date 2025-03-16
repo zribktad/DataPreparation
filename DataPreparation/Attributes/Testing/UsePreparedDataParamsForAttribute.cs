@@ -44,7 +44,7 @@ namespace DataPreparation.Testing
         {
             
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            TestStore testStore = TestStore.InitializeTestStore(testInfo);
+            TestStore testStore = TestStore.Initialize(testInfo);
             
             // Prepare class data for the test from attribute
             var preparedData = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, [_methodName]); 
@@ -67,7 +67,7 @@ namespace DataPreparation.Testing
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
             var testStore = TestStore.Get(testInfo);
             DataPreparationHandler.DataDown(testStore);
-            TestStore.RemoveTestStore(testStore);
+            TestStore.Deinitialize(testStore);
         }
 
        

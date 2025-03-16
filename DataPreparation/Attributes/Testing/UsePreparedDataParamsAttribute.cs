@@ -39,7 +39,7 @@ namespace DataPreparation.Testing
         public override void BeforeTest(ITest test)
         {
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            TestStore testStore = TestStore.InitializeTestStore(testInfo);
+            TestStore testStore = TestStore.Initialize(testInfo);
             // Prepare data for the test from attribute
             var preparedDataClassInstanceInList = GetDataPreparation.GetPreparedData(testStore, [_preparaDataType]);
             // Add the prepared data to the store
@@ -59,7 +59,7 @@ namespace DataPreparation.Testing
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
             var testStore = TestStore.Get(testInfo);
             DataPreparationHandler.DataDown(testStore);
-            TestStore.RemoveTestStore(testStore);
+            TestStore.Deinitialize(testStore);
         }
 
 

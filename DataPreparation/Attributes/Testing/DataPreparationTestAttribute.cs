@@ -28,7 +28,7 @@ namespace DataPreparation.Testing.Factory
         public void BeforeTest(ITest test)
         {
              var testInfo = TestInfo.CreateTestInfo(test);
-             TestStore.InitializeTestStore(testInfo);
+             TestStore.Initialize(testInfo);
         }
 
    
@@ -41,7 +41,7 @@ namespace DataPreparation.Testing.Factory
         {
             var testInfo = TestInfo.CreateTestInfo(test);
             var testStore = TestStore.Get(testInfo);
-            TestStore.RemoveTestStore(testStore);
+            TestStore.Deinitialize(testStore);
         }
 
     

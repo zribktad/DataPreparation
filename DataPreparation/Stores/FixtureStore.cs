@@ -20,7 +20,7 @@ public class FixtureStore(
     private readonly ConcurrentDictionary<ContextTestInfo, TestStore> _testData = new ();
     public ILoggerFactory LoggerFactory { get; } = loggerFactoryFactory;
 
-    public bool CreateTestStore(TestInfo testInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
+    internal bool CreateTestStore(TestInfo testInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
     {
        return _testData.TryAdd(testInfo, new(testInfo,loggerFactory, serviceCollection,dataPreparationAttributes));
     }

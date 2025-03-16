@@ -32,7 +32,7 @@ public class TestStore
         return "Store for " + TestInfo;
     }
     
-    public static TestStore InitializeTestStore(TestInfo testInfo)
+    internal static TestStore Initialize(TestInfo testInfo)
     {
         var testStore = Get(testInfo);
         if(testStore != null)  return testStore;
@@ -41,7 +41,7 @@ public class TestStore
 
         var dataPreparationAttributes = AttributeHelper.GetAttributes(testInfo.Method.MethodInfo, 
             typeof(UsePreparedAttribute));
-        testStore = CreateTestStore(testInfo,loggerFactory,dataPreparationAttributes);
+        testStore = Create(testInfo,loggerFactory,dataPreparationAttributes);
         
         if(testInfo.FixtureInfo.Instance is IBeforeTest beforeTest)
         {
@@ -52,23 +52,42 @@ public class TestStore
         return testStore;
     }
     
-    public static TestStore? RemoveTestStore(TestStore? testStore)
+    internal static TestStore? Deinitialize(TestStore? testStore)
     {
         if (testStore != null)
         {
             testStore.SourceFactory.Dispose();
-            if(testStore.TestInfo.FixtureInfo.Instance is IBeforeTest beforeTest)
+            if(testStore.TestInfo.FixtureInfo.Instance is IAfterTest beforeTest)
             {
-                beforeTest.BeforeTest(testStore.ServiceProvider);
+                
+                beforeTest.AfterTest(testStore.ServiceProvider);
             }
-            return RemoveTestStore(testStore.TestInfo);
+
+            if (Store.GetFixtureStore(testStore.TestInfo.FixtureInfo) is { } fixtureStore)
+            {
+                return fixtureStore.RemoveTestStore(testStore.TestInfo);
+            }
+
+            throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for {testStore.TestInfo.FixtureInfo}.");
         }
         return testStore;
     }
-    
+    internal static TestStore Get(ContextTestInfo testInfo)
+    {
+        foreach (var fixtureStore in  Store.GetFixtureStores())
+        {
+            var testStore = fixtureStore.GetTestStore(testInfo);
+            if (testStore !=  null)
+            {
+                return testStore;
+            }
+        }
+
+        throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for {testInfo}.");
+    }
     
        #region Test Store
-        private static TestStore CreateTestStore(TestInfo testContextTestInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
+        private static TestStore Create(TestInfo testContextTestInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
         {
             var testLogger = loggerFactory.CreateLogger(typeof(Store));
             testLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
@@ -95,36 +114,13 @@ public class TestStore
             return Get(testContextTestInfo)!;
         }
 
-        internal static TestStore Get(ContextTestInfo testInfo)
-        {
-            foreach (var fixtureStore in  Store.GetFixtureStores())
-            {
-                var testStore = fixtureStore.GetTestStore(testInfo);
-                if (testStore !=  null)
-                {
-                    return testStore;
-                }
-            }
-
-            throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for {testInfo}.");
-        }
+      
         private static TestStore? Get(TestInfo testInfo)
         {
             var store =  Store.GetFixtureStore(testInfo.FixtureInfo).GetTestStore(testInfo);
             return store;
         }
-        
 
-        public static TestStore? RemoveTestStore(TestInfo testInfo)
-        {
-            if (Store.GetFixtureStore(testInfo.FixtureInfo) is { } fixtureStore)
-            {
-               return fixtureStore.RemoveTestStore(testInfo);
-            }
-
-            throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for {testInfo.FixtureInfo}.");
-
-        }
         #endregion
     
     
