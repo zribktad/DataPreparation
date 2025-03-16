@@ -41,7 +41,8 @@ namespace DataPreparation.Testing
                 return new PreparedData(data, [], [], loggerFactory);
             }).ToList());
         }
-     
-     
+
+
+        public bool IsEmpty() => _processed.Count == 0 && _preparation.Count == 0;
     }
 }

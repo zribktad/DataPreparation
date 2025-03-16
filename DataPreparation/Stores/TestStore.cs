@@ -56,7 +56,16 @@ public class TestStore
     {
         if (testStore != null)
         {
-            testStore.SourceFactory.Dispose();
+            try
+            {
+                testStore.SourceFactory.Dispose();
+            }
+            catch (Exception e)
+            {
+                
+            }
+           
+            DataPreparationHandler.DataDown(testStore);
             if(testStore.TestInfo.FixtureInfo.Instance is IAfterTest beforeTest)
             {
                 

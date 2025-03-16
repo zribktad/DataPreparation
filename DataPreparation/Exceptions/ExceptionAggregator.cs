@@ -7,12 +7,21 @@ internal class ExceptionAggregator
     /// <summary>
     /// Adds a new exception to the list.
     /// </summary>
-    public Exception? Add(Exception? ex)
+    public AggregateException? Add(Exception? ex)
     {
         if (ex != null) _exceptions.Add(ex);
-        return ex;
+        return Get();
     }
-
+    
+    public AggregateException? Add(ExceptionAggregator exceptionAggregator)
+    {
+        if (exceptionAggregator.HasExceptions)
+        {
+            _exceptions.AddRange(exceptionAggregator._exceptions);
+        }
+        return Get();
+    }
+   
     /// <summary>
     /// Throws an AggregateException if there are any recorded exceptions.
     /// </summary>

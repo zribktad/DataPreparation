@@ -66,7 +66,7 @@ namespace DataPreparation.Testing
         {
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
             var testStore = TestStore.Get(testInfo);
-            DataPreparationHandler.DataDown(testStore);
+         
             TestStore.Deinitialize(testStore);
         }
 
