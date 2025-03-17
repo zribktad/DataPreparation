@@ -1,6 +1,6 @@
 ﻿namespace DataPreparation.Data
 {
-    public interface IDataPreparation
+    public interface IBeforePreparation
     {
         void UpData();
         void DownData();

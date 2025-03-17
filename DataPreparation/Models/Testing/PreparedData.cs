@@ -28,13 +28,13 @@ public class PreparedData
        
         switch (_preparedDataInstance)
         {
-            case IDataPreparation:
-                _runUpMethod = typeof(IDataPreparation).GetMethod(nameof(IDataPreparation.UpData));
-                _runDownMethod = typeof(IDataPreparation).GetMethod(nameof(IDataPreparation.DownData));
+            case IBeforePreparation:
+                _runUpMethod = typeof(IBeforePreparation).GetMethod(nameof(IBeforePreparation.UpData));
+                _runDownMethod = typeof(IBeforePreparation).GetMethod(nameof(IBeforePreparation.DownData));
                 break;
-            case IDataPreparationTask:
-                _runUpMethod = typeof(IDataPreparationTask).GetMethod(nameof(IDataPreparationTask.UpData));
-                _runDownMethod = typeof(IDataPreparationTask).GetMethod(nameof(IDataPreparationTask.DownData));
+            case IBeforePreparationTask:
+                _runUpMethod = typeof(IBeforePreparationTask).GetMethod(nameof(IBeforePreparationTask.UpData));
+                _runDownMethod = typeof(IBeforePreparationTask).GetMethod(nameof(IBeforePreparationTask.DownData));
                 break;
             default:
                 _logger.LogTrace("Checking of {preparedDataInstance} for UpData and DownData methods and parameters", _preparedDataInstance.GetType().Name);

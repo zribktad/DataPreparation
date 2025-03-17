@@ -1,6 +1,6 @@
 ﻿namespace DataPreparation.Data;
 
-public interface  IDataPreparationTask 
+public interface  IBeforePreparationTask 
 {
     Task UpData();
     Task DownData();

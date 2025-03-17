@@ -48,11 +48,11 @@ namespace OrderService.Test.Services
             serviceCollection.AddSingleton(_ => _mockRepository);
         }
         
-
+ //[UsePreparedData(typeof(CustomerServiceData.GetCustomerByIdData))]
+        //[DataPreparationAutoAnalyze]
         [Test] 
         [UsePreparedDataFor(typeof(CustomerService), nameof(CustomerService.GetAllCustomers))]
-        //[UsePreparedData(typeof(CustomerServiceData.GetCustomerByIdData))]
-        [DataPreparationAutoAnalyze]
+       
         public void GetAllCustomers_Returns_All_Customers()
         {
             Console.WriteLine("Test GetAllCustomers ");
@@ -86,7 +86,7 @@ namespace OrderService.Test.Services
         }
 
 
-        [Test , UsePreparedDataParams(typeof(CustomerServiceData.GetCustomerByIdData),[5L, "Customer 1"],[5L])]
+        [Test , UsePreparedDataParams(typeof(CustomerServiceData.GetCustomerByIdData),[5L, "Customer 1",],[5L])]
         public void GetCustomerById_Returns_Customer_If_Found_In_Database()
         {
             Console.WriteLine("Test GetCustomerById ");

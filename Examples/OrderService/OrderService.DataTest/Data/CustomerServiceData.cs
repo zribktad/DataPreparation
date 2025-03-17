@@ -8,25 +8,27 @@ using OrderService.Services;
 namespace OrderService.DataTest.Data
 {
     [DataPreparationClassFor(typeof(CustomerService))]
-    public class CustomerServiceData: IDataPreparation
+    public class CustomerServiceData: IBeforePreparationTask
     {
 
-        public void UpData()
+        public Task UpData()
         {
             Console.WriteLine("CustomerServiceData up data ");
+           return Task.CompletedTask;
         }
 
-        public void DownData()
+        public Task DownData()
         {
             Console.WriteLine("CustomerServiceData Down Data ");
+            return Task.CompletedTask;
         }
 
 
         [DataPreparationMethodFor(typeof(CustomerService), nameof(CustomerService.GetAllCustomers))]
-        public class GetAllCustomersData : IDataPreparation
+        public class GetAllCustomersBefore : IBeforePreparation
         {
             private readonly Mock<IRepository<Customer>> _customerRepo;
-            public GetAllCustomersData(Mock<IRepository<Customer>> customerRepo)
+            public GetAllCustomersBefore(Mock<IRepository<Customer>> customerRepo)
             {
                 _customerRepo = customerRepo;
             }
@@ -34,7 +36,7 @@ namespace OrderService.DataTest.Data
             public void UpData()
             {
 
-                Console.WriteLine("GetAllCustomersData up data ");
+                Console.WriteLine("GetAllCustomersBefore up data ");
                 var customers = new List<Customer>
                 {
                     new Customer { Id = 1, Name = "Customer 1", Address = new Address() },
@@ -49,7 +51,7 @@ namespace OrderService.DataTest.Data
 
             public void DownData()
             {
-                Console.WriteLine("GetAllCustomersData Down Data ");
+                Console.WriteLine("GetAllCustomersBefore Down Data ");
                 _customerRepo.Setup(repo => repo.GetAll(It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
                     .Returns([]);
             }
@@ -80,13 +82,15 @@ namespace OrderService.DataTest.Data
         public class UpdateCustomerData(Mock<IRepository<Customer>> customerRepo)
         {
             [UpData]
-            public void TestUpData()
+            public Task TestUpData()
             {
                 customerRepo.Setup(repo => repo.Update(It.IsAny<Customer>())).Returns((Customer c) => c);
+                return Task.CompletedTask;
             }
             [DownData]
-            public void TestDownData()
+            public async Task TestDownData()
             {
+               
             }
         }
 
