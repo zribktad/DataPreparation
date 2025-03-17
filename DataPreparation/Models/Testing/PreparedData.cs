@@ -16,8 +16,6 @@ public class PreparedData
     public PreparedData(object preparedDataInstance, object[] paramsUpData, object[] paramsDownData, ILoggerFactory logger)
     {
         _preparedDataInstance = preparedDataInstance;
-        _paramsUpData = paramsUpData;
-        _paramsDownData = paramsDownData;
         _logger = logger.CreateLogger<PreparedData>();
 
         if (_preparedDataInstance == null)
@@ -29,12 +27,14 @@ public class PreparedData
         switch (_preparedDataInstance)
         {
             case IBeforePreparation:
+             
                 _runUpMethod = typeof(IBeforePreparation).GetMethod(nameof(IBeforePreparation.UpData));
                 _runDownMethod = typeof(IBeforePreparation).GetMethod(nameof(IBeforePreparation.DownData));
                 break;
             case IBeforePreparationTask:
                 _runUpMethod = typeof(IBeforePreparationTask).GetMethod(nameof(IBeforePreparationTask.UpData));
                 _runDownMethod = typeof(IBeforePreparationTask).GetMethod(nameof(IBeforePreparationTask.DownData));
+               
                 break;
             default:
                 _logger.LogTrace("Checking of {preparedDataInstance} for UpData and DownData methods and parameters", _preparedDataInstance.GetType().Name);
@@ -43,12 +43,10 @@ public class PreparedData
                 {
                     if(method.GetCustomAttribute<UpDataAttribute>() != null)
                     {
-                        CheckParams(method, _paramsUpData,_logger);
                         _runUpMethod = method;
                     }
                     else if(method.GetCustomAttribute<DownDataAttribute>() != null)
                     {
-                        CheckParams(method, _paramsDownData,_logger);
                         _runDownMethod = method;
                     }
             
@@ -57,11 +55,14 @@ public class PreparedData
                 break;
         }
         
-
+        _paramsUpData = CheckParams(_runUpMethod, paramsUpData,_logger);
+        _paramsDownData =CheckParams(_runDownMethod, paramsDownData,_logger);
+        
     }
     //Check types and make conversion from string to int, long, etc.
-   private static object[] CheckParams(MethodInfo method, object[]? paramsData, ILogger logger)
+   private static object[] CheckParams(MethodInfo? method, object[]? paramsData, ILogger logger)
     {
+        if(method == null) return Array.Empty<object>();
         var expectedTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
         var lenParams = paramsData?.Length ?? 0;
         if (expectedTypes.Length < lenParams)

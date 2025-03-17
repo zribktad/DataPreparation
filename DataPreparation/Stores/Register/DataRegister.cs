@@ -71,12 +71,15 @@ namespace DataPreparation.Testing
 
         private static bool ProcessDataMethodPreparation(Type type)
         {
-            if ( type.GetCustomAttribute<DataPreparationMethodForAttribute>() is { } methodAttribute)
+            if ( type.GetCustomAttributes<PreparationMethodForAttribute>() is { } methodAttributes)
             {
-                var methodInfo = methodAttribute.MethodInfo;
-                DataRelationStore.SetMethodDataPreparationType(methodInfo,type);
-                BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, methodAttribute.Lifetime));
-                return true;
+                foreach (var methodAttribute in methodAttributes)
+                {
+                    var methodInfo = methodAttribute.MethodInfo;
+                    DataRelationStore.SetMethodDataPreparationType(methodInfo,type);
+                    BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, methodAttribute.Lifetime));
+                    return true;
+                }
             }
             return false;
         }
@@ -84,11 +87,16 @@ namespace DataPreparation.Testing
         private bool ProcessDataClassPreparation(Type type)
         {
             //RegisterService Data Preparation Classes
-            if (type.GetCustomAttribute<DataPreparationClassForAttribute>() is { } classAttribute )
+            if (type.GetCustomAttributes<PreparationClassForAttribute>() is { } classAttributes )
             {
-                var classType = classAttribute.ClassType;
-                DataRelationStore.SetClassDataPreparationType(classType, type);
-                BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, classAttribute.Lifetime));
+                foreach (var attribute in classAttributes)
+                {
+                    var classType = attribute.ClassType;
+                    DataRelationStore.SetClassDataPreparationType(classType, type);
+                    BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, attribute.Lifetime));
+                    return true;
+                }
+             
                 return true;
             }
             return false;

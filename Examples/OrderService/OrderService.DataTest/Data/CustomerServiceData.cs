@@ -7,7 +7,7 @@ using OrderService.Services;
 
 namespace OrderService.DataTest.Data
 {
-    [DataPreparationClassFor(typeof(CustomerService))]
+    [PreparationClassFor(typeof(CustomerService))]
     public class CustomerServiceData: IBeforePreparationTask
     {
 
@@ -24,7 +24,7 @@ namespace OrderService.DataTest.Data
         }
 
 
-        [DataPreparationMethodFor(typeof(CustomerService), nameof(CustomerService.GetAllCustomers))]
+        [PreparationMethodFor(typeof(CustomerService), nameof(CustomerService.GetAllCustomers))]
         public class GetAllCustomersBefore : IBeforePreparation
         {
             private readonly Mock<IRepository<Customer>> _customerRepo;
@@ -57,7 +57,7 @@ namespace OrderService.DataTest.Data
             }
         }
 
-        [DataPreparationMethodFor(typeof(CustomerService), nameof(CustomerService.GetCustomerById))]
+        [PreparationMethodFor(typeof(CustomerService), nameof(CustomerService.GetCustomerById))]
         public class GetCustomerByIdData(Mock<IRepository<Customer>> customerRepo)
         {
             [UpData]
@@ -78,7 +78,7 @@ namespace OrderService.DataTest.Data
             }
         }
         
-        [DataPreparationMethodFor(typeof(CustomerService), nameof(CustomerService.UpdateCustomer))]
+        [PreparationMethodFor(typeof(CustomerService), nameof(CustomerService.UpdateCustomer))]
         public class UpdateCustomerData(Mock<IRepository<Customer>> customerRepo)
         {
             [UpData]

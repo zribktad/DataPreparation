@@ -16,7 +16,15 @@ namespace DataPreparation.Testing
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class UsePreparedDataParamsForAttribute : UsePreparedAttribute
     {
-        public UsePreparedDataParamsForAttribute(Type classType,  string methodName,[NotNull] object[] paramsUpData, [NotNull]object[] paramsDownData)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UsePreparedDataParamsForAttribute"/> class.
+        /// </summary>
+        /// <param name="classType">The type of the class containing the method.</param>
+        /// <param name="methodName">The name of the method to be tested.</param>
+        /// <param name="paramsUpData">The parameters for the data preparation before the test.</param>
+        /// <param name="paramsDownData">The parameters for the data preparation after the test.</param>
+        /// <exception cref="ArgumentNullException">Thrown when any of the parameters are null.</exception>
+        public UsePreparedDataParamsForAttribute(Type classType, string methodName, [NotNull] object[] paramsUpData, [NotNull] object[] paramsDownData)
         {
             _classType = classType ?? throw new ArgumentNullException(nameof(classType));
             _methodName = methodName ?? throw new ArgumentNullException(nameof(methodName));
@@ -24,16 +32,23 @@ namespace DataPreparation.Testing
             _paramsUpData = paramsUpData ?? throw new ArgumentNullException(nameof(paramsUpData));
             _paramsDownData = paramsDownData ?? throw new ArgumentNullException(nameof(paramsDownData));
         }
-      
-        public UsePreparedDataParamsForAttribute(Type classType, [NotNull] object[] classParamsUpData, [NotNull]object[] classParamsDownData,  string methodName,  [NotNull] object[] paramsUpData, [NotNull]object[] paramsDownData)
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UsePreparedDataParamsForAttribute"/> class with class-level data preparation.
+        /// </summary>
+        /// <param name="classType">The type of the class containing the method.</param>
+        /// <param name="classParamsUpData">The parameters for the class-level data preparation before the test.</param>
+        /// <param name="classParamsDownData">The parameters for the class-level data preparation after the test.</param>
+        /// <param name="methodName">The name of the method to be tested.</param>
+        /// <param name="paramsUpData">The parameters for the data preparation before the test.</param>
+        /// <param name="paramsDownData">The parameters for the data preparation after the test.</param>
+        /// <exception cref="ArgumentNullException">Thrown when any of the parameters are null.</exception>
+
+        public UsePreparedDataParamsForAttribute(Type classType, [NotNull] object[] classParamsUpData, [NotNull]object[] classParamsDownData,  string methodName,  [NotNull] object[] paramsUpData, [NotNull]object[] paramsDownData):this(classType,methodName,paramsUpData,paramsDownData)
         {
-            _classType = classType ?? throw new ArgumentNullException(nameof(classType));
-            _methodName = methodName ?? throw new ArgumentNullException(nameof(methodName));
             _useClassDataPreparation = true;
             _classParamsUpData = classParamsUpData ?? throw new ArgumentNullException(nameof(classParamsUpData));
             _classParamsDownData = classParamsDownData ?? throw new ArgumentNullException(nameof(classParamsDownData));
-            _paramsUpData = paramsUpData ?? throw new ArgumentNullException(nameof(paramsUpData));
-            _paramsDownData = paramsDownData ?? throw new ArgumentNullException(nameof(paramsDownData));
         }
 
         /// <summary>

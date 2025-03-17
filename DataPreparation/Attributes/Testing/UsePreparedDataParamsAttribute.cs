@@ -23,9 +23,6 @@ namespace DataPreparation.Testing
          
         }
         
-        public UsePreparedDataParamsAttribute(Type preparedDataType,  object[] paramsUpData):this(preparedDataType,paramsUpData,[])
-        {
-        }
         public UsePreparedDataParamsAttribute(Type preparedDataType):this(preparedDataType,[],[])
         {
         }
