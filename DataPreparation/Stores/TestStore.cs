@@ -1,4 +1,5 @@
 using DataPreparation.Data;
+using DataPreparation.Exceptions;
 using DataPreparation.Factory.Testing;
 using DataPreparation.Helpers;
 using DataPreparation.Testing;
@@ -56,28 +57,58 @@ public class TestStore
     {
         if (testStore != null)
         {
+            //TODO: logging
+            ExceptionAggregator? exceptionAggregator = new();
             try
             {
                 testStore.SourceFactory.Dispose();
             }
-            catch (Exception e)
+            catch (AggregateException e)
             {
-                
+                exceptionAggregator.Add(e);
             }
-           
-            DataPreparationHandler.DataDown(testStore);
+
+            try
+            {
+                DataPreparationHandler.DataDown(testStore);
+            }
+            catch (AggregateException e)
+            {
+                exceptionAggregator.Add(e);
+            }
+            
             if(testStore.TestInfo.FixtureInfo.Instance is IAfterTest beforeTest)
             {
-                
-                beforeTest.AfterTest(testStore.ServiceProvider);
+                try
+                {
+                    beforeTest.AfterTest(testStore.ServiceProvider);
+                }
+                catch (Exception e)
+                {
+                    exceptionAggregator.Add(e);
+                }
+               
             }
-
-            if (Store.GetFixtureStore(testStore.TestInfo.FixtureInfo) is { } fixtureStore)
+            try
             {
-                return fixtureStore.RemoveTestStore(testStore.TestInfo);
+                if (Store.GetFixtureStore(testStore.TestInfo.FixtureInfo) is not { } fixtureStore)
+                {
+                    throw new InvalidOperationException(
+                        $"No {typeof(DataPreparationFixtureAttribute)} found for {testStore.TestInfo.FixtureInfo}.");
+                }
+            
+                testStore = fixtureStore.RemoveTestStore(testStore.TestInfo);
             }
-
-            throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for {testStore.TestInfo.FixtureInfo}.");
+            catch (AggregateException e)
+            {
+                exceptionAggregator.Add(e);
+            }
+            
+            var aggregatedEx =  exceptionAggregator.Get();
+            if (aggregatedEx != null)
+            {
+                throw aggregatedEx;
+            }
         }
         return testStore;
     }

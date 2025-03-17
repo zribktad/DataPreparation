@@ -13,14 +13,12 @@ internal class ExceptionAggregator
         return Get();
     }
     
-    public AggregateException? Add(ExceptionAggregator exceptionAggregator)
+    public AggregateException? Add(AggregateException aggregateException)
     {
-        if (exceptionAggregator.HasExceptions)
-        {
-            _exceptions.AddRange(exceptionAggregator._exceptions);
-        }
+        _exceptions.AddRange(aggregateException.InnerExceptions);
         return Get();
     }
+  
    
     /// <summary>
     /// Throws an AggregateException if there are any recorded exceptions.
