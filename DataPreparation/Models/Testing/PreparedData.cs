@@ -25,27 +25,39 @@ public class PreparedData
             _logger.LogError("Instance of prepared data is null");
             throw new ArgumentNullException("Instance of prepared data is null");
         }
-        if( _preparedDataInstance is  IDataPreparation)
+       
+        switch (_preparedDataInstance)
         {
-            return;
-        }
-        _logger.LogTrace("Checking of {preparedDataInstance} for UpData and DownData methods and parameters", _preparedDataInstance.GetType().Name);
-        var methods = _preparedDataInstance.GetType().GetMethods();
-        foreach (var method in methods)
-        {
-            if(method.GetCustomAttribute<UpDataAttribute>() != null)
-            {
-                CheckParams(method, _paramsUpData,_logger);
-                _runUpMethod = method;
-            }
-            else if(method.GetCustomAttribute<DownDataAttribute>() != null)
-            {
-                CheckParams(method, _paramsDownData,_logger);
-                _runDownMethod = method;
-            }
+            case IDataPreparation:
+                _runUpMethod = typeof(IDataPreparation).GetMethod(nameof(IDataPreparation.UpData));
+                _runDownMethod = typeof(IDataPreparation).GetMethod(nameof(IDataPreparation.DownData));
+                break;
+            case IDataPreparationTask:
+                _runUpMethod = typeof(IDataPreparationTask).GetMethod(nameof(IDataPreparationTask.UpData));
+                _runDownMethod = typeof(IDataPreparationTask).GetMethod(nameof(IDataPreparationTask.DownData));
+                break;
+            default:
+                _logger.LogTrace("Checking of {preparedDataInstance} for UpData and DownData methods and parameters", _preparedDataInstance.GetType().Name);
+                var methods = _preparedDataInstance.GetType().GetMethods();
+                foreach (var method in methods)
+                {
+                    if(method.GetCustomAttribute<UpDataAttribute>() != null)
+                    {
+                        CheckParams(method, _paramsUpData,_logger);
+                        _runUpMethod = method;
+                    }
+                    else if(method.GetCustomAttribute<DownDataAttribute>() != null)
+                    {
+                        CheckParams(method, _paramsDownData,_logger);
+                        _runDownMethod = method;
+                    }
             
+                }
+                _logger.LogDebug($"Prepared data of type {preparedDataInstance.GetType()} has been checked for UpData and DownData methods and parameters");
+                break;
         }
-        _logger.LogDebug($"Prepared data of type {preparedDataInstance.GetType()} has been checked for UpData and DownData methods and parameters");
+        
+
     }
     //Check types and make conversion from string to int, long, etc.
    private static object[] CheckParams(MethodInfo method, object[]? paramsData, ILogger logger)
@@ -96,48 +108,37 @@ public class PreparedData
         return newParams.ToArray();
     }
 
-    public Task RunUp()
+    public  Task RunUp()
     {
-        _logger.LogTrace($"Running UpData for {_preparedDataInstance.GetType().Name}");
-        if( _preparedDataInstance is IDataPreparation dataPreparation)
+        _logger.LogTrace($"Start UpData for {_preparedDataInstance.GetType().Name}");
+        if (_runUpMethod != null)
         {
-            dataPreparation.TestUpData();
-            return Task.CompletedTask;
+            _logger.LogTrace($"Running UpData for {_preparedDataInstance.GetType().Name}");
+            var result = _runUpMethod.Invoke(_preparedDataInstance, _paramsUpData);
+            if (result is Task t) return t;
         }
-        
-        if(_runUpMethod == null)
+        else
         {
             _logger.LogWarning($"No UpData method found in {_preparedDataInstance.GetType().Name}");
-            return Task.CompletedTask;
         }
         
-        var result= _runUpMethod.Invoke(_preparedDataInstance, _paramsUpData);
-        
-        if (result is Task task)
-        {
-           return  task;
-        }
         return Task.CompletedTask;
     }
     public  Task RunDown()
     {
-        _logger.LogTrace($"Running DownData for {_preparedDataInstance.GetType().Name}");
-        if( _preparedDataInstance is IDataPreparation dataPreparation)
+        _logger.LogTrace($"Start DownData for {_preparedDataInstance.GetType().Name}");
+        if (_runDownMethod != null)
         {
-            dataPreparation.TestDownData();
-            return Task.CompletedTask;
+            _logger.LogTrace($"Running DownData for {_preparedDataInstance.GetType().Name}");
+             var result = _runDownMethod.Invoke(_preparedDataInstance, _paramsDownData);
+             if(result is Task t) return t;
         }
-        if(_runDownMethod == null)
+        else
         {
             _logger.LogWarning($"No DownData method found in {_preparedDataInstance.GetType().Name}");
-            return Task.CompletedTask;
-        }
-        var result= _runDownMethod.Invoke(_preparedDataInstance, _paramsDownData);
-        
-        if (result is Task task)
-        {
-            return task;
         }
         return Task.CompletedTask;
+
+      
     }
 }

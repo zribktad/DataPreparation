@@ -2,7 +2,7 @@
 {
     public interface IDataPreparation
     {
-        void TestUpData();
-        void TestDownData();
+        void UpData();
+        void DownData();
     }
 }

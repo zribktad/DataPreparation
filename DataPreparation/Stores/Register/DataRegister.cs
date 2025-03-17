@@ -71,7 +71,7 @@ namespace DataPreparation.Testing
 
         private static bool ProcessDataMethodPreparation(Type type)
         {
-            if ( type.GetCustomAttribute<DataMethodPreparationForAttribute>() is { } methodAttribute)
+            if ( type.GetCustomAttribute<DataPreparationMethodForAttribute>() is { } methodAttribute)
             {
                 var methodInfo = methodAttribute.MethodInfo;
                 DataRelationStore.SetMethodDataPreparationType(methodInfo,type);
@@ -84,7 +84,7 @@ namespace DataPreparation.Testing
         private bool ProcessDataClassPreparation(Type type)
         {
             //RegisterService Data Preparation Classes
-            if (type.GetCustomAttribute<DataClassPreparationForAttribute>() is { } classAttribute )
+            if (type.GetCustomAttribute<DataPreparationClassForAttribute>() is { } classAttribute )
             {
                 var classType = classAttribute.ClassType;
                 DataRelationStore.SetClassDataPreparationType(classType, type);
