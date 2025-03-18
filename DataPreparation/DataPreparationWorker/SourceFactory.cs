@@ -131,15 +131,15 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
     public bool Register<TDataFactory>(object data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase
     {
-        var id = IdGeneratorCounter.Increment();
-        createdId = null;
         var factoryBase = serviceProvider.GetService<TDataFactory>() ??
                           throw new InvalidOperationException($"No factory or register found for {typeof(TDataFactory)}");
+        var id = IdGeneratorCounter.Increment();
         if (AddDataToHistory<TDataFactory>(id, args, data, factoryBase))
         {
             createdId = id;
             return true;
         }
+        createdId = null;
         return false;
     }
 
@@ -163,7 +163,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         
         if(_localDataCache.TryGetValue(typeof(TDataFactory), out var history))
         {
-            if (GetByIdForHistory(createdId, history, out var byId)) return byId;
+            if (GetByIdForHistory(createdId, history, out var data)) return data;
         }
       
         logger.LogInformation($"[{nameof(GetById)}]: No data found for id {createdId}");
@@ -174,23 +174,23 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         foreach (var (_,history) in _localDataCache)
         {
-            if (GetByIdForHistory(createdId, history, out var byId)) return byId;
+            if (GetByIdForHistory(createdId, history, out var data)) return data;
         }
 
         logger.LogInformation($"[{nameof(GetById)}]: No data found for id {createdId}");
         return default;
     }
 
-    private bool GetByIdForHistory(long createdId, HistoryStore<IFactoryData> history, out object? byId)
+    private bool GetByIdForHistory(long createdId, HistoryStore<IFactoryData> history, out object? data)
     {
         var factoryData = history.GetById(createdId);
         if (factoryData != null)
         {
             logger.LogInformation($"[{nameof(GetById)}]: Data for id {createdId} was found");
-            byId = factoryData.Data;
+            data = factoryData.Data;
             return true;
         }
-
+        data = default;
         return false;
     }
 
@@ -216,7 +216,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         logger.LogDebug("Factory disposing");
         var exceptionAggregator = new ExceptionAggregator();
         
-        while (_createdHistory.TryPop(out var data) && data != null)
+        while (_createdHistory.TryPop(out var data))
         {
             var factoryType = data.FactoryBase.GetType();
             
