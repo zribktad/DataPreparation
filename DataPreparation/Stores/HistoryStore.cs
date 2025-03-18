@@ -108,6 +108,11 @@ public class HistoryStore<T> where T : notnull
         return default; // If the stack is empty
     }
 
+    /// <summary>
+    /// Gets all items in the history store and their IDs ordered by ID.
+    /// </summary>
+    /// <param name="ids">A list of IDs associated with the items in the history store.</param>
+    /// <returns>A list of all items in the history store ordered by ID.</returns>
     public IList<T> GetAll(out IList<long> ids)
     {
         var sortedItems = _itemsById.OrderBy(pair => pair.Key).ToList();
