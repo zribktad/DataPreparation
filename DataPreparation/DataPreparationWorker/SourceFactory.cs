@@ -160,28 +160,38 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     
     public object? GetById<TDataFactory>(long createdId) where TDataFactory : IDataFactory
     {
-        var data = GetDataByIdFromFactory(typeof(TDataFactory),createdId);
-        logger.LogInformation(data != null
-            ? $"[{nameof(GetById)}]: Data for id {createdId} was found"
-            : $"[{nameof(GetById)}]: No data found for {typeof(TDataFactory)} with id {createdId}");
-
-        return data;
+        
+        if(_localDataCache.TryGetValue(typeof(TDataFactory), out var history))
+        {
+            if (GetByIdForHistory(createdId, history, out var byId)) return byId;
+        }
+      
+        logger.LogInformation($"[{nameof(GetById)}]: No data found for id {createdId}");
+        return default;
     }
     
     public object? GetById(long createdId)
     {
-        foreach (var (factoryType,_) in _localDataCache)
+        foreach (var (_,history) in _localDataCache)
         {
-            var data = GetDataByIdFromFactory(factoryType,createdId);
-            if(data != null)
-            {
-                logger.LogInformation($"[{nameof(GetById)}]: Data for id {createdId} was found");
-                return data;
-            }
+            if (GetByIdForHistory(createdId, history, out var byId)) return byId;
         }
 
         logger.LogInformation($"[{nameof(GetById)}]: No data found for id {createdId}");
         return default;
+    }
+
+    private bool GetByIdForHistory(long createdId, HistoryStore<IFactoryData> history, out object? byId)
+    {
+        var factoryData = history.GetById(createdId);
+        if (factoryData != null)
+        {
+            logger.LogInformation($"[{nameof(GetById)}]: Data for id {createdId} was found");
+            byId = factoryData.Data;
+            return true;
+        }
+
+        return false;
     }
 
 
@@ -568,19 +578,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     #endregion
 
     #region GetById
-    private object? GetDataByIdFromFactory(Type factoryType,long createdId)
-    {
-        if(_localDataCache.TryGetValue(factoryType, out var data))
-        {
-            var factoryData = data.GetById(createdId);
-            if (factoryData != null)
-            {
-                return factoryData.Data;
-            }
-        }
-        return default;
-    }
-    
+
     #endregion
     private  InvalidCastException CastExeption(ILogger log,string text, Exception? exception = null)
     {
