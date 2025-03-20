@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace DataPreparation.Testing
+namespace DataPreparation.Testing;
+
+public interface IDataPreparationTestServices
 {
-    public interface IDataPreparationTestServices
-    {
-        static abstract void  DataPreparationServices(IServiceCollection serviceCollection);
+     void  DataPreparationServices(IServiceCollection serviceCollection);
         
-    }
-    
 }

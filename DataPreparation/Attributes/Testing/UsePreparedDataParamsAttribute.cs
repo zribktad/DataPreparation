@@ -23,9 +23,6 @@ namespace DataPreparation.Testing
          
         }
         
-        public UsePreparedDataParamsAttribute(Type preparedDataType,  object[] paramsUpData):this(preparedDataType,paramsUpData,[])
-        {
-        }
         public UsePreparedDataParamsAttribute(Type preparedDataType):this(preparedDataType,[],[])
         {
         }
@@ -39,7 +36,7 @@ namespace DataPreparation.Testing
         public override void BeforeTest(ITest test)
         {
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            TestStore testStore = PreparationTest.CreateTestStore(testInfo);
+            TestStore testStore = TestStore.Initialize(testInfo);
             // Prepare data for the test from attribute
             var preparedDataClassInstanceInList = GetDataPreparation.GetPreparedData(testStore, [_preparaDataType]);
             // Add the prepared data to the store
@@ -57,9 +54,8 @@ namespace DataPreparation.Testing
         {
             // Down data for the test
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = Store.GetTestStore(testInfo);
-            DataPreparationHandler.DataDown(testStore);
-            PreparationTest.RemoveTestStore(testStore);
+            var testStore = TestStore.Get(testInfo);
+            TestStore.Deinitialize(testStore);
         }
 
 

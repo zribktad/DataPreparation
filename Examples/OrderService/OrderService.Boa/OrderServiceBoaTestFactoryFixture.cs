@@ -23,13 +23,13 @@ namespace OrderService.Boa;
 
 [DataPreparationFixture]
 //TODO [Parallelizable(ParallelScope.All)]
-public class OrderServiceBoaTestFactoryFixture:IDataPreparationLoggerInitializer, IDataPreparationTestServices
+public class OrderServiceBoaTestFactoryFixture:IDataPreparationLogger, IDataPreparationTestServices
 {
-    public static void DataPreparationServices(IServiceCollection serviceCollection)
+    public  void DataPreparationServices(IServiceCollection serviceCollection)
     {
       
     }
-    public static ILoggerFactory InitializeDataPreparationTestLogger()
+    public  ILoggerFactory InitializeDataPreparationTestLogger()
     {
         return LoggerFactory.Create(builder =>
         {
@@ -47,8 +47,8 @@ public class OrderServiceBoaTestFactoryFixture:IDataPreparationLoggerInitializer
         var customer = PreparationContext.GetFactory().New<Customer,CustomerFactory>();
         OrderDTO orderDto = PreparationContext.GetFactory().Get<OrderDTO,OrderDtoFactory>();
         Services.OrderService orderService = new Services.OrderService(
-            PreparationContext.GetFactory().New<IRepository<Order>,OrderMockRepositoryFactory>(ObjectsParams.Use(orderDto)), 
-            PreparationContext.GetFactory().New<IRepository<Customer>,CustomerMockRepositoryFactory>(ObjectsParams.Use(customer)), 
+            PreparationContext.GetFactory().New<IRepository<Order>,OrderMockRepositoryFactory>(ListParams.Use(orderDto)), 
+            PreparationContext.GetFactory().New<IRepository<Customer>,CustomerMockRepositoryFactory>(ListParams.Use(customer)), 
             null);
         
         IActor actor = new Actor("OrderTester", new ConsoleLogger());
@@ -78,8 +78,8 @@ public class OrderServiceBoaTestFactoryFixture:IDataPreparationLoggerInitializer
         var customer = await PreparationContext.GetFactory().NewAsync<Customer,CustomerFactoryAsync>();
         OrderDTO orderDto = await PreparationContext.GetFactory().GetAsync<OrderDTO,OrderDtoFactoryAsync>();
         Services.OrderService orderService = new Services.OrderService(
-            await PreparationContext.GetFactory().NewAsync<IRepository<Order>,OrderMockRepositoryFactoryAsync>(ObjectsParams.Use(orderDto)), 
-            await PreparationContext.GetFactory().NewAsync<IRepository<Customer>,CustomerMockRepositoryFactoryAsync>(ObjectsParams.Use(customer)), 
+            await PreparationContext.GetFactory().NewAsync<IRepository<Order>,OrderMockRepositoryFactoryAsync>(ListParams.Use(orderDto)), 
+            await PreparationContext.GetFactory().NewAsync<IRepository<Customer>,CustomerMockRepositoryFactoryAsync>(ListParams.Use(customer)), 
             null);
         
         IActor actor = new Actor("OrderTester", new ConsoleLogger());

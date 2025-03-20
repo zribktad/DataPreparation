@@ -4,7 +4,7 @@ public interface IDataRegister<T>:IDataRegister, IDataFactoryBase<T> where T : n
 { 
     bool Delete(long createId, T data, IDataParams? args);
     
-    bool IDataRegister.Delete(long createId, object data, IDataParams? args) => Delete(createId, (T)data, args);
+    bool  IDataRegister.Delete(long createId, object data, IDataParams? args) => Delete(createId, (T)data, args);
 }
 
 public interface IDataRegister: IDataFactoryBase 

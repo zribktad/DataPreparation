@@ -36,27 +36,23 @@ namespace DataPreparation.Testing
         {
             // MethodAnalyzer.AnalyzeTestFixture(_filePath, test.Fixture.GetType()); //TODO: Analyze
             // MethodAnalyzer.AnalyzeTestMethod(t);
-            if (test.TypeInfo == null)
-            {
-                throw new Exception("Test Fixture type not found before test");
-            }
-
-            var fixtureType = test.TypeInfo.Type;
+           
+            
+            var fixtureInfo = new FixtureInfo(test);
          
             //Get logger if not found NullLogger
-            var loggerFactory = LoggerHelper.CreateOrNullLogger(fixtureType);
-            var logger = loggerFactory.CreateLogger(fixtureType);
+            var loggerFactory = LoggerHelper.CreateOrNullLogger(fixtureInfo);
+            var logger = loggerFactory.CreateLogger(fixtureInfo.Type);
             
-            logger.LogDebug("Data Preparation for {0} started", fixtureType.Name);
+            logger.LogDebug("Data Preparation for {0} started", fixtureInfo.Type);
             //Get copy of base data service collection
-            IServiceCollection baseDataServiceCollection = new DataRegister(loggerFactory).GetBaseDataServiceCollection(fixtureType.Assembly);
+            IServiceCollection baseDataServiceCollection = new DataRegister(loggerFactory).GetBaseDataServiceCollection(fixtureInfo.Type.Assembly);
             
-            if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationTestServices)))
+            if (test.Fixture is IDataPreparationTestServices dataPreparationTestServices)
             {
                 try
                 {
-                    test.TypeInfo.Type.GetMethod(nameof(IDataPreparationTestServices.DataPreparationServices))
-                        ?.Invoke(null, [baseDataServiceCollection]);
+                    dataPreparationTestServices.DataPreparationServices(baseDataServiceCollection);
                 }
                 catch (Exception e)
                 {
@@ -66,11 +62,11 @@ namespace DataPreparation.Testing
               
             }
 
-            if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationSetUpConnections)))
-            {
-                test.TypeInfo.Type.GetMethod(nameof(IDataPreparationSetUpConnections.SetUpConnections))
-                    ?.Invoke(null, null);
-            }
+            // if (test.TypeInfo.Type.IsAssignableTo(typeof(IDataPreparationSetUpConnections)))
+            // {
+            //     test.TypeInfo.Type.GetMethod(nameof(IDataPreparationSetUpConnections.SetUpConnections))
+            //         ?.Invoke(null, null);
+            // }
 
             //create fixture store
             Store.CreateFixtureStore(new(test), loggerFactory,baseDataServiceCollection);

@@ -12,8 +12,8 @@ namespace DataPreparation.Factory.Testing;
 public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : ISourceFactory
 {
     private readonly ConcurrentDictionary<Type, HistoryStore<IFactoryData>> _localDataCache = new();
-    private readonly ConcurrentStack<IFactoryData> _createdHistory = new();
-    private static readonly ThreadSafeCounter Counter = new(); 
+    private readonly HistoryStore<IFactoryData> _createdHistory = new();
+    private static readonly ThreadSafeCounter IdGeneratorCounter = new(); 
     
     #region New
     #region New Synchronous Methods
@@ -114,27 +114,32 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     #endregion
     #region Was
     
-    public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase
+    public IList<object> Was<TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryBase
     {
         return WasData<TDataFactory>(out createdIds);
     }
     
-    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryBase<T>
+    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds) where T : notnull where TDataFactory : IDataFactoryBase<T>
     {
         return WasData<TDataFactory>(out createdIds).Cast<T>().ToList();
     }
 
     public bool Register<T, TDataFactory>(T data, out long? createdId,IDataParams? args = null) where T : notnull where TDataFactory : IDataFactoryBase<T>
     {
-        var id = Counter.Increment();
-        createdId = null;
+        return Register<TDataFactory>(data, out createdId, args);
+    }
+
+    public bool Register<TDataFactory>(object data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase
+    {
         var factoryBase = serviceProvider.GetService<TDataFactory>() ??
                           throw new InvalidOperationException($"No factory or register found for {typeof(TDataFactory)}");
+        var id = IdGeneratorCounter.Increment();
         if (AddDataToHistory<TDataFactory>(id, args, data, factoryBase))
         {
             createdId = id;
             return true;
         }
+        createdId = null;
         return false;
     }
 
@@ -155,19 +160,40 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     
     public object? GetById<TDataFactory>(long createdId) where TDataFactory : IDataFactory
     {
-        if(_localDataCache.TryGetValue(typeof(TDataFactory), out var data))
+        
+        if(_localDataCache.TryGetValue(typeof(TDataFactory), out var history))
         {
-            var factoryData = data.GetById(createdId);
-            if (factoryData != null)
-            {
-                logger.LogInformation($"[{nameof(GetById)}]: Data for id {createdId} was found");
-                return factoryData.Data;
-            }
+            if (GetByIdForHistory(createdId, history, out var data)) return data;
         }
-        logger.LogInformation($"[{nameof(GetById)}]: No data found for {typeof(TDataFactory)} with id {createdId}");
+      
+        logger.LogInformation($"[{nameof(GetById)}]: No data found for id {createdId}");
         return default;
     }
     
+    public object? GetById(long createdId)
+    {
+        foreach (var (_,history) in _localDataCache)
+        {
+            if (GetByIdForHistory(createdId, history, out var data)) return data;
+        }
+
+        logger.LogInformation($"[{nameof(GetById)}]: No data found for id {createdId}");
+        return default;
+    }
+
+    private bool GetByIdForHistory(long createdId, HistoryStore<IFactoryData> history, out object? data)
+    {
+        var factoryData = history.GetById(createdId);
+        if (factoryData != null)
+        {
+            logger.LogInformation($"[{nameof(GetById)}]: Data for id {createdId} was found");
+            data = factoryData.Data;
+            return true;
+        }
+        data = default;
+        return false;
+    }
+
 
     public T? GetById<T, TDataFactory>(long createdId) where TDataFactory : IDataFactory<T> where T : notnull
     {
@@ -188,70 +214,53 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     public void Dispose()
     {
         logger.LogDebug("Factory disposing");
-        ExceptionAggregator exceptionAggregator = new ExceptionAggregator();
-        int createdHistoryCount = _createdHistory.Count;
-        for (int i = 0; i < createdHistoryCount; i++)
+        var exceptionAggregator = new ExceptionAggregator();
+        
+        while (_createdHistory.TryPop(out var data))
         {
-            _createdHistory.TryPop(out var data);
-            switch (data?.FactoryBase)
-            {
-                case IDataRegister factorySync:
-                {
-                        try
-                        {
-                            if (factorySync.Delete(data.Id, data.Data, data.Args))
-                            {
-                                logger.LogInformation($"Deleted data for {factorySync.GetType()} with id {data.Id}");
-                            }
-                            else
-                            {
-                                var ex = new InvalidOperationException($"Failed to delete data for {factorySync.GetType()} with id {data.Id} and arguments {data.Args}");
-                                logger.LogError(ex, $"Failed to delete data for {factorySync.GetType()} with id {data.Id}");
-                                exceptionAggregator.Add(ex);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            logger.LogError(e,$"Error on Dispose data {factorySync.GetType()} with created data: {factorySync.GetType()}");
-                            var ex = new InvalidOperationException($"Failed to delete data for {factorySync.GetType()} with id {data.Id} and arguments {data.Args}",e);
-                            exceptionAggregator.Add(ex);
-                        }
-                        break;
-                }
-                case IDataRegisterAsync factoryAsync:
-                        try
-                        {
-                            if (factoryAsync.Delete(data.Id, data.Data, data.Args).GetAwaiter().GetResult())
-                            {
-                                logger.LogInformation($"Deleted data for {factoryAsync.GetType()} with id {data.Id}");
-                            }
-                            else
-                            {
-                                var ex = new InvalidOperationException($"Failed to delete data for {factoryAsync.GetType()} with id {data.Id} and arguments {data.Args}");
-                                logger.LogError(ex, $"Failed to delete data for {factoryAsync.GetType()} with id {data.Id}");
-                                exceptionAggregator.Add(ex);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            logger.LogError(e,$"Error on Dispose data {factoryAsync.GetType()} with created data: {factoryAsync.GetType()}");
-                            var ex = new InvalidOperationException($"Failed to delete data for {factoryAsync.GetType()} with id {data.Id} and arguments {data.Args}",e);
-                            exceptionAggregator.Add(ex);
-                        }
-                        break;
-               default:
-                    var exception = new InvalidOperationException($"No correct factory type found for data: {data}. Cannot delete data. Create a factory that implements {nameof(IDataFactory)} or {nameof(IDataFactoryAsync)}.");
-                    logger.LogWarning(exception,$"Error on Dispose with created data: {data}");
-                    exceptionAggregator.Add(exception);
-                    break;
-            }
+            var factoryType = data.FactoryBase.GetType();
             
+            try
+            {
+                bool deleted;
+                switch (data.FactoryBase)
+                {
+                    case IDataRegister sync:
+                        deleted = sync.Delete(data.Id, data.Data, data.Args);
+                        break;
+                    case IDataRegisterAsync async:
+                        deleted = async.Delete(data.Id, data.Data, data.Args).GetAwaiter().GetResult();
+                        break;
+                    default:
+                        AddException( $"No correct factory type found for data: {data.FactoryBase}. Cannot delete data. " +
+                                      $"Create a factory that implements Data Factory Object interface.");
+                        continue;
+                }
+
+                if (deleted)
+                    logger.LogInformation($"Deleted data for {factoryType} with id {data.Id}");
+                else
+                    AddException($"Failed to delete data for {factoryType} with id {data.Id} and arguments {data.Args}");
+            }
+            catch (Exception e)
+            {
+                AddException($"Error to delete data for {factoryType} with id {data.Id} and arguments {data.Args}", e);
+            }
         }
+        
         _localDataCache.Clear();
         _createdHistory.Clear();
         
-        if(exceptionAggregator.HasExceptions)  throw exceptionAggregator.Get()!;
+        if (exceptionAggregator.HasExceptions) throw exceptionAggregator.Get()!;
         logger.LogInformation("Factory disposed - Data deleted");
+        
+        
+        void AddException(string message, Exception? innerException = null)
+        {
+            var ex = new InvalidOperationException(message, innerException);
+            logger.LogError(ex, message);
+            exceptionAggregator.Add(ex);
+        }
     }
 
     #endregion
@@ -260,27 +269,42 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
 
     #region New data
     
-    //list
     private IList<TRet> NewData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null)
         where TDataFactory : IDataFactoryBase where TRet : notnull
     {
         logger.LogDebug($"[{nameof(New)}]: Creation of {size} data for {typeof(TDataFactory)} with was called");
-        
+
         var argsList = argsEnumerable?.ToList() ?? new List<IDataParams?>();
         createdIds = new List<long>();
         var items = new List<TRet>();
+        if (size <= 0)
+        {
+            logger.LogWarning($"[{nameof(New)}]: No data will be created for {typeof(TDataFactory)}");
+            return items;
+        }
+        
+        if(size < argsList.Count)
+        {
+            logger.LogWarning($"[{nameof(New)}]: Size of requested items is smaller than the number of arguments. Only {size} data will be created");
+        }
+        else if(size > argsList.Count)
+        {
+            logger.LogInformation($"[{nameof(New)}]: Size of requested items is bigger than the number of arguments. Some items will be without arguments");
+        }
+        
+        var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
 
         for (int i = 0; i < size; i++)
         {
             var args = argsList.ElementAtOrDefault(i);
-            var data =   NewData(createFunc,out var createdId, args);
+            var createdId = IdGeneratorCounter.Increment();
+            var data =   CreateData(createFunc, createdId, args,factory);
             createdIds.Add(createdId);
             items.Add(data);
         }
         logger.LogDebug($"[{nameof(New)}]: Created {size} data for {typeof(TDataFactory)}");
         return items;
     }
-    //one
     private TRet NewData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,out long createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
         logger.LogDebug($"[{nameof(NewDataAsync)}]: Creation of data for {typeof(TDataFactory)}  with type {typeof(TRet)} was called");
@@ -288,7 +312,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
         
         //Update the global data cache
-        createdId = Counter.Increment();
+        createdId = IdGeneratorCounter.Increment();
         //Create the data
         return CreateData(createFunc, createdId, args, factory);
     }
@@ -319,17 +343,35 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     private IList<Task<TRet>> NewDataAsync<TRet,TDataFactory>(Func<TDataFactory, long, IDataParams?, Task<TRet>> createFunc,int size, out IList<long> createdIds, IEnumerable<IDataParams?>? argsEnumerable = null)
         where TDataFactory : IDataFactoryBase where TRet : notnull
     {
+        
+        
         logger.LogDebug($"[{nameof(New)}]: Creation of {size} data for {typeof(TDataFactory)} with was called");
-        var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
 
         var argsList = argsEnumerable?.ToList() ?? new List<IDataParams?>();
         createdIds = new List<long>();
         var items = new List<Task<TRet>>();
-        
+           
+        if (size <= 0)
+        {
+            logger.LogWarning($"[{nameof(New)}]: No data will be created for {typeof(TDataFactory)}");
+            return items;
+        }
+        if(size < argsList.Count)
+        {
+            logger.LogWarning($"[{nameof(New)}]: Size of requested items is smaller than the number of arguments. Only {size} data will be created");
+        }
+        else if(size > argsList.Count)
+        {
+            logger.LogInformation($"[{nameof(New)}]: Size of requested items is bigger than the number of arguments. Some items will be without arguments");
+        }
+
+        var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
+
+
         for (int i = 0; i < size; i++)
         {
             var args = argsList.ElementAtOrDefault(i);
-            var createdId = Counter.Increment();
+            var createdId = IdGeneratorCounter.Increment();
             Task<TRet> data =  CreateDataAsync(createFunc, args, factory, createdId);
             createdIds.Add(createdId);
             items.Add(data);
@@ -343,7 +385,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         //Get the factory
         var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
         //Update the global data cache
-        createdId = Counter.Increment();
+        createdId = IdGeneratorCounter.Increment();
         return CreateDataAsync(createFunc, args, factory, createdId);
     }
 
@@ -382,17 +424,23 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         if(data == null)
         {
-            Dispose();
             var e = new InvalidOperationException($"Failed to create data. Create method returned null for {typeof(TDataFactory)}" +
                                                   $" id {createdId} and arguments {args}");
             logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)}");
+            Dispose();
             throw e;
         }
 
         IFactoryData factoryData =  new FactoryData(createdId, data, args, factoryBase);
-        
-        _createdHistory.Push(factoryData);
-        
+
+        if (!_createdHistory.TryPush(createdId, factoryData))
+        {
+            var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");
+            logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)} with type {data.GetType()}");
+            Dispose();
+            throw e;
+        }
+
         //Get the local data history
         HistoryStore< IFactoryData> historyStore;
         try
@@ -406,7 +454,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             throw new InvalidOperationException($"Failed to create history for {typeof(TDataFactory)}",e);
         }
         //Update the local data history
-        if(!historyStore.TryAdd(createdId,factoryData))
+        if(!historyStore.TryPush(createdId,factoryData))
         {
             Dispose();
             var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");
@@ -432,6 +480,13 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     }
     private IList<TRet> GetData<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, TRet> createFunc,int size, out IList<long> createdIds) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
+        if (size <= 0)
+        {
+            logger.LogWarning($"[{nameof(Get)}]: No data will be retrieved for {typeof(TDataFactory)}");
+            createdIds = new List<long>();
+            return new List<TRet>();
+        }
+
         if (TryGetLatest<TRet, TDataFactory>(size, out createdIds, out var retData)) return retData;
         while (retData.Count < size)
         {
@@ -445,6 +500,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     
     private Task<TRet> GetDataAsync<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, Task<TRet>> createFunc,out long createdId) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
+        
         if (TryGetLatest<TRet, TDataFactory>(out long? id, out var ret))
         {
             createdId = id!.Value;
@@ -456,6 +512,12 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     }
     private IList<Task<TRet>> GetDataAsync<TRet,TDataFactory>(Func<TDataFactory, long,IDataParams?, Task<TRet>> createFunc,int size, out IList<long> createdIds) where TDataFactory : IDataFactoryBase where TRet : notnull
     {
+        if (size <= 0)
+        {
+            logger.LogWarning($"[{nameof(Get)}]: No data will be retrieved for {typeof(TDataFactory)}");
+            createdIds = new List<long>();
+            return new List<Task<TRet>>();
+        }
         var ret = TryGetLatest<TRet, TDataFactory>(size, out createdIds, out var latestData) ;
         
         IList<Task<TRet>> retData = latestData.Select(Task.FromResult).ToList();
@@ -520,7 +582,11 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     }
 
     #endregion
-    private  Exception CastExeption(ILogger log,string text, Exception? exception = null)
+
+    #region GetById
+
+    #endregion
+    private  InvalidCastException CastExeption(ILogger log,string text, Exception? exception = null)
     {
         var ex = new InvalidCastException(text,exception);
         log.LogError(ex,"Error in cast:");

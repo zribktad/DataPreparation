@@ -2,7 +2,7 @@ using DataPreparation.Data.Setup;
 
 namespace DataPreparation.Factory.Testing;
 
-public record ObjectsParams(params object[] Args) : IDataParams
+public record ListParams(params object[] Args) : IDataParams
 {
     //Find an object of type T that satisfies the predicate
     public bool Find<T>(out T? result, Func<T, bool>? predicate = null)
@@ -20,5 +20,5 @@ public record ObjectsParams(params object[] Args) : IDataParams
         return false;
     }
 
-    public static ObjectsParams Use(params object[] args) => new ObjectsParams(args);
+    public static ListParams Use(params object[] args) => new ListParams(args);
 }

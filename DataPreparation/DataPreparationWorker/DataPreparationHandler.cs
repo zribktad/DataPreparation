@@ -10,8 +10,8 @@ namespace DataPreparation.Testing
         internal static void DataUp(TestStore testStore)
         {
           
-            testStore.AttributeUsing.IncrementAttrributeCountUp();
-            if (!testStore.AttributeUsing.IsAllUpAttributesRun()) return;
+            testStore.AttributeUsingCounter.IncrementAttrributeCountUp();
+            if (!testStore.AttributeUsingCounter.IsAllUpAttributesRun()) return;
             
             //analyse and results 
             //var analysisResult = MethodAnalyzer.Analyze(testMethodInfo);
@@ -20,7 +20,7 @@ namespace DataPreparation.Testing
             //analysisResult?.Print();
             
             testStore.LoggerFactory.CreateLogger(typeof(DataPreparationHandler))
-                .LogInformation($"Data preparation Up for test {testStore.TestInfo} started.");
+                .LogInformation($"Data preparation Up for before test {testStore.TestInfo} started.");
             var testData = testStore.PreparedData.GetPreparation();
             foreach (var data in testData)
             {
@@ -42,9 +42,9 @@ namespace DataPreparation.Testing
 
         internal static void DataDown(TestStore? testStore)
         {
-            if(testStore == null) return; //after first is testStore removed so it can be null
+            if(testStore == null || testStore.PreparedData.IsEmpty()) return; //after first is testStore removed so it can be null
             testStore.LoggerFactory.CreateLogger(typeof(DataPreparationHandler))
-                .LogInformation($"Data preparation Down for test {testStore.TestInfo} started.");
+                .LogInformation($"Data preparation before test Down {testStore.TestInfo} started.");
             ExceptionAggregator exceptionAggregator = new();
             while (testStore.PreparedData.TryPopProcessed(out var data))
             {

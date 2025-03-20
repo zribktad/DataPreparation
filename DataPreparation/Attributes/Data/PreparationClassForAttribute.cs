@@ -6,7 +6,7 @@ namespace DataPreparation.Data;
 /// Attribute to specify the class for which data preparation is required.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public class DataClassPreparationForAttribute : Attribute
+public class PreparationClassForAttribute : Attribute
 {
     /// <summary>
     /// Gets the lifetime of the service.
@@ -19,11 +19,11 @@ public class DataClassPreparationForAttribute : Attribute
     public Type ClassType { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DataClassPreparationForAttribute"/> class.
+    /// Initializes a new instance of the <see cref="PreparationClassForAttribute"/> class.
     /// </summary>
     /// <param name="type">The type of the class for which data preparation is required.</param>
-    /// <param name="lifetime">The lifetime of the service. Default is <see cref="ServiceLifetime.Transient"/>.</param>
-    public DataClassPreparationForAttribute(Type type, ServiceLifetime lifetime = ServiceLifetime.Transient)
+    /// <param name="lifetime">The lifetime of the service. Default is <see cref="ServiceLifetime.Singleton"/>.</param>
+    public PreparationClassForAttribute(Type type, ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         ClassType = type;
         Lifetime = lifetime;

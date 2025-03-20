@@ -1,8 +1,3 @@
-
-
-using System;
-using System.Collections.Generic;
-
 namespace DataPreparation.Exceptions;
 
 internal class ExceptionAggregator
@@ -12,12 +7,19 @@ internal class ExceptionAggregator
     /// <summary>
     /// Adds a new exception to the list.
     /// </summary>
-    public Exception? Add(Exception? ex)
+    public AggregateException? Add(Exception? ex)
     {
         if (ex != null) _exceptions.Add(ex);
-        return ex;
+        return Get();
     }
-
+    
+    public AggregateException? Add(AggregateException aggregateException)
+    {
+        _exceptions.AddRange(aggregateException.InnerExceptions);
+        return Get();
+    }
+  
+   
     /// <summary>
     /// Throws an AggregateException if there are any recorded exceptions.
     /// </summary>

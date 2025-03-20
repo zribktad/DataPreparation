@@ -68,18 +68,23 @@ public interface ISourceFactory : IDisposable
     #region GetById
     public T? GetById<T, TDataFactory>(long createdId) where TDataFactory : IDataFactory<T> where T : notnull;
     public object? GetById<TDataFactory>(long createdId) where TDataFactory : IDataFactory;
+    public object? GetById(long createdId);
+
     #endregion
     // Historical data
     #region Was
-    public IList<object> Was<TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryBase => Was<TDataFactory>(out _, args);
-    public IList<object> Was<TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase;
-    public IList<T> Was<T, TDataFactory>(IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull => Was<T, TDataFactory>(out _, args);
-    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull;
+    public IList<object> Was<TDataFactory>() where TDataFactory : IDataFactoryBase => Was<TDataFactory>(out _);
+    public IList<object> Was<TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryBase;
+    public IList<T> Was<T, TDataFactory>() where TDataFactory : IDataFactoryBase<T> where T : notnull => Was<T, TDataFactory>(out _);
+    public IList<T> Was<T, TDataFactory>(out IList<long> createdIds) where TDataFactory : IDataFactoryBase<T> where T : notnull;
     #endregion
     
     #region Register
     public bool Register<T,TDataFactory>(T data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull;
     public bool Register<T,TDataFactory>(T data, IDataParams? args = null) where TDataFactory : IDataFactoryBase<T> where T : notnull => Register<T,TDataFactory>(data, out _, args);
+    
+    public bool Register<TDataFactory>(object data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase;
+    public bool Register<TDataFactory>(object data, IDataParams? args = null) where TDataFactory : IDataFactoryBase => Register<TDataFactory>(data, out _, args);
     #endregion
     #endregion
 }

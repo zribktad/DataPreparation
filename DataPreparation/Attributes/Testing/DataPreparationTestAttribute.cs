@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using DataPreparation.Data;
 using DataPreparation.Helpers;
+using DataPreparation.Models.Data;
 using DataPreparation.Provider;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
@@ -15,19 +16,16 @@ namespace DataPreparation.Testing.Factory
     [AttributeUsage(AttributeTargets.Method,Inherited = false)]
     public class DataPreparationTestAttribute : TestAttribute, ITestAction
     {
-        public DataPreparationTestAttribute()
-        {
-        }
+        private TestInfo _testInfo = null!;
         
- 
         /// <summary>
         /// Method to be called before the test is executed.
         /// </summary>
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-             var testInfo = TestInfo.CreateTestInfo(test);
-            PreparationTest.CreateTestStore(testInfo);
+            _testInfo = TestInfo.CreateTestInfo(test);
+            TestStore.Initialize(_testInfo);
         }
 
    
@@ -38,9 +36,8 @@ namespace DataPreparation.Testing.Factory
         /// <param name="test">The test that has been executed.</param>
         public void AfterTest(ITest test)
         {
-            var testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = Store.GetTestStore(testInfo);
-            PreparationTest.RemoveTestStore(testStore);
+            var testStore = TestStore.Get(_testInfo);
+            TestStore.Deinitialize(testStore);
         }
 
     
