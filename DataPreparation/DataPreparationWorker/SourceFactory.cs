@@ -12,7 +12,7 @@ namespace DataPreparation.Factory.Testing;
 public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : ISourceFactory
 {
     private readonly ConcurrentDictionary<Type, HistoryStore<IFactoryData>> _localDataCache = new();
-    private readonly ConcurrentStack<IFactoryData> _createdHistory = new();
+    private readonly HistoryStore<IFactoryData> _createdHistory = new();
     private static readonly ThreadSafeCounter IdGeneratorCounter = new(); 
     
     #region New
@@ -424,17 +424,23 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         if(data == null)
         {
-            Dispose();
             var e = new InvalidOperationException($"Failed to create data. Create method returned null for {typeof(TDataFactory)}" +
                                                   $" id {createdId} and arguments {args}");
             logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)}");
+            Dispose();
             throw e;
         }
 
         IFactoryData factoryData =  new FactoryData(createdId, data, args, factoryBase);
-        
-        _createdHistory.Push(factoryData);
-        
+
+        if (!_createdHistory.TryPush(createdId, factoryData))
+        {
+            var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");
+            logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)} with type {data.GetType()}");
+            Dispose();
+            throw e;
+        }
+
         //Get the local data history
         HistoryStore< IFactoryData> historyStore;
         try
@@ -448,7 +454,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             throw new InvalidOperationException($"Failed to create history for {typeof(TDataFactory)}",e);
         }
         //Update the local data history
-        if(!historyStore.TryAdd(createdId,factoryData))
+        if(!historyStore.TryPush(createdId,factoryData))
         {
             Dispose();
             var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");

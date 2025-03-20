@@ -24,11 +24,12 @@ public class HistoryStore<T> where T : notnull
 
 
     /// <summary>
-    /// Adds a new item to the history store.
+    /// Attempts to push a new item into the history store.
     /// </summary>
-    /// <param name="id">The unique identifier of the item to add.</param>
-    /// <param name="item">The item to add to the history store.</param>
-    public bool TryAdd(long id, T item)
+    /// <param name="id">The unique identifier of the item to push.</param>
+    /// <param name="item">The item to push into the history store.</param>
+    /// <returns>True if the item was successfully pushed; otherwise, false.</returns>
+    public bool TryPush(long id, T item)
     {
         var historyItem = new HistoryItem<T>(id, item);
         if (_itemsById.TryAdd(id, historyItem))
@@ -38,6 +39,7 @@ public class HistoryStore<T> where T : notnull
         }
         return false;
     }
+    
 
   
     /// <summary>
@@ -95,17 +97,26 @@ public class HistoryStore<T> where T : notnull
     }
 
     /// <summary>
-    /// Pops the last item from the history store and removes it.
+    /// Attempts to pop the latest item from the history store.
     /// </summary>
-    /// <returns>The value of the popped item, or null if the stack is empty.</returns>
-    public T? Pop()
+    /// <param name="item">The item that was popped from the history store, or default if the stack is empty.</param>
+    /// <returns>True if an item was successfully popped; otherwise, false.</returns>
+    public bool TryPop(out T? item)
     {
-        if (_stack.TryPop(out var item))
+        if (_stack.TryPop(out var historyItem))
         {
-            _itemsById.TryRemove(item.Id, out _); // Removing item by ID
-            return item.Value;
+            if( _itemsById.TryRemove(historyItem.Id, out _)) // Removing item by ID
+            {
+                item = historyItem.Value;
+                return true;
+            }
+
+            _stack.Push(historyItem); // Pushing back the item to the stack
+
         }
-        return default; // If the stack is empty
+
+        item = default;
+        return false; // If the stack is empty
     }
 
     /// <summary>
@@ -123,7 +134,7 @@ public class HistoryStore<T> where T : notnull
     
     //**** CLEANUP ALL
     // Clears the entire history.
-    public void CleanupAll()
+    public void Clear()
     {
         _stack.Clear();
         _itemsById.Clear();
