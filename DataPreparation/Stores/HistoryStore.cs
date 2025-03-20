@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace DataPreparation.Models.Data;
@@ -8,7 +9,7 @@ namespace DataPreparation.Models.Data;
 /// A thread-safe history store that allows adding items, retrieving by ID, and retrieving the latest items.
 /// </summary>
 /// <typeparam name="T">The type of the item stored in the history store.</typeparam>
-public class HistoryStore<T> where T : notnull
+public class HistoryStore<T>:IReadOnlyCollection<T> where T : notnull
 {
     
     /// <summary>
@@ -103,16 +104,10 @@ public class HistoryStore<T> where T : notnull
     /// <returns>True if an item was successfully popped; otherwise, false.</returns>
     public bool TryPop(out T? item)
     {
-        if (_stack.TryPop(out var historyItem))
+        if (_stack.TryPop(out var historyItem) && _itemsById.TryRemove(historyItem.Id, out _))
         {
-            if( _itemsById.TryRemove(historyItem.Id, out _)) // Removing item by ID
-            {
-                item = historyItem.Value;
-                return true;
-            }
-
-            _stack.Push(historyItem); // Pushing back the item to the stack
-
+            item = historyItem.Value;
+            return true;
         }
 
         item = default;
@@ -139,7 +134,9 @@ public class HistoryStore<T> where T : notnull
         _stack.Clear();
         _itemsById.Clear();
     }
-    
+
+
+    public IEnumerator<T> GetEnumerator() => _itemsById.Values.Select(item => item.Value).GetEnumerator();
 
     public override string ToString()
     {
@@ -151,7 +148,13 @@ public class HistoryStore<T> where T : notnull
         }
         return sb.ToString();
     }
-    
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    public int Count => _stack.Count;
 }
 
 /// <summary>
