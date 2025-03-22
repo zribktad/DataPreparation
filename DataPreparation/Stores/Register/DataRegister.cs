@@ -7,14 +7,10 @@ using NUnit.Framework;
 
 namespace DataPreparation.Testing
 {
-    internal class DataRegister
+    internal class DataRegister(ILoggerFactory loggerFactory, Assembly typeAssembly)
     {
-        private ILogger _logger;
-
-        public DataRegister(ILoggerFactory loggerFactory)
-        {
-            _logger = loggerFactory.CreateLogger<DataRegister>();;
-        }
+        private readonly ILogger _logger = loggerFactory.CreateLogger<DataRegister>();
+        private BaseServiceCollectionForAssemblyStore BaseServiceCollectionForAssemblyStore { get; } = new();
 
         private  void RegisterProcessors(List<Func<Type, bool>> processors, Type[] allTypes)
         { 
@@ -28,13 +24,13 @@ namespace DataPreparation.Testing
             }
         }
 
-        internal IServiceCollection GetBaseDataServiceCollection(Assembly assembly)
+        internal IServiceCollection GetBaseDataServiceCollection()
         {
-            _logger.LogDebug("Analyzing process start for assembly {0}", assembly.FullName);
-            AnalyzeAssemblyProcessor(assembly);
-            _logger.LogDebug("Analyzing process end for assembly {0}", assembly.FullName);
+            _logger.LogDebug("Analyzing process start for assembly {0}", typeAssembly.FullName);
+            AnalyzeAssemblyProcessor(typeAssembly);
+            _logger.LogDebug("Analyzing process end for assembly {0}", typeAssembly.FullName);
         
-            return BaseServiceCollectionForAssemblyStore.GetBaseDataCollectionCopy(assembly) ?? throw new InvalidOperationException();
+            return BaseServiceCollectionForAssemblyStore.GetBaseDataCollectionCopy(typeAssembly) ?? throw new InvalidOperationException();
         }
 
         private void AnalyzeAssemblyProcessor(Assembly assembly)

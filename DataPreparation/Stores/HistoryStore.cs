@@ -104,6 +104,7 @@ public class HistoryStore<T>:IReadOnlyCollection<T> where T : notnull
     /// <returns>True if an item was successfully popped; otherwise, false.</returns>
     public bool TryPop(out T? item)
     {
+        
         if (_stack.TryPop(out var historyItem) && _itemsById.TryRemove(historyItem.Id, out _))
         {
             item = historyItem.Value;

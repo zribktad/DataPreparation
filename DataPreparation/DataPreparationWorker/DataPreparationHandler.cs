@@ -40,7 +40,7 @@ namespace DataPreparation.Testing
       
         }
 
-        internal static void DataDown(TestStore? testStore)
+        internal static async ValueTask DataDown(TestStore? testStore)
         {
             if(testStore == null || testStore.PreparedData.IsEmpty()) return; //after first is testStore removed so it can be null
             testStore.LoggerFactory.CreateLogger(typeof(DataPreparationHandler))
@@ -50,7 +50,8 @@ namespace DataPreparation.Testing
             {
                 try
                 {
-                    data?.RunDown().GetAwaiter().GetResult();
+                    if (data != null)
+                        await data.RunDown().ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {

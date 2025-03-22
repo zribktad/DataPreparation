@@ -6,7 +6,7 @@ namespace DataPreparation.Testing.Factory;
 /// <summary>
 /// Interface for creating and retrieving data for test.
 /// </summary>
-public interface ISourceFactory : IDisposable
+public interface ISourceFactory : IAsyncDisposable
 {
     #region Asynchronous Methods
 

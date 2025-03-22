@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace DataPreparation.Testing
 {
-    internal  static class BaseServiceCollectionForAssemblyStore
+    public class BaseServiceCollectionForAssemblyStore
     {
         private static ConcurrentDictionary<Assembly, IServiceCollection> BaseDataCollection { get; } = new();
 
@@ -16,7 +16,6 @@ namespace DataPreparation.Testing
 
         public static IServiceCollection? GetBaseDataCollectionCopy(Assembly assembly)
         {
-            
             var serviceCollection = BaseDataCollection.GetValueOrDefault(assembly);
             if (serviceCollection == null)
             {

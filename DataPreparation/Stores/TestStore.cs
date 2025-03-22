@@ -61,7 +61,7 @@ public class TestStore
             ExceptionAggregator? exceptionAggregator = new();
             try
             {
-                testStore.SourceFactory.Dispose();
+                testStore.SourceFactory.DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             }
             catch (AggregateException e)
             {
@@ -70,7 +70,7 @@ public class TestStore
 
             try
             {
-                DataPreparationHandler.DataDown(testStore);
+                DataPreparationHandler.DataDown(testStore).ConfigureAwait(false).GetAwaiter().GetResult();
             }
             catch (AggregateException e)
             {

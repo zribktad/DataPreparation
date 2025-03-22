@@ -109,7 +109,7 @@ public class PreparedData
         return newParams.ToArray();
     }
 
-    public  Task RunUp()
+    public Task RunUp()
     {
         _logger.LogTrace($"Start UpData for {_preparedDataInstance.GetType().Name}");
         if (_runUpMethod != null)
@@ -125,7 +125,7 @@ public class PreparedData
         
         return Task.CompletedTask;
     }
-    public  Task RunDown()
+    public Task RunDown()
     {
         _logger.LogTrace($"Start DownData for {_preparedDataInstance.GetType().Name}");
         if (_runDownMethod != null)
