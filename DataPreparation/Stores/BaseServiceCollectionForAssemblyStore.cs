@@ -8,12 +8,7 @@ namespace DataPreparation.Testing
     internal static class BaseServiceCollectionForAssemblyStore
     {
         private static ConcurrentDictionary<Assembly, IServiceCollection> BaseDataCollection { get; } = new();
-
-        private static void  AddBaseDataCollection(Assembly assembly, IServiceCollection serviceCollection)
-        {
-            BaseDataCollection.TryAdd(assembly,serviceCollection);
-        }
-
+        
         public static IServiceCollection? GetBaseDataCollectionCopy(Assembly assembly)
         {
             if(BaseDataCollection.TryGetValue(assembly, out var serviceCollection))
