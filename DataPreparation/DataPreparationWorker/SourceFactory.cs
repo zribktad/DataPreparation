@@ -132,7 +132,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         var factoryBase = serviceProvider.GetService<TDataFactory>() ??
                           throw new InvalidOperationException($"No factory or register found for {typeof(TDataFactory)}");
-        var id = IdGeneratorCounter.Increment();
+        var id = IdGeneratorCounter.GetNextId();
         if (AddDataToHistory<TDataFactory>(id, args, data, factoryBase))
         {
             createdId = id;
@@ -302,7 +302,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         for (int i = 0; i < size; i++)
         {
             var args = argsList.ElementAtOrDefault(i);
-            var createdId = IdGeneratorCounter.Increment();
+            var createdId = IdGeneratorCounter.GetNextId();
             var data =   CreateData(createFunc, createdId, args,factory);
             createdIds.Add(createdId);
             items.Add(data);
@@ -317,7 +317,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
         
         //Update the global data cache
-        createdId = IdGeneratorCounter.Increment();
+        createdId = IdGeneratorCounter.GetNextId();
         //Create the data
         return CreateData(createFunc, createdId, args, factory);
     }
@@ -375,7 +375,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         for (int i = 0; i < size; i++)
         {
             var args = argsList.ElementAtOrDefault(i);
-            var createdId = IdGeneratorCounter.Increment();
+            var createdId = IdGeneratorCounter.GetNextId();
             Task<TRet> data =  CreateDataAsync(createFunc, args, factory, createdId);
             createdIds.Add(createdId);
             items.Add(data);
@@ -389,7 +389,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         //Get the factory
         var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
         //Update the global data cache
-        createdId = IdGeneratorCounter.Increment();
+        createdId = IdGeneratorCounter.GetNextId();
         return CreateDataAsync(createFunc, args, factory, createdId);
     }
 

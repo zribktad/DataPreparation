@@ -8,7 +8,6 @@ namespace DataPreparation.Testing
     internal static class BaseServiceCollectionForAssemblyStore
     {
         private static ConcurrentDictionary<Assembly, IServiceCollection> BaseDataCollection { get; } = new();
-        
         public static IServiceCollection? GetBaseDataCollectionCopy(Assembly assembly)
         {
             if(BaseDataCollection.TryGetValue(assembly, out var serviceCollection))
@@ -30,7 +29,6 @@ namespace DataPreparation.Testing
 
         public static void AddDescriptor(Assembly typeAssembly, ServiceDescriptor serviceDescriptor)
         {
-          
             if(BaseDataCollection.TryGetValue(typeAssembly, out var serviceCollection))
             {
                 serviceCollection.Add(serviceDescriptor);

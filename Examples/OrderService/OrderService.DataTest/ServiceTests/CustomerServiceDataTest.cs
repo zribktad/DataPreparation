@@ -1,5 +1,6 @@
 ﻿using Castle.Core.Configuration;
 using DataPreparation.Analyzers.Test;
+using DataPreparation.Attributes.Testing;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
 using DataPreparation.Unums.Testing;
@@ -109,6 +110,8 @@ namespace OrderService.Test.Services
         [Test] 
         [UsePreparedDataParamsFor(typeof(CustomerService), nameof(CustomerService.GetCustomerById),[1L, "Customer 1"],[1L])]  
         [UsePreparedDataParams(typeof(CustomerServiceData.UpdateCustomerData))]
+        
+        [UseAutoDataPreparation(2, "@customerId",1L,"@customerName","Customer 1")]
         public void UpdateCustomer_Returns_Updated_Customer()
         {
             long customerId = 1;
