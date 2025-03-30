@@ -24,8 +24,8 @@ namespace DataPreparation.Data
         /// </summary>
         /// <param name="baseTestClass">The type of the class containing the method.</param>
         /// <param name="methodName">The name of the method for which data preparation is required.</param>
-        /// <param name="lifetime">The lifetime of the service. Default is <see cref="ServiceLifetime.Singleton"/>.</param>
-        public PreparationMethodForAttribute(Type baseTestClass, string methodName, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        /// <param name="lifetime">The lifetime of the service. Default is <see cref="ServiceLifetime.Scoped"/>.</param>
+        public PreparationMethodForAttribute(Type baseTestClass, string methodName, ServiceLifetime lifetime = ServiceLifetime.Scoped)
         {
             MethodInfo = baseTestClass.GetMethod(methodName) ?? throw new ArgumentNullException(nameof(methodName));
             Lifetime = lifetime;

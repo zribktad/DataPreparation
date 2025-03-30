@@ -22,8 +22,8 @@ public class PreparationClassForAttribute : Attribute
     /// Initializes a new instance of the <see cref="PreparationClassForAttribute"/> class.
     /// </summary>
     /// <param name="type">The type of the class for which data preparation is required.</param>
-    /// <param name="lifetime">The lifetime of the service. Default is <see cref="ServiceLifetime.Singleton"/>.</param>
-    public PreparationClassForAttribute(Type type, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    /// <param name="lifetime">The lifetime of the service. Default is <see cref="ServiceLifetime.Scoped"/>.</param>
+    public PreparationClassForAttribute(Type type, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         ClassType = type;
         Lifetime = lifetime;
