@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using DataPreparation.Data;
+using DataPreparation.Data.Factory;
 using DataPreparation.Data.Setup;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -7,15 +8,9 @@ using NUnit.Framework;
 
 namespace DataPreparation.Testing
 {
-    internal class DataRegister
+    internal class DataRegister(ILoggerFactory loggerFactory, Assembly typeAssembly)
     {
-        private ILogger _logger;
-
-        public DataRegister(ILoggerFactory loggerFactory)
-        {
-            _logger = loggerFactory.CreateLogger<DataRegister>();;
-        }
-
+        private readonly ILogger _logger = loggerFactory.CreateLogger<DataRegister>();
         private  void RegisterProcessors(List<Func<Type, bool>> processors, Type[] allTypes)
         { 
             _logger.LogDebug("Registering processors for {0} types", allTypes.Length);
@@ -28,35 +23,36 @@ namespace DataPreparation.Testing
             }
         }
 
-        internal IServiceCollection GetBaseDataServiceCollection(Assembly assembly)
+        internal IServiceCollection GetBaseDataServiceCollection()
         {
-            _logger.LogDebug("Analyzing process start for assembly {0}", assembly.FullName);
-            AnalyzeAssemblyProcessor(assembly);
-            _logger.LogDebug("Analyzing process end for assembly {0}", assembly.FullName);
-        
-            return BaseServiceCollectionForAssemblyStore.GetBaseDataCollectionCopy(assembly) ?? throw new InvalidOperationException();
+            lock (typeAssembly)
+            {
+                _logger.LogDebug("Analyzing process start for assembly {0}", typeAssembly.FullName);
+                AnalyzeAssemblyProcessor();
+                _logger.LogDebug("Analyzing process end for assembly {0}", typeAssembly.FullName);
+            }
+
+            return BaseServiceCollectionForAssemblyStore.GetBaseDataCollectionCopy(typeAssembly) ?? throw new InvalidOperationException();
         }
 
-        private void AnalyzeAssemblyProcessor(Assembly assembly)
+        private void AnalyzeAssemblyProcessor()
         {
-            lock (assembly)
+            if (!BaseServiceCollectionForAssemblyStore.ContainsBaseDataCollection(typeAssembly))
             {
-                if (!BaseServiceCollectionForAssemblyStore.ContainsBaseDataCollection(assembly))
-                {
-                    _logger.LogDebug("Analyzing assembly {0}", assembly.FullName);
-                    List<Func<Type, bool>> processors =
-                    [  
-                        ProcessDataClassPreparation,
-                        ProcessDataMethodPreparation,
-                        ProcessFactories
-                    ];
-                    //RegisterService Data Preparation classes
-                    RegisterProcessors(processors,  assembly.GetTypes());
-                    _logger.LogDebug("Assembly {0} analyzed", assembly.FullName);
-                }else
-                {
-                    _logger.LogDebug("Assembly {0} already analyzed", assembly.FullName);
-                }
+                BaseServiceCollectionForAssemblyStore.CreateBaseDataCollection(typeAssembly);
+                _logger.LogDebug("Analyzing assembly {0}", typeAssembly.FullName);
+                List<Func<Type, bool>> processors =
+                [  
+                    ProcessDataClassPreparation,
+                    ProcessDataMethodPreparation,
+                    ProcessFactories
+                ];
+                //RegisterService Data Preparation classes
+                RegisterProcessors(processors,  typeAssembly.GetTypes());
+                _logger.LogDebug("Assembly {0} analyzed", typeAssembly.FullName);
+            }else
+            {
+                _logger.LogDebug("Assembly {0} already analyzed", typeAssembly.FullName);
             }
         }
 
@@ -64,7 +60,11 @@ namespace DataPreparation.Testing
         {
             if (type.IsAssignableTo(typeof(IDataFactoryBase)) == false) return false;
             
-            BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, ServiceLifetime.Singleton)); // add FactoryObjects
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped;
+            if(type.GetCustomAttribute<FactoryLifetimeAttribute>() is {} factoryLifetimeAttribute)
+                serviceLifetime = factoryLifetimeAttribute.Lifetime;
+            
+            BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, serviceLifetime)); // add FactoryObjects
             return true;
         }
         
@@ -96,8 +96,6 @@ namespace DataPreparation.Testing
                     BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, attribute.Lifetime));
                     return true;
                 }
-             
-                return true;
             }
             return false;
         }

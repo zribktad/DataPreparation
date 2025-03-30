@@ -1,10 +1,14 @@
+using DataPreparation.Data.Factory;
 using DataPreparation.Data.Setup;
 using DataPreparation.Testing.Factory;
+using Microsoft.Extensions.DependencyInjection;
 using OrderService.DTO;
 using OrderService.Models;
 
 namespace OrderService.Boa.Factories.SQLite;
 
+
+[FactoryLifetime(ServiceLifetime.Scoped)]
 public class CustomerDtoFactory: IDataFactory<CustomerDTO>
 {
     public CustomerDtoFactory()

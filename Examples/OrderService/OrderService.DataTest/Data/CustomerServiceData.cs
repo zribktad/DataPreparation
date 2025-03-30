@@ -61,18 +61,19 @@ namespace OrderService.DataTest.Data
         public class GetCustomerByIdData(Mock<IRepository<Customer>> customerRepo)
         {
             [UpData]
-            public void TestUpData(long id , string name)
+            
+            public void TestUpData(long customerId , string customerName)
             {
-                var expectedCustomer = new Customer { Id = id, Name = name, Address = new Address() };
+                var expectedCustomer = new Customer { Id = customerId, Name = customerName, Address = new Address() };
 
-                customerRepo.Setup(repo => repo.GetById(id, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
+                customerRepo.Setup(repo => repo.GetById(customerId, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
                     .Returns(expectedCustomer);
                 Console.WriteLine("GetCustomerByIdData up data ");
             }
             [DownData]
-            public void TestDownData(long id)
+            public void TestDownData(long customerId)
             {
-                customerRepo.Setup(repo => repo.GetById(id, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
+                customerRepo.Setup(repo => repo.GetById(customerId, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
                     .Returns((Customer)null);
                 Console.WriteLine("GetCustomerByIdData Down Data ");
             }

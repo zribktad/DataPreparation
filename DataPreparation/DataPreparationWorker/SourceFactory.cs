@@ -128,12 +128,11 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     {
         return Register<TDataFactory>(data, out createdId, args);
     }
-
     public bool Register<TDataFactory>(object data, out long? createdId, IDataParams? args = null) where TDataFactory : IDataFactoryBase
     {
         var factoryBase = serviceProvider.GetService<TDataFactory>() ??
                           throw new InvalidOperationException($"No factory or register found for {typeof(TDataFactory)}");
-        var id = IdGeneratorCounter.Increment();
+        var id = IdGeneratorCounter.GetNextId();
         if (AddDataToHistory<TDataFactory>(id, args, data, factoryBase))
         {
             createdId = id;
@@ -211,13 +210,19 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     #region Dispose
     
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         logger.LogDebug("Factory disposing");
         var exceptionAggregator = new ExceptionAggregator();
         
         while (_createdHistory.TryPop(out var data))
         {
+            if (data == null)
+            {
+                logger.LogWarning("Some history data are null. Cannot delete data.");
+                continue;
+            }
+
             var factoryType = data.FactoryBase.GetType();
             
             try
@@ -229,7 +234,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
                         deleted = sync.Delete(data.Id, data.Data, data.Args);
                         break;
                     case IDataRegisterAsync async:
-                        deleted = async.Delete(data.Id, data.Data, data.Args).GetAwaiter().GetResult();
+                        deleted = await async.Delete(data.Id, data.Data, data.Args).ConfigureAwait(false);
                         break;
                     default:
                         AddException( $"No correct factory type found for data: {data.FactoryBase}. Cannot delete data. " +
@@ -297,7 +302,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         for (int i = 0; i < size; i++)
         {
             var args = argsList.ElementAtOrDefault(i);
-            var createdId = IdGeneratorCounter.Increment();
+            var createdId = IdGeneratorCounter.GetNextId();
             var data =   CreateData(createFunc, createdId, args,factory);
             createdIds.Add(createdId);
             items.Add(data);
@@ -312,7 +317,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
         
         //Update the global data cache
-        createdId = IdGeneratorCounter.Increment();
+        createdId = IdGeneratorCounter.GetNextId();
         //Create the data
         return CreateData(createFunc, createdId, args, factory);
     }
@@ -327,7 +332,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         }
         catch (Exception e)
         {
-            Dispose();
             var ex = new InvalidOperationException($"Failed to create data. Create method throw exception for {typeof(TDataFactory)}" +
                                                    $" with type {typeof(TRet)}, id {createdId} and arguments {args}",e);
             logger.LogError(ex,$"Creation of new data failed for {typeof(TDataFactory)} with type {typeof(TRet)}");
@@ -371,7 +375,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         for (int i = 0; i < size; i++)
         {
             var args = argsList.ElementAtOrDefault(i);
-            var createdId = IdGeneratorCounter.Increment();
+            var createdId = IdGeneratorCounter.GetNextId();
             Task<TRet> data =  CreateDataAsync(createFunc, args, factory, createdId);
             createdIds.Add(createdId);
             items.Add(data);
@@ -385,7 +389,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         //Get the factory
         var factory = serviceProvider.GetService<TDataFactory>() ?? throw new InvalidOperationException($"No factory found for {typeof(TDataFactory)}.");
         //Update the global data cache
-        createdId = IdGeneratorCounter.Increment();
+        createdId = IdGeneratorCounter.GetNextId();
         return CreateDataAsync(createFunc, args, factory, createdId);
     }
 
@@ -406,7 +410,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         }
         catch (Exception e)
         {
-            Dispose();
             var ex = new InvalidOperationException($"Failed to create data. Create method throw exception for {typeof(TDataFactory)}" +
                                                    $" with type {typeof(TRet)}, id {createdId} and arguments {args}",e);
             logger.LogError(ex,$"Creation of new data failed for {typeof(TDataFactory)} with type {typeof(TRet)}");
@@ -427,7 +430,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             var e = new InvalidOperationException($"Failed to create data. Create method returned null for {typeof(TDataFactory)}" +
                                                   $" id {createdId} and arguments {args}");
             logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)}");
-            Dispose();
             throw e;
         }
 
@@ -437,7 +439,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         {
             var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");
             logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)} with type {data.GetType()}");
-            Dispose();
             throw e;
         }
 
@@ -450,13 +451,11 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
         catch (Exception e)
         {
             logger.LogError("Failed to create history for {typeof(TDataFactory)}",e);
-            Dispose();
             throw new InvalidOperationException($"Failed to create history for {typeof(TDataFactory)}",e);
         }
         //Update the local data history
         if(!historyStore.TryPush(createdId,factoryData))
         {
-            Dispose();
             var e = new InvalidOperationException($"Failed to add data to history for {typeof(TDataFactory)}");
             logger.LogError(e,$"Creation of new data failed for {typeof(TDataFactory)} with type {data.GetType()}");
             throw e;
@@ -542,7 +541,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
                 logger.LogDebug($"[{nameof(Get)}]: Retrieved data for {typeof(TDataFactory)} with id {createdId}");
                 if ((item as FactoryData)!.Data is not TRet data)
                 {
-                    Dispose();
                     throw CastExeption(logger,
                         $"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.");
                 }
@@ -572,7 +570,6 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             }
             catch (InvalidCastException e)
             {
-                Dispose();
                 throw CastExeption(logger,$"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.",e);
             }
         }

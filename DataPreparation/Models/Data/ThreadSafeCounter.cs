@@ -4,7 +4,7 @@ public class ThreadSafeCounter
 {
     private long _counter = 0;
 
-    public long Increment()
+    public long GetNextId()
     {
         return Interlocked.Increment(ref _counter);
     }

@@ -13,7 +13,7 @@ namespace DataPreparation.Testing;
 public class FixtureStore(
     FixtureInfo fixtureInfo,
     ILoggerFactory loggerFactoryFactory,
-    IServiceCollection serviceCollection)
+    IServiceProvider serviceProvider)
 {
     public FixtureInfo FixtureInfo { get; init; } = fixtureInfo;
 
@@ -22,7 +22,7 @@ public class FixtureStore(
 
     internal bool CreateTestStore(TestInfo testInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
     {
-       return _testData.TryAdd(testInfo, new(testInfo,loggerFactory, serviceCollection,dataPreparationAttributes));
+       return _testData.TryAdd(testInfo, new(testInfo,loggerFactory, serviceProvider.CreateScope(),dataPreparationAttributes));
     }
     
     internal  TestStore? RemoveTestStore(TestInfo testInfo)

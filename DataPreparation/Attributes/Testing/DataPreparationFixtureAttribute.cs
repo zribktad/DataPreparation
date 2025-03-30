@@ -34,9 +34,6 @@ namespace DataPreparation.Testing
         /// <param name="test">The test that is going to be executed.</param>
         public void BeforeTest(ITest test)
         {
-            // MethodAnalyzer.AnalyzeTestFixture(_filePath, test.Fixture.GetType()); //TODO: Analyze
-            // MethodAnalyzer.AnalyzeTestMethod(t);
-           
             
             var fixtureInfo = new FixtureInfo(test);
          
@@ -46,7 +43,7 @@ namespace DataPreparation.Testing
             
             logger.LogDebug("Data Preparation for {0} started", fixtureInfo.Type);
             //Get copy of base data service collection
-            IServiceCollection baseDataServiceCollection = new DataRegister(loggerFactory).GetBaseDataServiceCollection(fixtureInfo.Type.Assembly);
+            IServiceCollection baseDataServiceCollection = new DataRegister(loggerFactory,fixtureInfo.Type.Assembly).GetBaseDataServiceCollection();
             
             if (test.Fixture is IDataPreparationTestServices dataPreparationTestServices)
             {
@@ -69,7 +66,7 @@ namespace DataPreparation.Testing
             // }
 
             //create fixture store
-            Store.CreateFixtureStore(new(test), loggerFactory,baseDataServiceCollection);
+            Store.CreateFixtureStore(new(test), loggerFactory,baseDataServiceCollection.BuildServiceProvider());
             
         }
 
