@@ -66,7 +66,7 @@ namespace DataPreparation.Testing
             // }
 
             //create fixture store
-            Store.CreateFixtureStore(new(test), loggerFactory,baseDataServiceCollection);
+            Store.CreateFixtureStore(new(test), loggerFactory,baseDataServiceCollection.BuildServiceProvider());
             
         }
 

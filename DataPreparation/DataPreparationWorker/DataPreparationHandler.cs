@@ -9,6 +9,11 @@ namespace DataPreparation.Testing
     {
         internal static void DataUp(TestStore testStore)
         {
+            DataUpTask(testStore).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        private static async ValueTask DataUpTask(TestStore testStore)
+        {
           
             testStore.AttributeUsingCounter.IncrementAttrributeCountUp();
             if (!testStore.AttributeUsingCounter.IsAllUpAttributesRun()) return;
@@ -26,7 +31,15 @@ namespace DataPreparation.Testing
             {
                 try
                 {
-                    data.RunUp().GetAwaiter().GetResult();
+                    if (data.IsRunUpASync())
+                    {
+                        await data.RunUpAsync().ConfigureAwait(false);
+                    }else
+                    {
+                        data.RunUp();
+                    }
+
+                
                     testStore.PreparedData.PushProcessed(data);
                 }
                 catch (Exception e)
@@ -51,7 +64,13 @@ namespace DataPreparation.Testing
                 try
                 {
                     if (data != null)
-                        await data.RunDown().ConfigureAwait(false);
+                        if (data.IsRunDownASync())
+                        {
+                            await data.RunDownAsync().ConfigureAwait(false);
+                        }else
+                        {
+                            data.RunDown();
+                        }
                 }
                 catch (Exception e)
                 {

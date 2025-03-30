@@ -20,10 +20,10 @@ namespace DataPreparation.Testing
         //Store FixtureStore for each test fixture
         private static readonly ConcurrentDictionary<FixtureInfo, FixtureStore> FixtureStores = new();
         
-        internal static bool CreateFixtureStore(FixtureInfo fixtureInfo,ILoggerFactory loggerFactory,IServiceCollection serviceCollection)
+        internal static bool CreateFixtureStore(FixtureInfo fixtureInfo,ILoggerFactory loggerFactory,IServiceProvider serviceProvider)
         {
             loggerFactory.CreateLogger(typeof(Store)).LogTrace("Creating FixtureStore for {0}", fixtureInfo);
-            var ret =  FixtureStores.TryAdd(fixtureInfo, new(fixtureInfo,loggerFactory,serviceCollection));
+            var ret =  FixtureStores.TryAdd(fixtureInfo, new(fixtureInfo,loggerFactory,serviceProvider));
             loggerFactory.CreateLogger(typeof(Store)).LogTrace("FixtureStore for {0} created", fixtureInfo);
             return ret;
         }

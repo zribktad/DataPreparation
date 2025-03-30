@@ -24,6 +24,10 @@ public class CustomerFactoryAsync: IDataFactoryAsync<Customer>
     
     public async Task<bool> Delete(long id, Customer data, IDataParams? args)
     {
+        
+        var isTracked = _context.ChangeTracker.Entries<Customer>().Any(e => e.Entity == data);
+        Console.WriteLine($"Is customer tracked? {isTracked}");
+        
          _context.Customers.Remove(data);
          await _context.SaveChangesAsync();
          return true;

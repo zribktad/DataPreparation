@@ -14,17 +14,19 @@ public class TestStore
 {
     public TestInfo TestInfo { get; }
     public IServiceProvider ServiceProvider { get; }
+    private IServiceScope ServiceScope;
     public ISourceFactory SourceFactory { get; }
     public ILoggerFactory LoggerFactory { get; }
     public AttributeUsingCounter AttributeUsingCounter { get; } 
     public DataPreparationTestStores PreparedData { get;} 
-    internal TestStore(TestInfo testInfo, ILoggerFactory loggerFactory, IServiceCollection serviceCollection, IList<Attribute> dataPreparationAttributes)
+    internal TestStore(TestInfo testInfo, ILoggerFactory loggerFactory, IServiceScope serviceScope, IList<Attribute> dataPreparationAttributes)
     {
         TestInfo = testInfo;
         LoggerFactory = loggerFactory;
         PreparedData = new(loggerFactory);
         AttributeUsingCounter = new( dataPreparationAttributes);
-        ServiceProvider = serviceCollection.BuildServiceProvider();
+        ServiceScope = serviceScope;
+        ServiceProvider = serviceScope.ServiceProvider;
         SourceFactory = new SourceFactory(ServiceProvider,LoggerFactory.CreateLogger<ISourceFactory>());
     }
     

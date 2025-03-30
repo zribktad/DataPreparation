@@ -108,38 +108,51 @@ public class PreparedData
         }
         return newParams.ToArray();
     }
-
-    public Task RunUp()
+    public bool IsRunUpASync() => _runUpMethod?.ReturnType == typeof(Task);
+    
+    public bool IsRunDownASync() => _runDownMethod?.ReturnType == typeof(Task);
+   
+    public object? RunUp()
     {
         _logger.LogTrace($"Start UpData for {_preparedDataInstance.GetType().Name}");
         if (_runUpMethod != null)
         {
             _logger.LogTrace($"Running UpData for {_preparedDataInstance.GetType().Name}");
-            var result = _runUpMethod.Invoke(_preparedDataInstance, _paramsUpData);
-            if (result is Task t) return t;
+            return _runUpMethod.Invoke(_preparedDataInstance, _paramsUpData);
         }
-        else
-        {
-            _logger.LogWarning($"No UpData method found in {_preparedDataInstance.GetType().Name}");
-        }
-        
-        return Task.CompletedTask;
+
+        _logger.LogWarning($"No UpData method found in {_preparedDataInstance.GetType().Name}");
+        return null;
     }
-    public Task RunDown()
+
+    public object? RunDown()
     {
         _logger.LogTrace($"Start DownData for {_preparedDataInstance.GetType().Name}");
         if (_runDownMethod != null)
         {
             _logger.LogTrace($"Running DownData for {_preparedDataInstance.GetType().Name}");
-             var result = _runDownMethod.Invoke(_preparedDataInstance, _paramsDownData);
-             if(result is Task t) return t;
+            return _runDownMethod.Invoke(_preparedDataInstance, _paramsDownData);
         }
-        else
-        {
-            _logger.LogWarning($"No DownData method found in {_preparedDataInstance.GetType().Name}");
-        }
+
+        _logger.LogWarning($"No DownData method found in {_preparedDataInstance.GetType().Name}");
+
+        return null;
+    }
+
+    public Task RunUpAsync()
+    {
+        var result = RunUp();
+        if (result is Task t) return t;
+        return Task.CompletedTask;
+    }
+    public Task RunDownAsync()
+    {
+        var result = RunDown();
+        if(result is Task t) return t;
         return Task.CompletedTask;
 
       
     }
+
+  
 }

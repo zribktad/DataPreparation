@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using DataPreparation.Data;
+using DataPreparation.Data.Factory;
 using DataPreparation.Data.Setup;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -59,7 +60,11 @@ namespace DataPreparation.Testing
         {
             if (type.IsAssignableTo(typeof(IDataFactoryBase)) == false) return false;
             
-            BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, ServiceLifetime.Singleton)); // add FactoryObjects
+            ServiceLifetime serviceLifetime = ServiceLifetime.Scoped;
+            if(type.GetCustomAttribute<FactoryLifetimeAttribute>() is {} factoryLifetimeAttribute)
+                serviceLifetime = factoryLifetimeAttribute.Lifetime;
+            
+            BaseServiceCollectionForAssemblyStore.AddDescriptor(type.Assembly,new ServiceDescriptor(type, type, serviceLifetime)); // add FactoryObjects
             return true;
         }
         

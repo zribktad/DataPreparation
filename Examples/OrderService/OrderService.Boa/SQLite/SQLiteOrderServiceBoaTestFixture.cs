@@ -61,7 +61,7 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
             options.UseSqlite(serviceConnection, 
                 sqliteOptions => sqliteOptions
                     .MigrationsHistoryTable("__EFMigrationsHistory")
-                    .MigrationsAssembly("OrderService")));
+                    .MigrationsAssembly("OrderService")),ServiceLifetime.Scoped);
         
         serviceCollection.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         serviceCollection.AddScoped<IOrderService, Services.OrderService>();
@@ -84,14 +84,11 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
     
     public void BeforeTest(IServiceProvider testProvider)
     {
-        try
-        {
-            testProvider.GetRequiredService<OrderServiceContext>().Database.EnsureCreated();
-        }
-        catch (Exception e)
-        {
-           
-        }
+        var context = testProvider.GetRequiredService<OrderServiceContext>();
+        context.Database.EnsureCreated();
+         testProvider.GetRequiredService<OrderServiceContext>();
+         testProvider.GetRequiredService<OrderServiceContext>();
+    
         
     }
     
@@ -231,7 +228,7 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
     }
     
     [DataPreparationTest]
-    public async Task CreateCustomer_CreateOrder_Factory()
+    public async Task cCreateCustomer_CreateOrder_Factory()
     {
         // *********** Create Customer ***********
         // Arrange customer
@@ -245,7 +242,8 @@ public class SQLiteOrderServiceBoaTestFixture : IDataPreparationTestServices, ID
         // Act
         var createCustomerTask = CreateCustomerTask.For(customerDto);
         actor.AttemptsTo(createCustomerTask);
-        factory.Register<Customer, CustomerFactoryAsync>(createCustomerTask.CreatedCustomer); //this is for data dependency using CustomerFactoryAsync
+        PreparationContext.GetFactory().Register<Customer, CustomerFactoryAsync>(createCustomerTask.CreatedCustomer); //this is for data dependency using CustomerFactoryAsync
+
         
         // Assert
         var createdCustomer = actor.AsksFor(new CustomerById(createCustomerTask.CreatedCustomer.Id));
