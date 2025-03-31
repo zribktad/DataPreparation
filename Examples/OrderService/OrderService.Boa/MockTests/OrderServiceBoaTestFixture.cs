@@ -6,6 +6,7 @@ using DataPreparation.Testing.Factory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderService.Boa.Boa.Questions;
 using OrderService.Boa.OrderService.Abilities;
 using OrderService.Boa.OrderService.Questions;
 using OrderService.Boa.OrderService.Tasks;
@@ -150,9 +151,8 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         var customer = factory.New<Customer,CustomerFactory>();
         OrderDTO orderDto = factory.Get<OrderDTO,OrderDtoFactory>();
         Services.OrderService orderService = new Services.OrderService(
-            factory.New<IRepository<Order>, OrderMockRepositoryFactory>(ListParams.Use(orderDto)), 
-            factory.New<IRepository<Customer>, CustomerMockRepositoryFactory>(ListParams.Use(customer)), 
-            null);
+            factory.New<IRepository<Order>, OrderMockRepositoryFactory>(ListParams.Use(orderDto)),
+            factory.New<IRepository<Customer>, CustomerMockRepositoryFactory>(ListParams.Use(customer)));
         
         IActor actor = new Actor("OrderTester", new ConsoleLogger());
         if (actor == null) throw new ArgumentNullException(nameof(actor));
@@ -161,52 +161,19 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         // Act
         var createTask = CreateOrderTask.For(orderDto); //task that will be executed CreateOrder  -  get customer by ID and insert order
         actor.AttemptsTo(createTask);
-        Order result = actor.AsksFor( OrderById.WithId(createTask.CreatedOrder.Id)); // there can be find mock for GetByID, or add real test data to DB
-        
+        Order createdOrder = actor.AsksFor( OrderById.WithId(createTask.CreatedOrder.Id)); // there can be find mock for GetByID, or add real test data to DB
+        var isAllOrders = actor.AsksFor(IsAllOrders.FromService(PreparationContext.GetFactory().Was<OrderItemFactory>().Count));
+
         // Assert
-        result.ShouldNotBeNull();
-        result.CustomerId.ShouldBe(orderDto.CustomerId);
-        result.OrderItems.ShouldNotBeNull();
+        createdOrder.ShouldNotBeNull();
+        createdOrder.CustomerId.ShouldBe(orderDto.CustomerId);
+        createdOrder.OrderItems.ShouldNotBeNull();
         
         // Get count from factory items
-        var factoryCount = (int)PreparationContext.GetFactory().Was<OrderItem, OrderItemFactory>().ToList().Count;
-        result.OrderItems.Count().ShouldBe(factoryCount);
+        var factoryCount = PreparationContext.GetFactory().Was<OrderItem, OrderItemFactory>().ToList().Count;
+        createdOrder.OrderItems.Count().ShouldBe(factoryCount);
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    public void CreateOrder_FullOrderDTO_ReturnsOrder_PrepareNaming() // Show Case for Test Data Preparation
-    {
-        // Arrange
-        OrderDTO orderDto = PreparationContext.GetFactory().New<OrderDTO,OrderDtoFactory>();
-        Services.OrderService _orderService = null;
-       //_orderService = PreparationContext.GetFactory().NewDataPreparationService<Services.OrderService>(orderDto);//how to presetup service to return Order with good ID if using mock? //TODO this line
-        //maybe fisrt process and add all get, new data to DB and after that create service
-        IActor actor = new Actor("OrderTester", new ConsoleLogger());
-        actor.Can(UseOrderService.With(_orderService));
-
-        // Act
-        var createTask = CreateOrderTask.For(orderDto); //what about to change For naming which will describe order object
-        actor.AttemptsTo(createTask);
-        Order result = actor.AsksFor( OrderById.WithId(createTask.CreatedOrder.Id));
-        
-        // Assert
-        result.ShouldNotBeNull();
-        result.CustomerId.ShouldBe(orderDto.CustomerId);
-        result.OrderItems.ShouldNotBeNull();
-        
-        int itemCount = (int)PreparationContext.GetFactory().Was<OrderItem, OrderItemFactory>().ToList().Count;
-        result.OrderItems.Count().ShouldBe(itemCount);
-    }
 
     
 
@@ -230,11 +197,10 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         _actor.Can(UseOrderService.With(_orderService));
 
         // Act
-        var result = _actor.AsksFor(AllOrders.FromService());
+        var result = _actor.AsksFor(IsAllOrders.FromService(orders.Count));
 
         // Assert
-        result.ShouldNotBeNull();
-        result.Count().ShouldBe(orders.Count);
+        result.ShouldBeTrue();
     }
 
     [Test]

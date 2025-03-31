@@ -11,5 +11,5 @@ public class AllOrders : IQuestion<IEnumerable<Order>>
         var ability = actor.Using<UseOrderService>();
         return ability.Service.GetOrders();
     }
-    public static AllOrders FromService() => new AllOrders();
+    public static AllOrders FromService() => new();
 }

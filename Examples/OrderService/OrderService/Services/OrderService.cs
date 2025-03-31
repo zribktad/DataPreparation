@@ -13,9 +13,9 @@ namespace OrderService.Services
     {
         private readonly IRepository<Order> _orderRepository;
         private readonly IRepository<Customer> _customerRepository;
-        private readonly IDiscoveryClient _discoveryClient;
+        private readonly IDiscoveryClient? _discoveryClient;
 
-        public OrderService(IRepository<Order> orderRepository, IRepository<Customer> customerRepository, IDiscoveryClient discoveryClient)
+        public OrderService(IRepository<Order> orderRepository, IRepository<Customer> customerRepository, IDiscoveryClient discoveryClient = null)
         {
             _orderRepository = orderRepository;
             _customerRepository = customerRepository;
