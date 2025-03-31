@@ -9,9 +9,11 @@
         <Authors>Tadeáš Zribko</Authors>
         <Description>DataPreparation provides robust tools for creating, managing, and validating test data in NUnit testing.</Description>
         <RepositoryUrl>https://github.com/zribktad/DataPreparation</RepositoryUrl>
-        <PackageTags>NUNit, Test, Data</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>NUnit;Testing;Data;TestData;DataPreparation;UnitTesting;Test;ManageData</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,7 +25,8 @@
     </ItemGroup>
   <ItemGroup>
 
-    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 
