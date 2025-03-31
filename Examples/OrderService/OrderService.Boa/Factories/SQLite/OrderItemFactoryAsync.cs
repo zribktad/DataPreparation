@@ -8,7 +8,6 @@ public class OrderItemFactoryAsync: IDataFactoryAsync<OrderItem>
     OrderServiceContext _context;
     public OrderItemFactoryAsync( OrderServiceContext context )
     {
-        context.Database.EnsureCreated();
         _context = context;
     }
     public Task<OrderItem> Create(long createId, IDataParams? args, CancellationToken token = default)

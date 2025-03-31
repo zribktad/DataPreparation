@@ -9,7 +9,6 @@ public class CustomerRegisterAsync: IDataRegisterAsync<Customer>
     public CustomerRegisterAsync(OrderServiceContext context )
     {
         _context = context;
-        context.Database.EnsureCreated();
     }
 
     public async Task<bool> Delete(long createId, Customer data, IDataParams? args)

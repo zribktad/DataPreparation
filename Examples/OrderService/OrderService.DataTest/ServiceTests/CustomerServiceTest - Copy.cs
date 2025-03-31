@@ -99,7 +99,7 @@ namespace OrderService.Test.Services
 
             _mockRepository.Setup(repo => repo.GetById(customerId, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
                            .Returns(updatedCustomer);
-            _mockRepository.Setup(repo => repo.Update(It.IsAny<Customer>()));
+            _mockRepository.Setup(repo => repo.Update(It.IsAny<Customer>())).Returns(updatedCustomer);
 
             var result = _customerService.UpdateCustomer(customerId, updatedCustomer);
 

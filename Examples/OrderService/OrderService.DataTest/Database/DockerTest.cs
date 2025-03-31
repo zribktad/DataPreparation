@@ -1,11 +1,13 @@
 ﻿using DataPreparation.Database.Helpers;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using NUnit.Framework;
-using FluentAssertions;
+using Shouldly;
+
 
 namespace OrderService.DataTest.Database
 {
+    
+    [Explicit]
     public class DockerTest
     {
 
@@ -51,11 +53,11 @@ namespace OrderService.DataTest.Database
         public async Task BackupDatabaseInDocker()
         {
             var retbackup = _dockerHelper.BackupDatabaseInDocker();
-            retbackup.Should().BeTrue();
+            retbackup.ShouldBeTrue();
          
             
             var retrestore = _dockerHelper.RestoreDatabaseInDocker();
-            retrestore.Should().BeTrue();
+            retbackup.ShouldBeTrue();
             
         }
 

@@ -3,8 +3,8 @@ using DataPreparation.Factory.Testing;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
 using DataPreparation.Testing.Factory;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OrderService.Boa.OrderService.Abilities;
 using OrderService.Boa.OrderService.Questions;
@@ -13,8 +13,7 @@ using OrderService.Boa.ShowCases.Factories;
 using OrderService.DTO;
 using OrderService.Models;
 using OrderService.Repository;
-using ILogger = NUnit.Framework.Internal.ILogger;
-using Microsoft.Extensions.Logging;
+using Shouldly;
 
 namespace OrderService.Boa;
 
@@ -69,10 +68,10 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         Order result = actor.AsksFor(new OrderById(createTask.CreatedOrder.Id));
 
         // Assert
-        result.Should().NotBeNull();
-        result.CustomerId.Should().Be(orderDto.CustomerId);
-        result.OrderItems.Should().NotBeNull();
-        result.OrderItems.Should().HaveCount(orderItems.Count);
+        result.ShouldNotBeNull();
+        result.CustomerId.ShouldBe(orderDto.CustomerId);
+        result.OrderItems.ShouldNotBeNull();
+        result.OrderItems.Count().ShouldBe(orderItems.Count);
         mockOrderRepository.Verify(repo => repo.Insert(It.IsAny<Order>()), Times.Once);
     }
     
@@ -105,12 +104,14 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         //maybe we can define some info about function that need mock or data in Screenplay pattern, somethink like interface, PrepareDataFor. //how to define if we use mock or not? SingleTone Scope for mock
 
         
-        // Assert
-        result.Should().NotBeNull();
-        result.CustomerId.Should().Be(orderDto.CustomerId);
-        result.OrderItems.Should().NotBeNull();
-        // we can also use the history of the data
-        result.OrderItems.Should().HaveCount( testData.Was<OrderItem,OrderItemFactory>().ToList().Count);
+        // Assert 
+        result.ShouldNotBeNull();
+        result.CustomerId.ShouldBe(orderDto.CustomerId);
+        result.OrderItems.ShouldNotBeNull();
+        
+        // Use Count() for IEnumerable
+        var factoryItems = testData.Was<OrderItem, OrderItemFactory>().ToList();
+        result.OrderItems.Count().ShouldBe(factoryItems.Count);
     }
     public void CreateOrder_FullOrderDTO_ReturnsOrder_PrepareConceptShortExample() // Show Case for Test Data Preparation
     {
@@ -132,10 +133,13 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
 
         
         // Assert
-        result.Should().NotBeNull();
-        result.CustomerId.Should().Be(orderDto.CustomerId);
-        result.OrderItems.Should().NotBeNull();
-        result.OrderItems.Should().HaveCount( (int)PreparationContext.GetFactory().Was<OrderItem,OrderItemFactory>().ToList().Count);
+        result.ShouldNotBeNull();
+        result.CustomerId.ShouldBe(orderDto.CustomerId);
+        result.OrderItems.ShouldNotBeNull();
+        
+        // Get count from factory items
+        var factoryCount = (int)PreparationContext.GetFactory().Was<OrderItem, OrderItemFactory>().ToList().Count;
+        result.OrderItems.Count().ShouldBe(factoryCount);
     }
     
     [DataPreparationTest]
@@ -160,10 +164,13 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         Order result = actor.AsksFor( OrderById.WithId(createTask.CreatedOrder.Id)); // there can be find mock for GetByID, or add real test data to DB
         
         // Assert
-        result.Should().NotBeNull();
-        result.CustomerId.Should().Be(orderDto.CustomerId);
-        result.OrderItems.Should().NotBeNull();
-        result.OrderItems.Should().HaveCount( (int)PreparationContext.GetFactory().Was<OrderItem,OrderItemFactory>().ToList().Count);
+        result.ShouldNotBeNull();
+        result.CustomerId.ShouldBe(orderDto.CustomerId);
+        result.OrderItems.ShouldNotBeNull();
+        
+        // Get count from factory items
+        var factoryCount = (int)PreparationContext.GetFactory().Was<OrderItem, OrderItemFactory>().ToList().Count;
+        result.OrderItems.Count().ShouldBe(factoryCount);
     }
     
     
@@ -193,10 +200,12 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         Order result = actor.AsksFor( OrderById.WithId(createTask.CreatedOrder.Id));
         
         // Assert
-        result.Should().NotBeNull();
-        result.CustomerId.Should().Be(orderDto.CustomerId);
-        result.OrderItems.Should().NotBeNull();
-        result.OrderItems.Should().HaveCount( (int)PreparationContext.GetFactory().Was<OrderItem,OrderItemFactory>().ToList().Count);
+        result.ShouldNotBeNull();
+        result.CustomerId.ShouldBe(orderDto.CustomerId);
+        result.OrderItems.ShouldNotBeNull();
+        
+        int itemCount = (int)PreparationContext.GetFactory().Was<OrderItem, OrderItemFactory>().ToList().Count;
+        result.OrderItems.Count().ShouldBe(itemCount);
     }
 
     
@@ -224,8 +233,8 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         var result = _actor.AsksFor(AllOrders.FromService());
 
         // Assert
-        result.Should().NotBeNull();
-        result.Count().Should().Be(orders.Count);
+        result.ShouldNotBeNull();
+        result.Count().ShouldBe(orders.Count);
     }
 
     [Test]
@@ -248,8 +257,9 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         var result = _actor.AsksFor(OrderById.WithId(orderId));
 
         // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be(orderId);
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(orderId);
+
     }
 
     [Test]
@@ -267,8 +277,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         _actor.Can(UseOrderService.With(_orderService));
 
         // Act & Assert
-        Action act = () => _actor.AsksFor(OrderById.WithId(invalidId));
-        act.Should().Throw<ArgumentException>();
+        Should.Throw<ArgumentException>(() => _actor.AsksFor(OrderById.WithId(invalidId)));
     }
 
     [Test]
@@ -301,9 +310,9 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         var result = _actor.AsksFor(new OrderById(createTask.CreatedOrder.Id));
 
         // Assert
-        result.Should().NotBeNull();
-        result.CustomerId.Should().Be(orderDto.CustomerId);
-        mockOrderRepository.Verify(repo => repo.Insert(It.IsAny<Order>()), Times.Once);
+        result.ShouldNotBeNull();
+        result.CustomerId.ShouldBe(orderDto.CustomerId);
+
     }
 
     [Test]
@@ -326,8 +335,9 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
 
         // Act & Assert
         Action act = () => _orderService.CreateOrder(orderDto);
-        act.Should().Throw<InvalidOperationException>();
+        act.ShouldThrow<InvalidOperationException>();
         mockOrderRepository.Verify(repo => repo.Insert(It.IsAny<Order>()), Times.Never);
+
     }
 
 
@@ -357,7 +367,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         var result = updateTask.UpdateResult;
 
         // Assert
-        result.Should().BeTrue();
+        result.ShouldBeTrue();
         mockOrderRepository.Verify(repo => repo.Update(It.IsAny<Order>()), Times.Once);
     }
 
@@ -380,7 +390,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
 
         // Act & Assert
         Action act = () => _actor.AttemptsTo(UpdateOrderTask.For(invalidId, updatedOrder));
-        act.Should().Throw<ArgumentException>();
+        act.ShouldThrow<ArgumentException>();
         mockOrderRepository.Verify(repo => repo.Update(It.IsAny<Order>()), Times.Never);
     }
 

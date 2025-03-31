@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Boa.Constrictor.Screenplay;
-using FluentAssertions;
+using Shouldly; 
 using Moq;
 using NUnit.Framework;
 using OrderService.Boa.CustomerService.Abilities;
@@ -19,7 +19,6 @@ namespace OrderService.Boa.CustomerService
     {
         private IActor _actor;
         private Services.CustomerService _customerService;
-
         private Mock<IRepository<Customer>> _mockRepository;
 
         [SetUp]
@@ -36,8 +35,11 @@ namespace OrderService.Boa.CustomerService
         {
             var customers = new List<Customer>{ new Customer { Id = 1 }, new Customer { Id = 2 } };
             _mockRepository.Setup(r => r.GetAll(It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>())).Returns(customers);
+            
             var result = _actor.AsksFor(new AllCustomers());
-            result.Should().NotBeNull().And.HaveCount(2);
+            
+            result.ShouldNotBeNull();
+            result.Count().ShouldBe(2);
         }
 
         [Test]
@@ -46,16 +48,20 @@ namespace OrderService.Boa.CustomerService
             var customerId = 1;
             var customer = new Customer { Id = customerId };
             _mockRepository.Setup(r => r.GetById(customerId, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>())).Returns(customer);
+            
             var result = _actor.AsksFor(new CustomerById(customerId));
-            result.Should().NotBeNull().And.BeOfType<Customer>().And.Match<Customer>(c => c.Id == customerId);
+            
+            result.ShouldNotBeNull();
+            result.ShouldBeOfType<Customer>();
+            result.Id.ShouldBe(customerId);
         }
 
         [Test]
         public void GetCustomerById_Throws_WhenNotFound()
         {
             _mockRepository.Setup(r => r.GetById(0, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>())).Returns((Customer)null);
-            Action act = () => _actor.AsksFor(new CustomerById(0));
-            act.Should().Throw<InvalidOperationException>();
+            
+            Should.Throw<InvalidOperationException>(() => _actor.AsksFor(new CustomerById(0)));
         }
 
         [Test]
@@ -79,11 +85,11 @@ namespace OrderService.Boa.CustomerService
 
             // Assert
             var createdCustomer = _actor.AsksFor(new CustomerById(1));
-            createdCustomer.Should().NotBeNull()
-                .And.BeOfType<Customer>()
-                .And.Match<Customer>(c => c.Id == 1)
-                .And.Match<Customer>(c => c.Name == customerDto.Name)
-                .And.Match<Customer>(c => c.Email == customerDto.Email);
+            createdCustomer.ShouldNotBeNull();
+            createdCustomer.ShouldBeOfType<Customer>();
+            createdCustomer.Id.ShouldBe(1);
+            createdCustomer.Name.ShouldBe(customerDto.Name);
+            createdCustomer.Email.ShouldBe(customerDto.Email);
         }
 
         [Test]
@@ -109,9 +115,9 @@ namespace OrderService.Boa.CustomerService
 
             // Assert
             var retrievedCustomer = _actor.AsksFor(new CustomerById(customerId));
-            retrievedCustomer.Should().NotBeNull()
-                .And.Match<Customer>(c => c.Name == updatedCustomer.Name)
-                .And.Match<Customer>(c => c.Email == updatedCustomer.Email);
+            retrievedCustomer.ShouldNotBeNull();
+            retrievedCustomer.Name.ShouldBe(updatedCustomer.Name);
+            retrievedCustomer.Email.ShouldBe(updatedCustomer.Email);
         }
     }
 }

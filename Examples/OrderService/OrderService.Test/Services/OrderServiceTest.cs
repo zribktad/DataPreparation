@@ -83,7 +83,7 @@ namespace OrderService.Test.Services
             mockCustomerRepository.Setup(repo => repo.GetById(orderDto.CustomerId,It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>())).Returns(customer);
 
             var mockOrderRepository = new Mock<IRepository<Order>>();
-            mockOrderRepository.Setup(repo => repo.Insert(It.IsAny<Order>()));
+            mockOrderRepository.Setup(repo => repo.Insert(It.IsAny<Order>())).Returns(new Order { Id = 1, CustomerId = orderDto.CustomerId });
 
             var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, mockCustomerRepository.Object,null);
 

@@ -18,7 +18,6 @@ public class CustomerDtoFactory: IDataFactory<CustomerDTO>
     
     public CustomerDtoFactory(OrderServiceContext context)
     {
-        context.Database.EnsureCreated();
     }
     public bool Delete(long createId, CustomerDTO data, IDataParams? args)
     {

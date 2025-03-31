@@ -1,20 +1,14 @@
-﻿using Castle.Core.Configuration;
-using DataPreparation.Analyzers.Test;
-using DataPreparation.Attributes.Testing;
+﻿using DataPreparation.Attributes.Testing;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
-using DataPreparation.Unums.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Npgsql;
 using OrderService.DataTest.Data;
 using OrderService.Models;
 using OrderService.Repository;
 using OrderService.Services;
-using FluentAssertions;
-
 
 namespace OrderService.Test.Services
 {
@@ -68,14 +62,6 @@ namespace OrderService.Test.Services
             var s = "Customer 1";
             var Name = "s";
             
-            //result.Count().Should().Be(2);
-            result.Should().HaveCount(2);
-            // result.Should().NotBeNullOrEmpty();
-            // result.Should().ContainSingle(c => c.Name == "Customer 1" );
-            // result.Should().ContainSingle(c => c.Name == "Customer 2");
-            // result.Should().ContainSingle(c => c.Id == 1L);
-            // result.Should().ContainSingle(c => c.Id == 2L);
-           
             
             Assert.That(result.Count(), Is.EqualTo(2));
             Assert.That(result, Is.All.Not.Null);
@@ -96,11 +82,7 @@ namespace OrderService.Test.Services
                 CustomerService _customerService = new(mockRepo.Object);
             var result = _customerService.GetCustomerById(5L);
             
-            
-            result.Should().NotBeNull();
-            result.Id.Should().Be(5L);
-            result.Name.Should().Be("Customer 1");
-            //
+            //Assertion
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Id, Is.EqualTo(5L));
             Assert.That(result.Name, Is.EqualTo("Customer 1"));
@@ -111,7 +93,7 @@ namespace OrderService.Test.Services
         [UsePreparedDataParamsFor(typeof(CustomerService), nameof(CustomerService.GetCustomerById),[1L, "Customer 1"],[1L])]  
         [UsePreparedDataParams(typeof(CustomerServiceData.UpdateCustomerData))]
         
-        [UseAutoDataPreparation(2, "@customerId",1L,"@customerName","Customer 1")]
+        //[UseAutoDataPreparation(2, "@customerId",1L,"@customerName","Customer 1")]
         public void UpdateCustomer_Returns_Updated_Customer()
         {
             long customerId = 1;

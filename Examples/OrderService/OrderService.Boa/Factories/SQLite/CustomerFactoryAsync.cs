@@ -9,14 +9,14 @@ public class CustomerFactoryAsync: IDataFactoryAsync<Customer>
     OrderServiceContext _context;
     public CustomerFactoryAsync(OrderServiceContext context )
     {
-        context.Database.EnsureCreated();
         _context = context;
     }
-    public async Task<Customer> Create(long id, IDataParams? args, CancellationToken token = default)
+    public async Task<Customer> Create(long id, IDataParams? args, CancellationToken token)
     {
        
         var factory = PreparationContext.GetFactory();
         var customer = new Customer {Name = $"Name {id}", Address =await factory.GetAsync<Address,AddressFactoryAsync>(token), Email ="@ " + id,Phone = id.ToString()};
+        _context.Addresses.Attach(customer.Address); 
         await  _context.Customers.AddAsync(customer, token);
         await _context.SaveChangesAsync(token);
         return customer;

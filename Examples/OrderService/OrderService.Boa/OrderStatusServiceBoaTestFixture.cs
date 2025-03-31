@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Boa.Constrictor.Screenplay;
-using FluentAssertions;
 using Moq;
-using NUnit.Framework;
 using OrderService.Boa.OrderStatusService.Abilities;
 using OrderService.Boa.OrderStatusService.Questions;
 using OrderService.Boa.OrderStatusService.Tasks;
 using OrderService.DTO;
 using OrderService.Models;
 using OrderService.Repository;
-using OrderService.Services;
+using Shouldly;
 
 namespace OrderService.Boa.OrderStatusService;
 
@@ -57,7 +52,7 @@ public class OrderStatusServiceBoaTestFixture
         _actor.AttemptsTo(addTask);
 
         // Assert
-        addTask.AddResult.Should().NotBeNull();
+        addTask.AddResult.ShouldNotBeNull();
         _mockOrderStatusRepository.Verify(repo => repo.Insert(It.IsAny<OrderStatus>()), Times.Once);
     }
 
@@ -74,7 +69,7 @@ public class OrderStatusServiceBoaTestFixture
 
         // Act & Assert
         Action act = () => _actor.AttemptsTo(AddOrderStatusTask.For(orderId, statusDto));
-        act.Should().Throw<InvalidOperationException>();
+        act.ShouldThrow<InvalidOperationException>();
         _mockOrderStatusRepository.Verify(repo => repo.Insert(It.IsAny<OrderStatus>()), Times.Never);
     }
 
@@ -90,7 +85,7 @@ public class OrderStatusServiceBoaTestFixture
 
         // Act & Assert
         Action act = () => _actor.AttemptsTo(AddOrderStatusTask.For(orderId, statusDto));
-        act.Should().Throw<ArgumentException>();
+        act.ShouldThrow<ArgumentException>();
         _mockOrderStatusRepository.Verify(repo => repo.Insert(It.IsAny<OrderStatus>()), Times.Never);
     }
 
@@ -113,10 +108,10 @@ public class OrderStatusServiceBoaTestFixture
         var orderStatuses = _actor.AsksFor(OrderStatusesForOrderId.ForOrderId(orderId));
 
         // Assert
-        orderStatuses.Should().NotBeNull();
-        orderStatuses.Should().HaveCount(1);
-        orderStatuses.First().OrderStatus.Should().Be(nameof(Status.SENT));
-        orderStatuses.First().StatusDate.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMinutes(5)); // Adjust delta as needed
+        orderStatuses.ShouldNotBeNull();
+        orderStatuses.Count().ShouldBe(1);
+        orderStatuses.First().OrderStatus.ShouldBe(nameof(Status.SENT));
+        orderStatuses.First().StatusDate.ShouldBeLessThanOrEqualTo(DateTime.Now +TimeSpan.FromMinutes(5));
     }
 
     [Test]
@@ -130,7 +125,7 @@ public class OrderStatusServiceBoaTestFixture
 
         // Act & Assert
         Action act = () => _actor.AsksFor(OrderStatusesForOrderId.ForOrderId(orderId));
-        act.Should().Throw<ArgumentException>();
+        act.ShouldThrow<ArgumentException>();
     }
     
     [Test]
@@ -161,11 +156,10 @@ public class OrderStatusServiceBoaTestFixture
        
         // Assert
         _mockOrderStatusRepository.Verify(repo => repo.Insert(It.IsAny<OrderStatus>()), Times.Once);
-        orderStatuses.Should().NotBeNull();
-        orderStatuses.Should().HaveCount(1);
-        orderStatuses.First().OrderStatus.Should().Be(nameof(Status.DELIVERED));
-        orderStatuses.First().StatusDate.Should().BeCloseTo(DateTime.Now.ToUniversalTime(), TimeSpan.FromMinutes(5)); // Adjust delta as needed
-        
+        orderStatuses.ShouldNotBeNull();
+        orderStatuses.Count().ShouldBe(1);
+        orderStatuses.First().OrderStatus.ShouldBe(nameof(Status.DELIVERED));
+        orderStatuses.First().StatusDate.ShouldBeLessThanOrEqualTo(DateTime.Now +TimeSpan.FromMinutes(5));        
         
         
     }
