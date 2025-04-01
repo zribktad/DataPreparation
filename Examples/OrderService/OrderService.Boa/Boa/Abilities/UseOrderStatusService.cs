@@ -4,14 +4,14 @@ namespace OrderService.Boa.OrderStatusService.Abilities;
 
 public class UseOrderStatusService : IAbility
 {
-    public Services.OrderStatusService Service { get; }
+    public Services.IOrderStatusService Service { get; }
 
-    public UseOrderStatusService(Services.OrderStatusService service)
+    public UseOrderStatusService(Services.IOrderStatusService service)
     {
         Service = service;
     }
 
-    public static UseOrderStatusService With(Services.OrderStatusService service)
+    public static UseOrderStatusService With(Services.IOrderStatusService service)
     {
         return new UseOrderStatusService(service);
     }

@@ -14,13 +14,15 @@ namespace OrderService.Services
         private readonly IRepository<Order> _orderRepository;
         private readonly IDiscoveryClient _discoveryClient;
         private readonly ICustomerService _customerService;
+        private readonly HttpClient _client;
 
-        public OrderStatusService(IRepository<OrderStatus> orderStatusRepository, IRepository<Order> orderRepository, IDiscoveryClient discoveryClient, ICustomerService customerService)
+        public OrderStatusService(IRepository<OrderStatus> orderStatusRepository, IRepository<Order> orderRepository, IDiscoveryClient discoveryClient, ICustomerService customerService, IHttpClientFactory httpClientFactory)
         {
             _orderStatusRepository = orderStatusRepository;
             _orderRepository = orderRepository;
             _discoveryClient = discoveryClient;
             _customerService = customerService;
+            _client = httpClientFactory.CreateClient();
         }
 
         public OrderStatusOutputDTO AddOrderStatus(long orderId, OrderStatusInputDTO statusDto)
@@ -117,9 +119,8 @@ namespace OrderService.Services
                 throw new TimeoutException("API-GATEWAY not found");
             }
             string baseUrl = $"http://{instance.Host}:{instance.Port}/api/v1/packages";
-
-            var client = new HttpClient();
-            var response = client.PostAsync(baseUrl, new StringContent(JsonConvert.SerializeObject(packageDTO), Encoding.UTF8, "application/json")).Result;
+            
+            var response = _client.PostAsync(baseUrl, new StringContent(JsonConvert.SerializeObject(packageDTO), Encoding.UTF8, "application/json")).Result;
             if (!response.IsSuccessStatusCode)
             {
                 throw new TimeoutException("Error posting package");
@@ -139,9 +140,8 @@ namespace OrderService.Services
                 throw new TimeoutException("API-GATEWAY not found");
             }
             string baseUrl = $"http://{instance.Host}:{instance.Port}/api/v1/addresses/supply-address";
-
-            var client = new HttpClient();
-            var response = client.GetAsync(baseUrl).Result;
+            
+            var response = _client.GetAsync(baseUrl).Result;
             if (response.IsSuccessStatusCode)
             {
                 var content = response.Content.ReadAsStringAsync().Result;

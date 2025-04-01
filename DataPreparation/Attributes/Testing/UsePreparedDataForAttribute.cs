@@ -15,6 +15,15 @@ namespace DataPreparation.Testing
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class UsePreparedDataForAttribute : UsePreparedAttribute
     {
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UsePreparedDataForAttribute"/> class.
+        /// </summary>
+        /// <param name="classType">The type of the class containing the methods.</param>
+        /// <param name="methodsNames">The names of the methods for which data preparation is required.</param>
+        public UsePreparedDataForAttribute(Type classType): this(classType, true)
+        {
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="UsePreparedDataForAttribute"/> class.
         /// </summary>
@@ -34,7 +43,7 @@ namespace DataPreparation.Testing
         public UsePreparedDataForAttribute(Type classType, bool useClassDataPreparation, params string[] methodsNames)
         {
             _classType = classType ?? throw new ArgumentNullException(nameof(classType));
-            _methodsNames = methodsNames ?? throw new ArgumentNullException(nameof(methodsNames));
+            _methodsNames = methodsNames;
             _useClassDataPreparation = useClassDataPreparation;
         }
 

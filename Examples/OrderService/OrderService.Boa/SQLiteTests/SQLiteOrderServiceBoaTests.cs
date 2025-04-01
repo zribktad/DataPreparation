@@ -52,7 +52,7 @@ public class SqLiteOrderServiceBoaTests
     {
         IRepository<Customer> customerRepository = new Repository<Customer>(_context);
         IRepository<Order> orderRepository = new Repository<Order>(_context);
-        Services.OrderService  orderService = new Services.OrderService(orderRepository, customerRepository,null);
+        Services.OrderService  orderService = new Services.OrderService(orderRepository, customerRepository);
         
         // Arrange
         var address = new Address() { City = "City", Street = "Street", PostalCode = "ZipCode" };
@@ -87,7 +87,7 @@ public class SqLiteOrderServiceBoaTests
     {
         IRepository<Customer> customerRepository = new Repository<Customer>(_context);
         IRepository<Order> orderRepository = new Repository<Order>(_context);
-        Services.OrderService  orderService = new Services.OrderService(orderRepository, customerRepository,null);
+        Services.OrderService  orderService = new Services.OrderService(orderRepository, customerRepository);
         Services.CustomerService  customerService = new Services.CustomerService(customerRepository);
         // *********** Create Customer ***********
         // Arrange customer

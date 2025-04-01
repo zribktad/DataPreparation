@@ -26,7 +26,7 @@ namespace OrderService.Test.Services
             var mockOrderItemRepository = new Mock<IRepository<OrderItem>>();
             mockOrderItemRepository.Setup(repo => repo.Insert(It.IsAny<OrderItem>()));
 
-            var orderItemService = new OrderItemService(mockOrderRepository.Object, mockOrderItemRepository.Object, null);
+            var orderItemService = new OrderItemService(mockOrderRepository.Object, mockOrderItemRepository.Object);
 
             // Act
             var result = orderItemService.AddOrderItem(orderId, orderItemDTO);
@@ -53,7 +53,7 @@ namespace OrderService.Test.Services
             var mockOrderRepository = new Mock<IRepository<Order>>();
             mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>())).Returns(order);
 
-            var orderItemService = new OrderItemService(mockOrderRepository.Object, Mock.Of<IRepository<OrderItem>>(), null);
+            var orderItemService = new OrderItemService(mockOrderRepository.Object, Mock.Of<IRepository<OrderItem>>());
 
             // Act
             var result = orderItemService.GetOrderItems(orderId);
@@ -71,7 +71,7 @@ namespace OrderService.Test.Services
             var mockOrderRepository = new Mock<IRepository<Order>>();
             mockOrderRepository.Setup(repo => repo.GetById(orderId, null)).Returns((Order)null); // Pass null for optional parameter
 
-            var orderItemService = new OrderItemService(mockOrderRepository.Object, Mock.Of<IRepository<OrderItem>>(), null);
+            var orderItemService = new OrderItemService(mockOrderRepository.Object, Mock.Of<IRepository<OrderItem>>());
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => orderItemService.GetOrderItems(orderId));

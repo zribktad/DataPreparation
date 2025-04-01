@@ -58,7 +58,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
                 new Order { Id = id, CustomerId = orderDto.CustomerId, OrderItems = orderItems }); //Mock the GetById method to return the order with the same id as the input
     
         Services.OrderService orderService = new Services.OrderService(
-            mockOrderRepository.Object, mockCustomerRepository.Object, null);    //FactoryObjects the order service
+            mockOrderRepository.Object, mockCustomerRepository.Object);    //FactoryObjects the order service
         
         Actor actor = new Actor("OrderTester", new ConsoleLogger());
         actor.Can(UseOrderService.With(orderService));
@@ -89,7 +89,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
     
         //how to ppair CustomerIde with CustomerRepository, OrderItems with OrderRepository?
         Services.OrderService orderService = new Services.OrderService(
-            testData.New<IRepository<Order>,OrderMockRepositoryFactory>(new ListParams(orderDto)), testData.New<IRepository<Customer>,CustomerMockRepositoryFactory>(), null);
+            testData.New<IRepository<Order>,OrderMockRepositoryFactory>(new ListParams(orderDto)), testData.New<IRepository<Customer>,CustomerMockRepositoryFactory>());
         //or if we use injection setup orderReposiroty and customerRepository according the UseOrderService (Can)
         orderService = PreparationContext.GetProvider().GetService<Services.OrderService>(); // how to setup to return Order with good ID
         //orderDTO is not in OrderRepository, but OrderRepository is  defined method for insert and get by id and for CustomerRepository is defined method for get by id
@@ -122,8 +122,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         
         Services.OrderService _orderService = new Services.OrderService(
                     PreparationContext.GetFactory().New<IRepository<Order>,OrderMockRepositoryFactory>(ListParams.Use(orderDto)), 
-                 PreparationContext.GetFactory().New<IRepository<Customer>,CustomerMockRepositoryFactory>(ListParams.Use(customer)), 
-                    null);
+                 PreparationContext.GetFactory().New<IRepository<Customer>,CustomerMockRepositoryFactory>(ListParams.Use(customer)));
         IActor _actor = new Actor("OrderTester", new ConsoleLogger());
         _actor.Can(UseOrderService.With(_orderService));
 
@@ -192,7 +191,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
             .Setup(repo => repo.GetAll(It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns(orders);
 
-        Services.OrderService _orderService = new Services.OrderService(mockOrderRepository.Object, null, null);
+        Services.OrderService _orderService = new Services.OrderService(mockOrderRepository.Object, null);
         IActor _actor = new Actor("OrderTester");
         _actor.Can(UseOrderService.With(_orderService));
 
@@ -215,7 +214,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
             .Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns(order);
 
-        Services.OrderService _orderService = new Services.OrderService(mockOrderRepository.Object, null, null);
+        Services.OrderService _orderService = new Services.OrderService(mockOrderRepository.Object, null);
         IActor _actor = new Actor("OrderTester");
         _actor.Can(UseOrderService.With(_orderService));
 
@@ -238,7 +237,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
             .Setup(repo => repo.GetById(invalidId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns<Order>(null);
 
-        Services.OrderService _orderService = new Services.OrderService(mockOrderRepository.Object, null, null);
+        Services.OrderService _orderService = new Services.OrderService(mockOrderRepository.Object, null);
         IActor _actor = new Actor("OrderTester");
         _actor.Can(UseOrderService.With(_orderService));
 
@@ -250,8 +249,9 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
     public void CreateOrder_ValidOrderDTO_ReturnsOrder()
     {
         // Arrange
-        var orderDto = new OrderDTO { CustomerId = 1 };
         var customer = new Customer { Id = 1 };
+        var orderDto = new OrderDTO { CustomerId = customer.Id, OrderItems = [new OrderItem()]};
+       
 
         var mockCustomerRepository = new Mock<IRepository<Customer>>();
         mockCustomerRepository
@@ -266,7 +266,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
                 new Order { Id = id, CustomerId = orderDto.CustomerId });
         
         Services.OrderService _orderService = new Services.OrderService(
-            mockOrderRepository.Object, mockCustomerRepository.Object, null);
+            mockOrderRepository.Object, mockCustomerRepository.Object);
         IActor _actor = new Actor("OrderTester");
         _actor.Can(UseOrderService.With(_orderService));
 
@@ -295,7 +295,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
         var mockOrderRepository = new Mock<IRepository<Order>>();
 
         Services.OrderService _orderService = new Services.OrderService(
-            mockOrderRepository.Object, mockCustomerRepository.Object, null);
+            mockOrderRepository.Object, mockCustomerRepository.Object);
         IActor _actor = new Actor("OrderTester");
         _actor.Can(UseOrderService.With(_orderService));
 
@@ -323,7 +323,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
             .Returns(existingOrder);
 
         Services.OrderService _orderService = new Services.OrderService(
-            mockOrderRepository.Object, null, null);
+            mockOrderRepository.Object, null);
         IActor _actor = new Actor("OrderTester");
         _actor.Can(UseOrderService.With(_orderService));
 
@@ -350,7 +350,7 @@ public class OrderServiceBoaTestFixture:IDataPreparationLogger
             .Returns<Order>(null);
 
         Services.OrderService _orderService = new Services.OrderService(
-            mockOrderRepository.Object,null, null);
+            mockOrderRepository.Object,null);
         IActor _actor = new Actor("OrderTester");
         _actor.Can(UseOrderService.With(_orderService));
 

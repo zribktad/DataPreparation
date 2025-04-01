@@ -26,10 +26,13 @@ public class OrderStatusServiceBoaTestFixture
         _mockOrderRepository = new Mock<IRepository<Order>>();
         _mockOrderStatusRepository = new Mock<IRepository<OrderStatus>>();
 
+        
+        var mockFactoryClient = new Mock<IHttpClientFactory>();
+        mockFactoryClient.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
         // Create the service instance
         _orderStatusService = new Services.OrderStatusService(
             _mockOrderStatusRepository.Object, 
-            _mockOrderRepository.Object, null, null);
+            _mockOrderRepository.Object, null, null,mockFactoryClient.Object);
 
         // Assign the actor
         _actor = new Actor("OrderStatusTester");

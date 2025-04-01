@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using OrderService.DTO;
 using OrderService.Models;
@@ -13,21 +14,14 @@ namespace OrderService.Services
     {
         private readonly IRepository<Order> _orderRepository;
         private readonly IRepository<Customer> _customerRepository;
-        private readonly IDiscoveryClient? _discoveryClient;
 
-        public OrderService(IRepository<Order> orderRepository, IRepository<Customer> customerRepository, IDiscoveryClient discoveryClient = null)
+        public OrderService(IRepository<Order> orderRepository, IRepository<Customer> customerRepository )
         {
             _orderRepository = orderRepository;
             _customerRepository = customerRepository;
-            _discoveryClient = discoveryClient;
+           
         }
         
-        public OrderService(IRepository<Order> orderRepository, IRepository<Customer> customerRepository)
-        {
-            _orderRepository = orderRepository;
-            _customerRepository = customerRepository;
-        }
-
         public IEnumerable<Order> GetOrders()
         {
             return _orderRepository.GetAll(q => q.Include(o => o.Complaint).Include(o => o.Rating));
@@ -54,12 +48,16 @@ namespace OrderService.Services
             {
                 throw new InvalidOperationException("Customer not found");
             }
+            if(orderDTO.OrderItems == null || orderDTO.OrderItems.Count() == 0)
+            {
+                throw new ValidationException("Order items not found");
+            }
 
             Order newOrder = new Order
             {
                 CustomerId = orderDTO.CustomerId,
-                OrderStatuses = new List<OrderStatus>(),
-                OrderItems = orderDTO.OrderItems,
+                OrderStatuses = [new OrderStatus { Status = Status.CREATED, StatusDate = DateTime.Now }],
+                OrderItems = orderDTO.OrderItems.ToList(),
                 OrderDate = DateTime.Now
             };
             
