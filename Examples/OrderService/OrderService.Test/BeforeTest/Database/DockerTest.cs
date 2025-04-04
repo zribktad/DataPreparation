@@ -1,6 +1,7 @@
 ﻿using DataPreparation.Database.Helpers;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using NUnit.Framework;
 using Shouldly;
 
 
@@ -14,7 +15,7 @@ namespace OrderService.DataTest.Database
         private static string _connectionString;
 
 
-        private static  string _databaseName = "OrderService"; // Original database name
+        private static  string _databaseName = "OrderServiceBdd"; // Original database name
         private static  string _snapshotName = "OrderService_Snapshot"; // Name for the snapshot
 
         public DockerTest()
@@ -37,7 +38,7 @@ namespace OrderService.DataTest.Database
         public async Task SetUp()
         {
             
-            _dockerHelper = new DockerHelper("0163d3066a87", "OrderService", "ear", "ear");
+            _dockerHelper = new DockerHelper("0163d3066a87", "OrderServiceBdd", "ear", "ear");
             connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
         }

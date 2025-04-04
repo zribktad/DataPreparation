@@ -5,10 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using NUnit.Framework;
 using OrderService.DataTest.Data;
 using OrderService.Models;
 using OrderService.Repository;
 using OrderService.Services;
+using Assert = NUnit.Framework.Assert;
+
 
 namespace OrderService.Test.Services
 {

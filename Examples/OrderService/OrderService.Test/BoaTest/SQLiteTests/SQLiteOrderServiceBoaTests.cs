@@ -23,13 +23,16 @@ using OrderService.DTO;
 using OrderService.Models;
 using OrderService.Repository;
 using OrderService.Services;
+using OrderService.Test.Domain.Boa.Abilities;
+using OrderService.Test.Domain.Boa.Questions;
+using OrderService.Test.Domain.Factories.SQLite;
 using Shouldly;
 using Steeltoe.Discovery;
 
 namespace OrderService.BoaTest;
 
 [DataPreparationFixture]
-public class SqLiteOrderServiceBoaTestsFactory : IDataPreparationTestServices, IDataPreparationLogger, IBeforeTest
+public class SQLiteOrderServiceBoaTests : IDataPreparationTestServices, IDataPreparationLogger, IBeforeTest
 {
     
     public  void DataPreparationServices(IServiceCollection serviceCollection)
@@ -41,7 +44,7 @@ public class SqLiteOrderServiceBoaTestsFactory : IDataPreparationTestServices, I
             options.UseSqlite(databaseConnection, 
                 sqliteOptions => sqliteOptions
                     .MigrationsHistoryTable("__EFMigrationsHistory")
-                    .MigrationsAssembly("OrderService")));
+                    .MigrationsAssembly("OrderServiceBdd")));
         
         serviceCollection.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         serviceCollection.AddScoped<IOrderService, Services.OrderService>();
@@ -75,8 +78,13 @@ public class SqLiteOrderServiceBoaTestsFactory : IDataPreparationTestServices, I
     
     
     [DataPreparationTest]
-    public async Task CreateOrder_FullOrderDTO_ReturnsOrder_Factory()
+    public async Task CreateOrder_FullOrderDTO_ReturnsOrder()
     {
+        
+        Actor actor = new Actor("OrderTester", new ConsoleLogger());
+        actor.Can(UseOrderService.With(PreparationContext.GetProvider().GetRequiredService<IOrderService>()));
+        
+        
         var factory = PreparationContext.GetFactory();
         #region Other Variant
         
@@ -87,8 +95,7 @@ public class SqLiteOrderServiceBoaTestsFactory : IDataPreparationTestServices, I
         #endregion
         orderDto = await factory.GetAsync<OrderDTO,OrderDtoFactoryAsync>();
         //FactoryObjects the order service
-        Actor actor = new Actor("OrderTester", new ConsoleLogger());
-        actor.Can(UseOrderService.With(PreparationContext.GetProvider().GetRequiredService<IOrderService>()));
+        
         // Act
         var createTask = CreateOrderTask.For(orderDto);
         actor.AttemptsTo(createTask);
@@ -103,6 +110,29 @@ public class SqLiteOrderServiceBoaTestsFactory : IDataPreparationTestServices, I
         result.OrderItems.ShouldNotBeNull();
         result.OrderItems.Count().ShouldBe(orderDto.OrderItems.Count());
     }
+    
+    [DataPreparationTest]
+    public async Task CreateOrder_FullOrderDTO_ReturnsOrder_UseBOA()
+    {
+        Actor actor = new Actor("OrderTester", new ConsoleLogger());
+        actor.Can( UseSourceFactory.FromDataPreparation());
+        actor.Can(UseOrderService.FromDataPreparationProvider());
+        
+        // Act
+        OrderDTO orderDto = await actor.AsksForAsync(new NewOrderDtoAsync());
+        var createTask = CreateOrderAndRegisterTask.For(orderDto);
+        actor.AttemptsTo(createTask);
+     
+        // Assert
+        createTask.CreatedOrder.ShouldNotBeNull();;
+        Order result = actor.AsksFor(new OrderById(createTask.CreatedOrder.Id));
+        
+        result.ShouldNotBeNull();
+        result.CustomerId.ShouldBe(orderDto.CustomerId);
+        result.OrderItems.ShouldNotBeNull();
+        result.OrderItems.Count().ShouldBe(orderDto.OrderItems.Count());
+    }
+
     
     
     [DataPreparationTest]
@@ -241,7 +271,7 @@ public class SqLiteOrderServiceBoaTestsFactory : IDataPreparationTestServices, I
     }
 
     [DataPreparationTest]
-    [UsePreparedDataFor(typeof(UpdateOrderStatusTask),true)]
+    [UsePreparedDataFor(typeof(UpdateOrderStatusTask))]
     public async Task CompleteOrderWorkflow_FromCreateToShipped()
     {
         var factory = PreparationContext.GetFactory();

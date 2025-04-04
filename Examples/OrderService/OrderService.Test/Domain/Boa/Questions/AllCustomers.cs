@@ -9,6 +9,7 @@ public class AllCustomers : IQuestion<IEnumerable<Customer>>
 {
     public IEnumerable<Customer> RequestAs(IActor actor)
     {
+        
         var ability = actor.Using<UseCustomerService>();
         return ability.Service.GetAllCustomers();
     }

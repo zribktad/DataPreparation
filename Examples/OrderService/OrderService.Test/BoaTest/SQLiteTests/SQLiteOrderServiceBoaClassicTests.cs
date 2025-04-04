@@ -1,13 +1,7 @@
 using Boa.Constrictor.Screenplay;
-using DataPreparation.Factory.Testing;
-using DataPreparation.Provider;
-using DataPreparation.Testing;
-using DataPreparation.Testing.Factory;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using OrderService.BoaTest.Factories.SQLite;
+using NUnit.Framework;
 using OrderService.BoaTest.CustomerService.Abilities;
 using OrderService.BoaTest.CustomerService.Questions;
 using OrderService.BoaTest.CustomerService.Tasks;
@@ -17,12 +11,11 @@ using OrderService.BoaTest.OrderService.Tasks;
 using OrderService.DTO;
 using OrderService.Models;
 using OrderService.Repository;
-using OrderService.Services;
 using Shouldly;
 
 namespace OrderService.BoaTest;
 
-public class SqLiteOrderServiceBoaTests
+public class SQLiteOrderServiceBoaClassicTests
 {
     private SqliteOrderServiceContext _context;
     private SqliteConnection _connection;
@@ -38,7 +31,7 @@ public class SqLiteOrderServiceBoaTests
         var options = new DbContextOptionsBuilder<OrderServiceContext>()
             .UseSqlite(_connection, sql => {
                 sql
-                .MigrationsAssembly("OrderService")
+                .MigrationsAssembly("OrderServiceBdd")
                 .MigrationsHistoryTable("__EFMigrationsHistory"); })
             .Options;
 

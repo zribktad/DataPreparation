@@ -1,5 +1,6 @@
 using Boa.Constrictor.Screenplay;
 using Moq;
+using NUnit.Framework;
 using OrderService.BoaTest.OrderStatusService.Abilities;
 using OrderService.BoaTest.OrderStatusService.Questions;
 using OrderService.BoaTest.OrderStatusService.Tasks;

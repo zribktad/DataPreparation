@@ -1,8 +1,7 @@
 using DataPreparation.Data.Setup;
-using DataPreparation.Provider;
 using OrderService.Models;
 
-namespace OrderService.BoaTest.ShowCases.Factories;
+namespace OrderService.Test.Domain.Factories.AsyncMock;
 
 public class CustomerFactoryAsync: IDataFactoryAsync<Customer>
 {

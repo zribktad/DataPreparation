@@ -5,11 +5,6 @@ namespace OrderService.BoaTest.Factories.SQLite;
 
 public class OrderItemFactoryAsync: IDataFactoryAsync<OrderItem>
 {
-    OrderServiceContext _context;
-    public OrderItemFactoryAsync( OrderServiceContext context )
-    {
-        _context = context;
-    }
     public Task<OrderItem> Create(long createId, IDataParams? args, CancellationToken token = default)
     {
         return Task.FromResult( new OrderItem() {ItemId = createId, Quantity = (int)createId});

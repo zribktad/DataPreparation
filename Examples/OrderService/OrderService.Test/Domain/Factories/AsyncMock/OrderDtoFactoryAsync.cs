@@ -1,9 +1,10 @@
 using DataPreparation.Data.Setup;
 using DataPreparation.Provider;
+using OrderService.BoaTest.ShowCases.Factories;
 using OrderService.DTO;
 using OrderService.Models;
 
-namespace OrderService.BoaTest.ShowCases.Factories;
+namespace OrderService.Test.Domain.Factories.AsyncMock;
 
 public class OrderDtoFactoryAsync : IDataFactoryAsync<OrderDTO>
 {
@@ -14,8 +15,8 @@ public class OrderDtoFactoryAsync : IDataFactoryAsync<OrderDTO>
         var factory = PreparationContext.GetFactory();
         return new OrderDTO()
         {
-            OrderItems = await factory.GetAsync<OrderItem, OrderItemFactoryAsync>(2, token),
-            CustomerId = (await factory.GetAsync<Customer, CustomerFactoryAsync>(token)).Id
+            OrderItems = await factory.GetAsync<OrderItem, OrderService.BoaTest.Factories.SQLite.OrderItemFactoryAsync>(2, token),
+            CustomerId = (await factory.GetAsync<Customer, OrderService.BoaTest.Factories.SQLite.CustomerFactoryAsync>(token)).Id
         };
 
     }

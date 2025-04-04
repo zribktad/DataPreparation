@@ -1,9 +1,10 @@
 using DataPreparation.Data.Setup;
 using DataPreparation.Provider;
+using OrderService.BoaTest.Factories.SQLite;
 using OrderService.DTO;
 using OrderService.Models;
 
-namespace OrderService.BoaTest.Factories.SQLite;
+namespace OrderService.Test.Domain.Factories.SQLite;
 
 public class OrderDtoFactoryAsync : IDataFactoryAsync<OrderDTO>
 {

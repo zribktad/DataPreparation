@@ -1,18 +1,7 @@
-﻿using DataPreparation.Testing;
-using DataPreparation.Unums.Testing;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
+﻿using Microsoft.Extensions.Configuration;
 using Npgsql;
-using OrderService.DataTest.Data;
-using OrderService.Models;
-using OrderService.Repository;
-using OrderService.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NUnit.Framework;
+using Assert = NUnit.Framework.Assert;
 
 namespace OrderService.DataTest.Database
 {
@@ -24,7 +13,7 @@ namespace OrderService.DataTest.Database
         private static string _connectionString;
 
 
-        private static  string _databaseName = "OrderService"; // Original database name
+        private static  string _databaseName = "OrderServiceBdd"; // Original database name
         private static  string _snapshotName = "OrderService_Snapshot"; // Name for the snapshot
 
         public DatabaseTests()
