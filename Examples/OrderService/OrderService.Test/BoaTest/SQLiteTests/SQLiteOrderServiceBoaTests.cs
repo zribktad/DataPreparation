@@ -23,6 +23,7 @@ using OrderService.DTO;
 using OrderService.Models;
 using OrderService.Repository;
 using OrderService.Services;
+using OrderService.Test.Domain;
 using OrderService.Test.Domain.Boa.Abilities;
 using OrderService.Test.Domain.Boa.Questions;
 using OrderService.Test.Domain.Factories.SQLite;
@@ -32,44 +33,9 @@ using Steeltoe.Discovery;
 namespace OrderService.BoaTest;
 
 [DataPreparationFixture]
-public class SQLiteOrderServiceBoaTests : IDataPreparationTestServices, IDataPreparationLogger, IBeforeTest
+public class SQLiteOrderServiceBoaTests : SQLiteFixture, IBeforeTest
 {
     
-    public  void DataPreparationServices(IServiceCollection serviceCollection)
-    {
-        
-        SqliteConnection databaseConnection = new("DataSource=:memory:");
-        databaseConnection.Open();
-        serviceCollection.AddDbContext<OrderServiceContext>(options =>
-            options.UseSqlite(databaseConnection, 
-                sqliteOptions => sqliteOptions
-                    .MigrationsHistoryTable("__EFMigrationsHistory")
-                    .MigrationsAssembly("OrderServiceBdd")));
-        
-        serviceCollection.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-        serviceCollection.AddScoped<IOrderService, Services.OrderService>();
-        serviceCollection.AddScoped<IOrderManagementService, OrderManagementService>();
-        serviceCollection.AddScoped<IOrderStatusService, Services.OrderStatusService>();
-        serviceCollection.AddScoped<IOrderItemService, OrderItemService>();
-        serviceCollection.AddScoped<ICustomerService, Services.CustomerService>();
-        serviceCollection.AddScoped<IDiscoveryClient, FakeDiscoveryClient>();
-        serviceCollection.AddScoped<IHttpClientFactory,FakeHttpClientFactory>();
-        
-        var context = serviceCollection.BuildServiceProvider().GetRequiredService<OrderServiceContext>();
-        context.Database.EnsureCreated();
-    }
-    
-    public  ILoggerFactory InitializeDataPreparationTestLogger()
-    {
-        return LoggerFactory.Create(builder =>
-        {
-            builder.SetMinimumLevel(LogLevel.Debug);
-            builder.AddDebug();
-            builder.AddConsole();
-        });
-        
-    }
-
     public void BeforeTest(IServiceProvider testProvider)
     {
        // code to run before each test
@@ -119,13 +85,13 @@ public class SQLiteOrderServiceBoaTests : IDataPreparationTestServices, IDataPre
         actor.Can(UseOrderService.FromDataPreparationProvider());
         
         // Act
-        OrderDTO orderDto = await actor.AsksForAsync(new NewOrderDtoAsync());
+        OrderDTO orderDto = await actor.AsksForAsync(NewOrderDtoAsync.WithNoArgs());
         var createTask = CreateOrderAndRegisterTask.For(orderDto);
         actor.AttemptsTo(createTask);
      
         // Assert
         createTask.CreatedOrder.ShouldNotBeNull();;
-        Order result = actor.AsksFor(new OrderById(createTask.CreatedOrder.Id));
+        Order result = actor.AsksFor(OrderById.WithId(createTask.CreatedOrder.Id));
         
         result.ShouldNotBeNull();
         result.CustomerId.ShouldBe(orderDto.CustomerId);
@@ -180,25 +146,19 @@ public class SQLiteOrderServiceBoaTests : IDataPreparationTestServices, IDataPre
     [DataPreparationTest]
     public async Task CancelOrder_ValidOrder_ChangesOrderStatus()
     {
-        var factory = PreparationContext.GetFactory();
-        var orderDto = await factory.GetAsync<OrderDTO, OrderDtoFactoryAsync>();
-
+        
         Actor actor = new Actor("OrderTester", new ConsoleLogger());
-        actor.Can(UseOrderService.With(PreparationContext.GetProvider().GetRequiredService<IOrderService>()));
-        actor.Can(UseOrderStatusService.With(PreparationContext.GetProvider().GetRequiredService<IOrderStatusService>()));
+        actor.Can(UseSourceFactory.FromDataPreparation());
+        actor.Can(UseOrderService.FromDataPreparationProvider());
+        actor.Can(UseOrderStatusService.FromDataPreparationProvider());
     
-        
-        var createTask = CreateOrderTask.For(orderDto);
+        OrderDTO orderDto = await actor.AsksForAsync(NewOrderDtoAsync.WithNoArgs());
+        var createTask = CreateOrderAndRegisterTask.For(orderDto);
         actor.AttemptsTo(createTask);
-        factory.Register<Order, OrderRegisterAsync>(createTask.CreatedOrder, out _);
-    
         
-        var cancelTask = CancelOrderTask.For(createTask.CreatedOrder.Id);
-        actor.AttemptsTo(cancelTask);
-    
+        actor.AttemptsTo(CancelOrderTask.For(createTask.CreatedOrder.Id));
         
         var canceledOrder = actor.AsksFor(new OrderById(createTask.CreatedOrder.Id));
-    
         
         canceledOrder.ShouldNotBeNull();
         canceledOrder.OrderStatuses.ShouldContain(item => item.Status == Status.CANCELED);
@@ -274,20 +234,19 @@ public class SQLiteOrderServiceBoaTests : IDataPreparationTestServices, IDataPre
     [UsePreparedDataFor(typeof(UpdateOrderStatusTask))]
     public async Task CompleteOrderWorkflow_FromCreateToShipped()
     {
-        var factory = PreparationContext.GetFactory();
-        var orderDto = await factory.GetAsync<OrderDTO, OrderDtoFactoryAsync>();
-
+        
         Actor actor = new Actor("OrderProcessor", new ConsoleLogger());
-        actor.Can(UseOrderService.With(PreparationContext.GetProvider().GetRequiredService<IOrderService>()));
-        actor.Can(UseOrderStatusService.With(PreparationContext.GetProvider().GetRequiredService<IOrderStatusService>()));
-        actor.Can(UseOrderManagementService.With(PreparationContext.GetProvider().GetRequiredService<IOrderManagementService>()));
+        actor.Can(UseSourceFactory.FromDataPreparation());
+        actor.Can(UseOrderService.FromDataPreparationProvider());
+        actor.Can(UseOrderStatusService.FromDataPreparationProvider());
+        actor.Can(UseOrderManagementService.FromDataPreparationProvider());
     
-        var createTask = CreateOrderTask.For(orderDto);
+        OrderDTO orderDto = await actor.AsksForAsync(NewOrderDtoAsync.WithNoArgs());
+        var createTask = CreateOrderAndRegisterTask.For(orderDto);
         actor.AttemptsTo(createTask);
-        factory.Register<Order, OrderRegisterAsync>(createTask.CreatedOrder, out _);
     
         
-        var initialOrder = actor.AsksFor(new OrderById(createTask.CreatedOrder.Id));
+        var initialOrder = actor.AsksFor(OrderById.WithId(createTask.CreatedOrder.Id));
         initialOrder.OrderStatuses.LastOrDefault()!.Status.ShouldBe(Status.CREATED);
     
         actor.AttemptsTo(UpdateOrderStatusTask.For(createTask.CreatedOrder.Id, Status.PROCESSING));
@@ -319,7 +278,7 @@ public class SQLiteOrderServiceBoaTests : IDataPreparationTestServices, IDataPre
             factory.Register<Order, OrderRegisterAsync>(createTask.CreatedOrder, out _);
         }
     
-        var allOrders = actor.AsksFor(AllOrders.FromService());
+        var allOrders = actor.AsksFor(AllOrders.FromService()).ToList();
     
         // Assert
         allOrders.ShouldNotBeNull();
