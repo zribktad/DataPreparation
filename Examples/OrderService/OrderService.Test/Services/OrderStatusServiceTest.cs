@@ -26,7 +26,9 @@ namespace OrderService.Test.Services
 
             var mockOrderStatusRepository = new Mock<IRepository<OrderStatus>>();
             mockOrderStatusRepository.Setup(repo => repo.Insert(It.IsAny<OrderStatus>())).Returns(new OrderStatus { Status =  (Status)Enum.Parse(typeof(Status), statusDto.OrderStatus), StatusDate = DateTime.Now.ToUniversalTime() });
-            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null);
+            var mockFactoryClient = new Mock<IHttpClientFactory>();
+            mockFactoryClient.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null,mockFactoryClient.Object);
 
             // Act
             var result = orderStatusService.AddOrderStatus(orderId, statusDto);
@@ -50,8 +52,9 @@ namespace OrderService.Test.Services
             mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>())).Returns(order);
 
             var mockOrderStatusRepository = new Mock<IRepository<OrderStatus>>();
-
-            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null);
+            var mockFactoryClient = new Mock<IHttpClientFactory>();
+            mockFactoryClient.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null,mockFactoryClient.Object);
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => orderStatusService.AddOrderStatus(orderId, statusDto));
@@ -71,7 +74,9 @@ namespace OrderService.Test.Services
 
             var mockOrderStatusRepository = new Mock<IRepository<OrderStatus>>();
 
-            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null);
+            var mockFactoryClient = new Mock<IHttpClientFactory>();
+            mockFactoryClient.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null,mockFactoryClient.Object);
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => orderStatusService.AddOrderStatus(orderId, statusDto));
@@ -90,7 +95,9 @@ namespace OrderService.Test.Services
 
             var mockOrderStatusRepository = new Mock<IRepository<OrderStatus>>();
 
-            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null);
+            var mockFactoryClient = new Mock<IHttpClientFactory>();
+            mockFactoryClient.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null,mockFactoryClient.Object);
 
             // Act
             var result = orderStatusService.GetOrderStatuses(orderId);
@@ -114,7 +121,9 @@ namespace OrderService.Test.Services
 
             var mockOrderStatusRepository = new Mock<IRepository<OrderStatus>>();
 
-            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null);
+            var mockFactoryClient = new Mock<IHttpClientFactory>();
+            mockFactoryClient.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+            var orderStatusService = new OrderStatusService(mockOrderStatusRepository.Object, mockOrderRepository.Object, null, null,mockFactoryClient.Object);
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => orderStatusService.GetOrderStatuses(orderId));

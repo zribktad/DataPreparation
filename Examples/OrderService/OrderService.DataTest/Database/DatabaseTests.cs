@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 
 namespace OrderService.DataTest.Database
 {
+    
+    [Explicit]
     public class DatabaseTests
     {
 

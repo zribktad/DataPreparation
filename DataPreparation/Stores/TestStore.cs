@@ -100,6 +100,7 @@ public class TestStore
                 }
             
                 testStore = fixtureStore.RemoveTestStore(testStore.TestInfo);
+                testStore?.ServiceScope.Dispose();
             }
             catch (AggregateException e)
             {
@@ -114,7 +115,7 @@ public class TestStore
         }
         return testStore;
     }
-    internal static TestStore Get(ContextTestInfo testInfo)
+    internal static TestStore? Get(ContextTestInfo testInfo)
     {
         foreach (var fixtureStore in  Store.GetFixtureStores())
         {
@@ -124,8 +125,7 @@ public class TestStore
                 return testStore;
             }
         }
-
-        throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for {testInfo}.");
+        return null;
     }
     
        #region Test Store

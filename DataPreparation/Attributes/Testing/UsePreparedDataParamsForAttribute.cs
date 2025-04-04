@@ -67,10 +67,8 @@ namespace DataPreparation.Testing
             //add data to store
             testStore.PreparedData.AddDataPreparation(preparedData[0],_paramsUpData,_paramsDownData);
             
-            
             // Up data for the test if all data are prepared
             DataPreparationHandler.DataUp(testStore);
-            throw new Exception("Test failed");
         }
 
         /// <summary>

@@ -8,9 +8,9 @@ namespace OrderService.Models
         public DateTime OrderDate { get; set; }
         public long CustomerId { get; set; }
         [JsonIgnore]
-        public virtual IEnumerable<OrderItem> OrderItems { get; set; }
+        public virtual IList<OrderItem> OrderItems { get; set; }
         [JsonIgnore]
-        public virtual IEnumerable<OrderStatus> OrderStatuses { get; set; } 
+        public virtual IList<OrderStatus> OrderStatuses { get; set; } 
         public Complaint Complaint { get; set; }
         public Rating Rating { get; set; }
     }

@@ -16,12 +16,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IOrderService, OrderService.Services.OrderService>();
-builder.Services.AddScoped<IOrderManagementService, OrderService.Services.OrderManagementService>();
-builder.Services.AddScoped<IOrderStatusService, OrderService.Services.OrderStatusService>();
-builder.Services.AddScoped<IOrderItemService, OrderService.Services.OrderItemService>();
-builder.Services.AddScoped<ICustomerService, OrderService.Services.CustomerService>();
+builder.Services.AddScoped<IOrderManagementService, OrderManagementService>();
+builder.Services.AddScoped<IOrderStatusService, OrderStatusService>();
+builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.AddAllActuators();
 
+builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

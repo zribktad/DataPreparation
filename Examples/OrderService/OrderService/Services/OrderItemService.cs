@@ -11,13 +11,21 @@ namespace OrderService.Services
     {
         private readonly IRepository<Order> _orderRepository;
         private readonly IRepository<OrderItem> _orderItemRepository;
-        private readonly IDiscoveryClient _discoveryClient;
+        private readonly IDiscoveryClient? _discoveryClient;
+        private readonly HttpClient _client;
 
-        public OrderItemService(IRepository<Order> orderRepository, IRepository<OrderItem> orderItemRepository, IDiscoveryClient discoveryClient)
+        public OrderItemService(IRepository<Order> orderRepository, IRepository<OrderItem> orderItemRepository, IDiscoveryClient discoveryClient, IHttpClientFactory httpClientFactory)
         {
             _orderRepository = orderRepository;
             _orderItemRepository = orderItemRepository;
             _discoveryClient = discoveryClient;
+            _client = httpClientFactory.CreateClient();
+        }
+        public OrderItemService(IRepository<Order> orderRepository, IRepository<OrderItem> orderItemRepository)
+        {
+            _orderRepository = orderRepository;
+            _orderItemRepository = orderItemRepository;
+   
         }
 
         public bool AddOrderItem(long orderId, OrderItemDTO orderItemDTO)
@@ -62,7 +70,7 @@ namespace OrderService.Services
             return order.OrderItems;
         }
 
-        public int getPriceAndReduceStock(OrderItemDTO orderItem)
+        private int getPriceAndReduceStock(OrderItemDTO orderItem)
         {
             if (_discoveryClient == null)
             {
@@ -75,15 +83,14 @@ namespace OrderService.Services
                 throw new TimeoutException("API-GATEWAY not found");
             }
             string baseUrl = $"http://{instance.Host}:{instance.Port}/api/v1/items/";
-
-            using var client = new HttpClient();
+            
             string url = baseUrl + orderItem.ItemId + "/reserve";
 
             var requestBody = new { quantity = orderItem.Quantity };
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(requestBody);
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = client.PutAsync(url, httpContent);
+            var response = _client.PutAsync(url, httpContent);
             if (!response.Result.IsSuccessStatusCode)
             {
                 throw new ArgumentException(response.Result.StatusCode.ToString());

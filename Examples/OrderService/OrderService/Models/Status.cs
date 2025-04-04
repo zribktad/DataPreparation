@@ -3,8 +3,10 @@
     public enum Status
     {
         CREATED,
+        PROCESSING,
         SENT,
         DELIVERING,
-        DELIVERED
+        DELIVERED,
+        CANCELED,
     }
 }

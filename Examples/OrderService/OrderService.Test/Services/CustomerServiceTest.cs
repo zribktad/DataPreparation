@@ -98,7 +98,7 @@ namespace OrderService.Test.Services
             var mockRepository = new Mock<IRepository<Customer>>();
             mockRepository.Setup(repo => repo.GetById(customerId, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
                           .Returns(updatedCustomer);
-            mockRepository.Setup(repo => repo.Update(It.IsAny<Customer>()));
+            mockRepository.Setup(repo => repo.Update(It.IsAny<Customer>())).Returns(updatedCustomer);
 
             var _customerService = new CustomerService(mockRepository.Object);
 
