@@ -31,7 +31,7 @@ public class SQLiteOrderServiceBoaClassicTests
         var options = new DbContextOptionsBuilder<OrderServiceContext>()
             .UseSqlite(_connection, sql => {
                 sql
-                .MigrationsAssembly("OrderServiceBdd")
+                .MigrationsAssembly("OrderServiceBddTest")
                 .MigrationsHistoryTable("__EFMigrationsHistory"); })
             .Options;
 

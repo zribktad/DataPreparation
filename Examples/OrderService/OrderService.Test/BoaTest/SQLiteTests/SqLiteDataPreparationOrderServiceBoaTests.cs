@@ -4,11 +4,7 @@ using DataPreparation.Factory.Testing;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
 using DataPreparation.Testing.Factory;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Moq;
 using OrderService.BoaTest.Boa.Abilities;
 using OrderService.BoaTest.CustomerService.Abilities;
 using OrderService.BoaTest.CustomerService.Questions;
@@ -18,22 +14,19 @@ using OrderService.BoaTest.OrderService.Abilities;
 using OrderService.BoaTest.OrderService.Questions;
 using OrderService.BoaTest.OrderService.Tasks;
 using OrderService.BoaTest.OrderStatusService.Abilities;
-using OrderService.BoaTest.TestFakeModels;
 using OrderService.DTO;
 using OrderService.Models;
-using OrderService.Repository;
 using OrderService.Services;
 using OrderService.Test.Domain;
 using OrderService.Test.Domain.Boa.Abilities;
 using OrderService.Test.Domain.Boa.Questions;
 using OrderService.Test.Domain.Factories.SQLite;
 using Shouldly;
-using Steeltoe.Discovery;
 
 namespace OrderService.BoaTest;
 
 [DataPreparationFixture]
-public class SQLiteOrderServiceBoaTests : SQLiteFixture, IBeforeTest
+public class SqLiteDataPreparationOrderServiceBoaTests : SqLiteDataPreparationFixture, IBeforeTest
 {
     
     public void BeforeTest(IServiceProvider testProvider)
@@ -261,10 +254,10 @@ public class SQLiteOrderServiceBoaTests : SQLiteFixture, IBeforeTest
     [DataPreparationTest]
     public async Task GetAllOrders_MultipleOrders_ReturnsAllOrders()
     {
-        var factory = PreparationContext.GetFactory();
-    
+        
         Actor actor = new Actor("OrderAdmin", new ConsoleLogger());
-        actor.Can(UseOrderService.With(PreparationContext.GetProvider().GetRequiredService<IOrderService>()));
+        actor.Can(UseOrderService.FromDataPreparationProvider());
+        actor.Can(UseSourceFactory.FromDataPreparation());
     
         var initialOrders = actor.AsksFor(AllOrders.FromService());
         var initialCount = initialOrders.Count();
@@ -272,10 +265,10 @@ public class SQLiteOrderServiceBoaTests : SQLiteFixture, IBeforeTest
         var orderCount = 3;
         for (int i = 0; i < orderCount; i++)
         {
-            var orderDto = await factory.GetAsync<OrderDTO, OrderDtoFactoryAsync>();
-            var createTask = CreateOrderTask.For(orderDto);
+            
+            var orderDto = await actor.AsksForAsync(NewOrderDtoAsync.WithNoArgs());
+            var createTask = CreateOrderAndRegisterTask.For(orderDto);
             actor.AttemptsTo(createTask);
-            factory.Register<Order, OrderRegisterAsync>(createTask.CreatedOrder, out _);
         }
     
         var allOrders = actor.AsksFor(AllOrders.FromService()).ToList();

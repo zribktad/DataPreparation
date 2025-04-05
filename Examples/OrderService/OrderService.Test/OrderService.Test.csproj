@@ -33,7 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="BDDTest\SQLite\" />
     <Folder Include="ClasicUnit\" />
     <Folder Include="BeforeTest\" />
     <Folder Include="BoaTest\" />

@@ -13,7 +13,7 @@ namespace OrderService.DataTest.Database
         private static string _connectionString;
 
 
-        private static  string _databaseName = "OrderServiceBdd"; // Original database name
+        private static  string _databaseName = "OrderServiceBddTest"; // Original database name
         private static  string _snapshotName = "OrderService_Snapshot"; // Name for the snapshot
 
         public DatabaseTests()

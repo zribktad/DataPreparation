@@ -11,7 +11,7 @@ using Steeltoe.Discovery;
 
 namespace OrderService.Test.Domain;
 
-public class SQLiteFixture: IDataPreparationTestServices, IDataPreparationLogger
+public class SqLiteDataPreparationFixture: IDataPreparationTestServices, IDataPreparationLogger
 {
     public void DataPreparationServices(IServiceCollection serviceCollection)
     {
@@ -22,7 +22,7 @@ public class SQLiteFixture: IDataPreparationTestServices, IDataPreparationLogger
             options.UseSqlite(databaseConnection,
                 sqliteOptions => sqliteOptions
                     .MigrationsHistoryTable("__EFMigrationsHistory")
-                    .MigrationsAssembly("OrderServiceBdd")));
+                    .MigrationsAssembly("OrderServiceBddTest")));
 
         serviceCollection.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         serviceCollection.AddScoped<IOrderService, OrderService.Services.OrderService>();
