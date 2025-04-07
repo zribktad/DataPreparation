@@ -16,39 +16,51 @@ namespace DataPreparation.Testing
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class UsePreparedDataParamsForAttribute : UsePreparedAttribute
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UsePreparedDataParamsForAttribute"/> class.
-        /// </summary>
-        /// <param name="classType">The type of the class containing the method.</param>
-        /// <param name="methodName">The name of the method to be tested.</param>
-        /// <param name="paramsUpData">The parameters for the data preparation before the test.</param>
-        /// <param name="paramsDownData">The parameters for the data preparation after the test.</param>
-        /// <exception cref="ArgumentNullException">Thrown when any of the parameters are null.</exception>
-        public UsePreparedDataParamsForAttribute(Type classType, string methodName, [NotNull] object[] paramsUpData, [NotNull] object[] paramsDownData)
+        
+        public UsePreparedDataParamsForAttribute(Type classType, string? methodName,object[] methodMethodParams)
+            :this(classType, false, null,null,methodName, methodMethodParams, methodMethodParams)
+
         {
-            _classType = classType ?? throw new ArgumentNullException(nameof(classType));
-            _methodName = methodName ?? throw new ArgumentNullException(nameof(methodName));
-            _useClassDataPreparation = false;
-            _paramsUpData = paramsUpData ?? throw new ArgumentNullException(nameof(paramsUpData));
-            _paramsDownData = paramsDownData ?? throw new ArgumentNullException(nameof(paramsDownData));
+            
+        }
+         public UsePreparedDataParamsForAttribute(Type classType, string? methodName,object[] methodMethodParamsUpData,  object[] methodMethodParamsDownData)
+             :this(classType, false, null,null,methodName, methodMethodParamsUpData, methodMethodParamsDownData)
+
+        {
+            
+        }
+        
+        public UsePreparedDataParamsForAttribute(Type classType,object[] classParams)
+            :this(classType, true, classParams, classParams, null, null, null)
+        {
+           
+        }
+        public UsePreparedDataParamsForAttribute(Type classType,object[] classParamsUpData,  object[] classParamsDownData)
+            :this(classType, true, classParamsUpData, classParamsDownData, null, null, null)
+        {
+           
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UsePreparedDataParamsForAttribute"/> class with class-level data preparation.
-        /// </summary>
-        /// <param name="classType">The type of the class containing the method.</param>
-        /// <param name="classParamsUpData">The parameters for the class-level data preparation before the test.</param>
-        /// <param name="classParamsDownData">The parameters for the class-level data preparation after the test.</param>
-        /// <param name="methodName">The name of the method to be tested.</param>
-        /// <param name="paramsUpData">The parameters for the data preparation before the test.</param>
-        /// <param name="paramsDownData">The parameters for the data preparation after the test.</param>
-        /// <exception cref="ArgumentNullException">Thrown when any of the parameters are null.</exception>
-
-        public UsePreparedDataParamsForAttribute(Type classType, [NotNull] object[] classParamsUpData, [NotNull]object[] classParamsDownData,  string methodName,  [NotNull] object[] paramsUpData, [NotNull]object[] paramsDownData):this(classType,methodName,paramsUpData,paramsDownData)
+        public UsePreparedDataParamsForAttribute(Type classType, object[] classParams,  string? methodName,  object[] methodMethodParams)
+            :this( classType,true,  classParams,  classParams,   methodName, methodMethodParams,  methodMethodParams)
         {
-            _useClassDataPreparation = true;
-            _classParamsUpData = classParamsUpData ?? throw new ArgumentNullException(nameof(classParamsUpData));
-            _classParamsDownData = classParamsDownData ?? throw new ArgumentNullException(nameof(classParamsDownData));
+            _methodName = methodName?? throw new ArgumentNullException(nameof(methodName));;
+        }
+        public UsePreparedDataParamsForAttribute(Type classType, object[] classParamsUpData, object[] classParamsDownData,  string? methodName,  object[] methodMethodParamsUpData, object[] methodMethodParamsDownData)
+            :this( classType,true,  classParamsUpData,  classParamsDownData,   methodName, methodMethodParamsUpData,  methodMethodParamsDownData)
+        {
+            _methodName = methodName?? throw new ArgumentNullException(nameof(methodName));;
+        }
+        
+        private UsePreparedDataParamsForAttribute(Type classType, bool useClassDataPreparation, object[]? classParamsUpData, object[]? classParamsDownData,  string? methodName,  object[]? methodMethodParamsUpData, object[]? methodMethodParamsDownData)
+        {
+            _classType = classType ?? throw new ArgumentNullException(nameof(classType));
+            _methodName = methodName;
+            _useClassDataPreparation = useClassDataPreparation;
+            _classClassParamsUpData = classParamsUpData;
+            _classParamsDownData = classParamsDownData;
+            _methodParamsUpData = methodMethodParamsUpData;
+            _methodParamsDownData = methodMethodParamsDownData;
         }
 
         /// <summary>
@@ -62,10 +74,12 @@ namespace DataPreparation.Testing
             TestStore testStore = TestStore.Initialize(testInfo);
             
             // Prepare class data for the test from attribute
-            var preparedData = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, [_methodName]); 
+            var preparedData = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, _methodName);
+            var (paramsUpData, paramsDown) = GetDataPreparation.FilterParams(_useClassDataPreparation, _methodName, _classClassParamsUpData, _methodParamsUpData,
+                _classParamsDownData, _methodParamsDownData);
             if(preparedData.Count == 0) return;
             //add data to store
-            testStore.PreparedData.AddDataPreparation(preparedData[0],_paramsUpData,_paramsDownData);
+            testStore.PreparedData.AddDataPreparationList(preparedData,paramsUpData,paramsDown);
             
             // Up data for the test if all data are prepared
             DataPreparationHandler.DataUp(testStore);
@@ -90,11 +104,11 @@ namespace DataPreparation.Testing
         public override ActionTargets Targets => ActionTargets.Test;
         
         private readonly Type _classType;
-        private readonly string _methodName;
+        private readonly string? _methodName;
         private readonly bool _useClassDataPreparation = false;
-        private readonly object[] _classParamsUpData;
-        private readonly object[] _classParamsDownData;
-        private readonly object[] _paramsUpData;
-        private readonly object[] _paramsDownData;
+        private readonly object[]? _classClassParamsUpData;
+        private readonly object[]? _classParamsDownData;
+        private readonly object[]? _methodParamsUpData;
+        private readonly object[]? _methodParamsDownData;
     }
 }
