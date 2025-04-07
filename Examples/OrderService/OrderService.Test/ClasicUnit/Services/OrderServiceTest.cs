@@ -3,154 +3,170 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using NUnit.Framework;
 using OrderService.DTO;
 using OrderService.Models;
 using OrderService.Repository;
 using OrderService.Services;
-using Xunit;
+using Assert = Xunit.Assert;
 
-namespace OrderService.Test.Services
+namespace OrderService.Test.Services;
+
+public class OrderServiceTest
 {
-    public class OrderServiceTest
+    [Test]
+    public void GetOrders_ReturnsOrders()
     {
-        [Fact]
-        public void GetOrders_ReturnsOrders()
+        // Arrange
+        var orders = new List<Order>
         {
-            // Arrange
-            var orders = new List<Order>
-            {
-                new Order { Id = 1, CustomerId = 1 },
-                new Order { Id = 2, CustomerId = 2 }
-            };
+            new() { Id = 1, CustomerId = 1 },
+            new() { Id = 2, CustomerId = 2 }
+        };
 
-            var mockOrderRepository = new Mock<IRepository<Order>>();
-            mockOrderRepository.Setup(repo => repo.GetAll(It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>())).Returns(orders);
+        var mockOrderRepository = new Mock<IRepository<Order>>();
+        mockOrderRepository.Setup(repo => repo.GetAll(It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+            .Returns(orders);
 
-            var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
+        var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
 
-            // Act
-            var result = orderService.GetOrders();
+        // Act
+        var result = orderService.GetOrders();
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(orders.Count, result.Count());
-        }
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(orders.Count, result.Count());
+    }
 
-        [Fact]
-        public void GetOrder_ValidId_ReturnsOrder()
-        {
-            // Arrange
-            var orderId = 1;
-            var order = new Order { Id = orderId, CustomerId = 1 };
+    [Test]
+    public void GetOrder_ValidId_ReturnsOrder()
+    {
+        // Arrange
+        var orderId = 1;
+        var order = new Order { Id = orderId, CustomerId = 1 };
 
-            var mockOrderRepository = new Mock<IRepository<Order>>();
-            mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>())).Returns(order);
+        var mockOrderRepository = new Mock<IRepository<Order>>();
+        mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+            .Returns(order);
 
-            var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
+        var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
 
-            // Act
-            var result = orderService.GetOrder(orderId);
+        // Act
+        var result = orderService.GetOrder(orderId);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(orderId, result.Id);
-        }
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(orderId, result.Id);
+    }
 
-        [Fact]
-        public void GetOrder_InvalidId_ThrowsException()
-        {
-            // Arrange
-            var invalidId = 999;
+    [Test]
+    public void GetOrder_InvalidId_ThrowsException()
+    {
+        // Arrange
+        var invalidId = 999;
 
-            var mockOrderRepository = new Mock<IRepository<Order>>();
-            mockOrderRepository.Setup(repo => repo.GetById(invalidId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>())).Returns<Order>(null);
+        var mockOrderRepository = new Mock<IRepository<Order>>();
+        mockOrderRepository
+            .Setup(repo => repo.GetById(invalidId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+            .Returns<Order>(null);
 
-            var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
+        var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => orderService.GetOrder(invalidId));
-        }
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => orderService.GetOrder(invalidId));
+    }
 
 
-        [Fact]
-        public void CreateOrder_ValidOrderDTO_ReturnsOrder()
-        {
-            // Arrange
-            var customer = new Customer { Id = 1 };
-            var orderDto = new OrderDTO { CustomerId = customer.Id, OrderItems = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1 } } };
-            
+    [Test]
+    public void CreateOrder_ValidOrderDTO_ReturnsOrder()
+    {
+        // Arrange
+        var customer = new Customer { Id = 1 };
+        var orderDto = new OrderDTO
+            { CustomerId = customer.Id, OrderItems = new List<OrderItem> { new() { ItemId = 1, Quantity = 1 } } };
 
-            var mockCustomerRepository = new Mock<IRepository<Customer>>();
-            mockCustomerRepository.Setup(repo => repo.GetById(orderDto.CustomerId,It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>())).Returns(customer);
 
-            var mockOrderRepository = new Mock<IRepository<Order>>();
-            mockOrderRepository.Setup(repo => repo.Insert(It.IsAny<Order>())).Returns(new Order { Id = 1, CustomerId = orderDto.CustomerId });
+        var mockCustomerRepository = new Mock<IRepository<Customer>>();
+        mockCustomerRepository.Setup(repo =>
+                repo.GetById(orderDto.CustomerId, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
+            .Returns(customer);
 
-            var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, mockCustomerRepository.Object);
+        var mockOrderRepository = new Mock<IRepository<Order>>();
+        mockOrderRepository.Setup(repo => repo.Insert(It.IsAny<Order>()))
+            .Returns(new Order { Id = 1, CustomerId = orderDto.CustomerId });
 
-            // Act
-            var result = orderService.CreateOrder(orderDto);
+        var orderService =
+            new OrderService.Services.OrderService(mockOrderRepository.Object, mockCustomerRepository.Object);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(orderDto.CustomerId, result.CustomerId);
-            mockOrderRepository.Verify(repo => repo.Insert(It.IsAny<Order>()), Times.Once);
-        }
+        // Act
+        var result = orderService.CreateOrder(orderDto);
 
-        [Fact]
-        public void CreateOrder_InvalidCustomerId_ThrowsException()
-        {
-            // Arrange
-            var orderDto = new OrderDTO { CustomerId = 999 };
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(orderDto.CustomerId, result.CustomerId);
+        mockOrderRepository.Verify(repo => repo.Insert(It.IsAny<Order>()), Times.Once);
+    }
 
-            var mockCustomerRepository = new Mock<IRepository<Customer>>();
-            mockCustomerRepository.Setup(repo => repo.GetById(orderDto.CustomerId, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>())).Returns<Customer>(null);
+    [Test]
+    public void CreateOrder_InvalidCustomerId_ThrowsException()
+    {
+        // Arrange
+        var orderDto = new OrderDTO { CustomerId = 999 };
 
-            var mockOrderRepository = new Mock<IRepository<Order>>();
+        var mockCustomerRepository = new Mock<IRepository<Customer>>();
+        mockCustomerRepository
+            .Setup(repo =>
+                repo.GetById(orderDto.CustomerId, It.IsAny<Func<IQueryable<Customer>, IQueryable<Customer>>>()))
+            .Returns<Customer>(null);
 
-            var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, mockCustomerRepository.Object);
+        var mockOrderRepository = new Mock<IRepository<Order>>();
 
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => orderService.CreateOrder(orderDto));
-            mockOrderRepository.Verify(repo => repo.Insert(It.IsAny<Order>()), Times.Never);
-        }
+        var orderService =
+            new OrderService.Services.OrderService(mockOrderRepository.Object, mockCustomerRepository.Object);
 
-        [Fact]
-        public void UpdateOrder_ValidIdAndOrder_ReturnsTrue()
-        {
-            // Arrange
-            var orderId = 1;
-            var existingOrder = new Order { Id = orderId };
-            var updatedOrder = new Order { Id = orderId, CustomerId = 2 };
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => orderService.CreateOrder(orderDto));
+        mockOrderRepository.Verify(repo => repo.Insert(It.IsAny<Order>()), Times.Never);
+    }
 
-            var mockOrderRepository = new Mock<IRepository<Order>>();
-            mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>())).Returns(existingOrder);
+    [Test]
+    public void UpdateOrder_ValidIdAndOrder_ReturnsTrue()
+    {
+        // Arrange
+        var orderId = 1;
+        var existingOrder = new Order { Id = orderId };
+        var updatedOrder = new Order { Id = orderId, CustomerId = 2 };
 
-            var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
+        var mockOrderRepository = new Mock<IRepository<Order>>();
+        mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+            .Returns(existingOrder);
 
-            // Act
-            var result = orderService.UpdateOrder(orderId, updatedOrder);
+        var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
 
-            // Assert
-            Assert.True(result);
-            mockOrderRepository.Verify(repo => repo.Update(It.IsAny<Order>()), Times.Once);
-        }
+        // Act
+        var result = orderService.UpdateOrder(orderId, updatedOrder);
 
-        [Fact]
-        public void UpdateOrder_InvalidId_ThrowsException()
-        {
-            // Arrange
-            var invalidId = 999;
-            var updatedOrder = new Order { Id = invalidId, CustomerId = 2 };
+        // Assert
+        Assert.True(result);
+        mockOrderRepository.Verify(repo => repo.Update(It.IsAny<Order>()), Times.Once);
+    }
 
-            var mockOrderRepository = new Mock<IRepository<Order>>();
-            mockOrderRepository.Setup(repo => repo.GetById(invalidId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>())).Returns<Order>(null);
+    [Test]
+    public void UpdateOrder_InvalidId_ThrowsException()
+    {
+        // Arrange
+        var invalidId = 999;
+        var updatedOrder = new Order { Id = invalidId, CustomerId = 2 };
 
-            var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
+        var mockOrderRepository = new Mock<IRepository<Order>>();
+        mockOrderRepository
+            .Setup(repo => repo.GetById(invalidId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+            .Returns<Order>(null);
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => orderService.UpdateOrder(invalidId, updatedOrder));
-            mockOrderRepository.Verify(repo => repo.Update(It.IsAny<Order>()), Times.Never);
-        }
+        var orderService = new OrderService.Services.OrderService(mockOrderRepository.Object, null);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => orderService.UpdateOrder(invalidId, updatedOrder));
+        mockOrderRepository.Verify(repo => repo.Update(It.IsAny<Order>()), Times.Never);
     }
 }

@@ -3,12 +3,11 @@ using OrderService.Models;
 
 namespace OrderService.BoaTest.ShowCases.Factories;
 
-public class OrderItemFactory: IDataFactory<OrderItem>
+public class OrderItemFactory : IDataFactory<OrderItem>
 {
-
     public OrderItem Create(long id, IDataParams? args)
     {
-        return new OrderItem() {Id = id, ItemId = id, Quantity = (int)id};
+        return new OrderItem() { Id = id, ItemId = id, Quantity = (int)id };
     }
 
     public bool Delete(long id, OrderItem data, IDataParams? args)

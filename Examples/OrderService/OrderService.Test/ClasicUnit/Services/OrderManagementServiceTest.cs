@@ -7,161 +7,164 @@ using OrderService.Repository;
 using OrderService.Services;
 using Xunit;
 
-namespace OrderService.Test.Services
+namespace OrderService.Test.Services;
+
+public class OrderManagementServiceTest
 {
-    public class OrderManagementServiceTest
+    [Fact]
+    public void AddRatingToOrder_ValidOrder_ReturnsNewRating()
     {
-        [Fact]
-        public void AddRatingToOrder_ValidOrder_ReturnsNewRating()
-        {
-            // Arrange
-            var orderId = 1;
-            var ratingDto = new RatingDTO { NumOfStars = 5, Reason = "Great service" };
-            var order = new Order { Id = orderId };
+        // Arrange
+        var orderId = 1;
+        var ratingDto = new RatingDTO { NumOfStars = 5, Reason = "Great service" };
+        var order = new Order { Id = orderId };
 
-            var mockOrderService = new Mock<IOrderService>();
-            mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
-            mockOrderService.Setup(service => service.UpdateOrder(orderId, It.IsAny<Order>()));
+        var mockOrderService = new Mock<IOrderService>();
+        mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
+        mockOrderService.Setup(service => service.UpdateOrder(orderId, It.IsAny<Order>()));
 
-            var orderManagementService = new OrderManagementService(mockOrderService.Object);
+        var orderManagementService = new OrderManagementService(mockOrderService.Object);
 
-            // Act
-            var result = orderManagementService.AddRatingToOrder(orderId, ratingDto);
+        // Act
+        var result = orderManagementService.AddRatingToOrder(orderId, ratingDto);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(ratingDto.NumOfStars, result.NumOfStars);
-            Assert.Equal(ratingDto.Reason, result.Reason);
-        }
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(ratingDto.NumOfStars, result.NumOfStars);
+        Assert.Equal(ratingDto.Reason, result.Reason);
+    }
 
-        [Fact]
-        public void AddRatingToOrder_OrderNotFound_ThrowsException()
-        {
-            // Arrange
-            var orderId = 1;
-            var ratingDto = new RatingDTO { NumOfStars = 5, Reason = "Great service" };
+    [Fact]
+    public void AddRatingToOrder_OrderNotFound_ThrowsException()
+    {
+        // Arrange
+        var orderId = 1;
+        var ratingDto = new RatingDTO { NumOfStars = 5, Reason = "Great service" };
 
-            var mockOrderService = new Mock<IOrderService>();
-            mockOrderService.Setup(service => service.GetOrder(orderId)).Throws<InvalidOperationException>();
+        var mockOrderService = new Mock<IOrderService>();
+        mockOrderService.Setup(service => service.GetOrder(orderId)).Throws<InvalidOperationException>();
 
-            var orderManagementService = new OrderManagementService(mockOrderService.Object);
+        var orderManagementService = new OrderManagementService(mockOrderService.Object);
 
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => orderManagementService.AddRatingToOrder(orderId, ratingDto));
-        }
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => orderManagementService.AddRatingToOrder(orderId, ratingDto));
+    }
 
-        [Fact]
-        public void AddComplaintToOrder_ValidOrder_ReturnsNewComplaint()
-        {
-            // Arrange
-            var orderId = 1;
-            var complaintDto = new ComplaintDTO { Status = "Pending", Reason = "Issue with the product" };
-            var order = new Order { Id = orderId };
+    [Fact]
+    public void AddComplaintToOrder_ValidOrder_ReturnsNewComplaint()
+    {
+        // Arrange
+        var orderId = 1;
+        var complaintDto = new ComplaintDTO { Status = "Pending", Reason = "Issue with the product" };
+        var order = new Order { Id = orderId };
 
-            var mockOrderService = new Mock<IOrderService>();
-            mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
-            mockOrderService.Setup(service => service.UpdateOrder(orderId, It.IsAny<Order>()));
+        var mockOrderService = new Mock<IOrderService>();
+        mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
+        mockOrderService.Setup(service => service.UpdateOrder(orderId, It.IsAny<Order>()));
 
-            var orderManagementService = new OrderManagementService(mockOrderService.Object);
+        var orderManagementService = new OrderManagementService(mockOrderService.Object);
 
-            // Act
-            var result = orderManagementService.AddComplaintToOrder(orderId, complaintDto);
+        // Act
+        var result = orderManagementService.AddComplaintToOrder(orderId, complaintDto);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(complaintDto.Status, result.Status);
-            Assert.Equal(complaintDto.Reason, result.Reason);
-        }
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(complaintDto.Status, result.Status);
+        Assert.Equal(complaintDto.Reason, result.Reason);
+    }
 
-        [Fact]
-        public void AddComplaintToOrder_OrderNotFound_ThrowsException()
-        {
-            // Arrange
-            var orderId = 1;
-            var complaintDto = new ComplaintDTO { Status = "Pending", Reason = "Issue with the product" };
+    [Fact]
+    public void AddComplaintToOrder_OrderNotFound_ThrowsException()
+    {
+        // Arrange
+        var orderId = 1;
+        var complaintDto = new ComplaintDTO { Status = "Pending", Reason = "Issue with the product" };
 
-            var mockOrderService = new Mock<IOrderService>();
-            mockOrderService.Setup(service => service.GetOrder(orderId)).Throws<InvalidOperationException>();
+        var mockOrderService = new Mock<IOrderService>();
+        mockOrderService.Setup(service => service.GetOrder(orderId)).Throws<InvalidOperationException>();
 
-            var orderManagementService = new OrderManagementService(mockOrderService.Object);
+        var orderManagementService = new OrderManagementService(mockOrderService.Object);
 
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => orderManagementService.AddComplaintToOrder(orderId, complaintDto));
-        }
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(
+            () => orderManagementService.AddComplaintToOrder(orderId, complaintDto));
+    }
 
-        [Fact]
-        public void AddComplaintToOrder_ComplaintAlreadyExists_ThrowsException()
-        {
-            // Arrange
-            var orderId = 1;
-            var complaintDto = new ComplaintDTO { Status = "Pending", Reason = "Issue with the product" };
-            var order = new Order { Id = orderId, Complaint = new Complaint() };
+    [Fact]
+    public void AddComplaintToOrder_ComplaintAlreadyExists_ThrowsException()
+    {
+        // Arrange
+        var orderId = 1;
+        var complaintDto = new ComplaintDTO { Status = "Pending", Reason = "Issue with the product" };
+        var order = new Order { Id = orderId, Complaint = new Complaint() };
 
-            var mockOrderService = new Mock<IOrderService>();
-            mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
+        var mockOrderService = new Mock<IOrderService>();
+        mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
 
-            var orderManagementService = new OrderManagementService(mockOrderService.Object);
+        var orderManagementService = new OrderManagementService(mockOrderService.Object);
 
-            // Act & Assert
-            Assert.Throws<AlreadyExistsException>(() => orderManagementService.AddComplaintToOrder(orderId, complaintDto));
-        }
-        [Fact]
-        public void UpdateComplaintStatus_ValidOrderAndComplaint_ReturnsUpdatedComplaint()
-        {
-            // Arrange
-            var orderId = 1;
-            var complaintDto = new ComplaintDTO { Status = "Resolved", Reason = "Resolved the issue" };
-            var order = new Order { Id = orderId, Complaint = new Complaint { Status = "Pending", Reason = "Issue with the product" } };
+        // Act & Assert
+        Assert.Throws<AlreadyExistsException>(() => orderManagementService.AddComplaintToOrder(orderId, complaintDto));
+    }
 
-            var mockOrderService = new Mock<IOrderService>();
-            mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
-            mockOrderService.Setup(service => service.UpdateOrder(orderId, It.IsAny<Order>()));
+    [Fact]
+    public void UpdateComplaintStatus_ValidOrderAndComplaint_ReturnsUpdatedComplaint()
+    {
+        // Arrange
+        var orderId = 1;
+        var complaintDto = new ComplaintDTO { Status = "Resolved", Reason = "Resolved the issue" };
+        var order = new Order
+            { Id = orderId, Complaint = new Complaint { Status = "Pending", Reason = "Issue with the product" } };
 
-            var orderManagementService = new OrderManagementService(mockOrderService.Object);
+        var mockOrderService = new Mock<IOrderService>();
+        mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
+        mockOrderService.Setup(service => service.UpdateOrder(orderId, It.IsAny<Order>()));
 
-            // Act
-            var result = orderManagementService.UpdateComplaintStatus(orderId, complaintDto);
+        var orderManagementService = new OrderManagementService(mockOrderService.Object);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(complaintDto.Status, result.Status);
-            Assert.Equal(complaintDto.Reason, result.Reason);
-        }
+        // Act
+        var result = orderManagementService.UpdateComplaintStatus(orderId, complaintDto);
 
-
-        [Fact]
-        public void UpdateComplaintStatus_OrderNotFound_ThrowsException()
-        {
-            // Arrange
-            var orderId = 1;
-            var complaintDto = new ComplaintDTO { Status = "Resolved", Reason = "Resolved the issue" };
-
-            var mockOrderService = new Mock<IOrderService>();
-            mockOrderService.Setup(service => service.GetOrder(orderId)).Throws<InvalidOperationException>();
-
-            var orderManagementService = new OrderManagementService(mockOrderService.Object);
-
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => orderManagementService.UpdateComplaintStatus(orderId, complaintDto));
-        }
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(complaintDto.Status, result.Status);
+        Assert.Equal(complaintDto.Reason, result.Reason);
+    }
 
 
-        [Fact]
-        public void UpdateComplaintStatus_ComplaintNotFound_ThrowsException()
-        {
-            // Arrange
-            var orderId = 1;
-            var complaintDto = new ComplaintDTO { Status = "Resolved", Reason = "Resolved the issue" };
-            var order = new Order { Id = orderId }; // No complaint
+    [Fact]
+    public void UpdateComplaintStatus_OrderNotFound_ThrowsException()
+    {
+        // Arrange
+        var orderId = 1;
+        var complaintDto = new ComplaintDTO { Status = "Resolved", Reason = "Resolved the issue" };
 
-            var mockOrderService = new Mock<IOrderService>();
-            mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
+        var mockOrderService = new Mock<IOrderService>();
+        mockOrderService.Setup(service => service.GetOrder(orderId)).Throws<InvalidOperationException>();
 
-            var orderManagementService = new OrderManagementService(mockOrderService.Object);
+        var orderManagementService = new OrderManagementService(mockOrderService.Object);
 
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => orderManagementService.UpdateComplaintStatus(orderId, complaintDto));
-        }
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
+            orderManagementService.UpdateComplaintStatus(orderId, complaintDto));
+    }
+
+
+    [Fact]
+    public void UpdateComplaintStatus_ComplaintNotFound_ThrowsException()
+    {
+        // Arrange
+        var orderId = 1;
+        var complaintDto = new ComplaintDTO { Status = "Resolved", Reason = "Resolved the issue" };
+        var order = new Order { Id = orderId }; // No complaint
+
+        var mockOrderService = new Mock<IOrderService>();
+        mockOrderService.Setup(service => service.GetOrder(orderId)).Returns(order);
+
+        var orderManagementService = new OrderManagementService(mockOrderService.Object);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
+            orderManagementService.UpdateComplaintStatus(orderId, complaintDto));
     }
 }
-

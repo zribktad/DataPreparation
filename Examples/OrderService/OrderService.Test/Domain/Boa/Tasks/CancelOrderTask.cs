@@ -19,10 +19,13 @@ public class CancelOrderTask : ITask
     public void PerformAs(IActor actor)
     {
         var ability = actor.Using<UseOrderStatusService>();
-        var ret = ability.Service.AddOrderStatus(_orderId, new OrderStatusInputDTO(){OrderStatus = Status.CANCELED.ToString()});
-        CancelResult =  ret.OrderStatus == Status.CANCELED.ToString();
-     
+        var ret = ability.Service.AddOrderStatus(_orderId,
+            new OrderStatusInputDTO() { OrderStatus = Status.CANCELED.ToString() });
+        CancelResult = ret.OrderStatus == Status.CANCELED.ToString();
     }
 
-    public static CancelOrderTask For(long orderId) => new CancelOrderTask(orderId);
+    public static CancelOrderTask For(long orderId)
+    {
+        return new CancelOrderTask(orderId);
+    }
 }

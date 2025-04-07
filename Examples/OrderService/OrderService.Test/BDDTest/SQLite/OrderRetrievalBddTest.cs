@@ -15,11 +15,10 @@ namespace OrderService.Test.BDDTest.SQLite;
     SoThat = "I can verify that multiple orders are processed correctly")]
 public class OrderRetrievalBddTest : SqLiteDataPreparationFixture
 {
-    readonly OrderServiceSteps _steps = new();
+    private readonly OrderServiceSteps _steps = new();
 
     [DataPreparationTest]
     [UsePreparedDataFor(typeof(UpdateOrderStatusTask))]
-
     public void GetAllOrders_MultipleOrders_ReturnsAllOrders()
     {
         this.Given(_ => _steps.GivenIHaveActor())

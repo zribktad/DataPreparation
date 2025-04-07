@@ -4,7 +4,7 @@ using DataPreparation.Testing.Factory;
 
 namespace OrderService.Test.Domain.Boa.Abilities;
 
-public class UseSourceFactory: IAbility
+public class UseSourceFactory : IAbility
 {
     public ISourceFactory Factory { get; }
 
@@ -12,7 +12,7 @@ public class UseSourceFactory: IAbility
     {
         Factory = factory;
     }
-    
+
     public static IAbility FromDataPreparation()
     {
         return new UseSourceFactory(PreparationContext.GetFactory());

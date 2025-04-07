@@ -8,7 +8,6 @@ namespace OrderService.Test.Domain.Factories.SQLite;
 
 public class OrderDtoFactoryAsync : IDataFactoryAsync<OrderDTO>
 {
-    
     public async Task<OrderDTO> Create(long createId, IDataParams? args, CancellationToken token = default)
     {
         var factory = PreparationContext.GetFactory();
@@ -18,7 +17,6 @@ public class OrderDtoFactoryAsync : IDataFactoryAsync<OrderDTO>
             OrderItems = await factory.GetAsync<OrderItem, OrderItemFactoryAsync>(2, token),
             CustomerId = (await factory.GetAsync<Customer, CustomerFactoryAsync>(token)).Id
         };
-
     }
 
     public Task<bool> Delete(long createId, OrderDTO data, IDataParams? args)
@@ -26,4 +24,3 @@ public class OrderDtoFactoryAsync : IDataFactoryAsync<OrderDTO>
         return Task.FromResult(true);
     }
 }
-    

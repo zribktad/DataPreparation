@@ -11,5 +11,9 @@ public class OrderById(long orderId) : IQuestion<Order>
         var ability = actor.Using<UseOrderService>();
         return ability.Service.GetOrder(orderId);
     }
-    public static OrderById WithId(long orderId) => new(orderId);
+
+    public static OrderById WithId(long orderId)
+    {
+        return new OrderById(orderId);
+    }
 }

@@ -13,18 +13,15 @@ using Steeltoe.Discovery.Eureka;
 
 namespace OrderService.BoaTest.PreparedData;
 
-
 [PreparationClassFor(typeof(UpdateOrderStatusTask))]
 public class UpdateOrderStatusTaskData : IBeforePreparation
 {
-
     private FakeDiscoveryClient? _discoveryClient;
 
     private FakeHttpClientFactory? _httpClientFactory;
-   
-    public UpdateOrderStatusTaskData(IDiscoveryClient discoveryClient,IHttpClientFactory httpClientFactory)
+
+    public UpdateOrderStatusTaskData(IDiscoveryClient discoveryClient, IHttpClientFactory httpClientFactory)
     {
-        
         _discoveryClient = discoveryClient as FakeDiscoveryClient;
         _httpClientFactory = httpClientFactory as FakeHttpClientFactory;
     }
@@ -38,10 +35,10 @@ public class UpdateOrderStatusTaskData : IBeforePreparation
         mockServiceInstance.Setup(instance => instance.Port).Returns(0);
         var serviceInstance = mockServiceInstance.Object;
         _discoveryClient.FakeServiceInstance = serviceInstance;
-        
+
         //HttpClientFactory
-        
-      
+
+
         var fakeAddress = AddressFaker.Generate();
         var mockHandler = new Mock<HttpMessageHandler>();
         mockHandler
@@ -59,20 +56,16 @@ public class UpdateOrderStatusTaskData : IBeforePreparation
                     Content = new StringContent(jsonResponse, System.Text.Encoding.UTF8, "application/json")
                 };
             });
-        
+
         var mockClient = new HttpClient(mockHandler.Object);
 
         _httpClientFactory.FakeHttpClient = mockClient;
-
     }
-    
+
     public void DownData()
-    { 
+    {
     }
-    
-    
 }
-
 
 public static class AddressFaker
 {
@@ -82,7 +75,13 @@ public static class AddressFaker
         .RuleFor(a => a.ZipCode, f => f.Address.ZipCode())
         .RuleFor(a => a.State, f => f.Address.State());
 
-    public static AddressDTO Generate() => _faker.Generate();
-    
-    public static List<AddressDTO> Generate(int count) => _faker.Generate(count);
+    public static AddressDTO Generate()
+    {
+        return _faker.Generate();
+    }
+
+    public static List<AddressDTO> Generate(int count)
+    {
+        return _faker.Generate(count);
+    }
 }

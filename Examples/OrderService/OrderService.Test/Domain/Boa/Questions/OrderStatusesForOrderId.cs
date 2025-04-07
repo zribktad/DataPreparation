@@ -14,7 +14,7 @@ public class OrderStatusesForOrderId : IQuestion<IEnumerable<OrderStatusOutputDT
         _orderId = orderId;
     }
 
-    public IEnumerable<OrderStatusOutputDTO > RequestAs(IActor actor)
+    public IEnumerable<OrderStatusOutputDTO> RequestAs(IActor actor)
     {
         var ability = actor.Using<UseOrderStatusService>();
         return ability.Service.GetOrderStatuses(_orderId);

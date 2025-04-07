@@ -1,6 +1,5 @@
 ﻿using DataPreparation.Testing;
 using DataPreparation.Testing.Factory;
-using NUnit.Framework;
 using OrderService.BoaTest.OrderService.Tasks;
 using OrderService.Test.Domain;
 using OrderService.Test.Domain.BddSteps;
@@ -15,11 +14,10 @@ namespace OrderService.Test.BDDTest.SQLite;
     SoThat = "I can verify that an order is created correctly")]
 public class OrderCreationBddTest : SqLiteDataPreparationFixture
 {
-    readonly OrderServiceSteps _steps = new();
+    private readonly OrderServiceSteps _steps = new();
 
     [DataPreparationTest]
     [UsePreparedDataFor(typeof(UpdateOrderStatusTask))]
-
     public void CreateOrder_FullOrderDTO_ReturnsOrder()
     {
         this.Given(_ => _steps.GivenIHaveActor())

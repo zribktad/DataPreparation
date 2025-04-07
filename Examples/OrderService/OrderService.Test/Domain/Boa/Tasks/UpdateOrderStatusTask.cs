@@ -26,5 +26,8 @@ public class UpdateOrderStatusTask : ITask
         UpdateResult = res.OrderStatus == _status.ToString();
     }
 
-    public static UpdateOrderStatusTask For(long orderId, Status status) => new UpdateOrderStatusTask(orderId, status);
+    public static UpdateOrderStatusTask For(long orderId, Status status)
+    {
+        return new UpdateOrderStatusTask(orderId, status);
+    }
 }

@@ -12,6 +12,7 @@ public class FakeDiscoveryClient : IDiscoveryClient
 
     public string Description { get; }
     public IList<string> Services { get; }
+
     public IServiceInstance GetLocalServiceInstance()
     {
         return null;

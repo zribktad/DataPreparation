@@ -6,7 +6,6 @@ using OrderService.Models;
 
 namespace OrderService.BoaTest.CustomerService.Tasks;
 
-
 //[PrepareData] //use attribute as identificator, mark class with data
 public class CreateCustomerTask : ITask
 {
@@ -22,11 +21,13 @@ public class CreateCustomerTask : ITask
     {
         var ability = actor.Using<UseCustomerService>();
         CreatedCustomer = ability.Service.CreateCustomer(_customerDto);
-        
     }
 
-    public static CreateCustomerTask For(CustomerDTO customerDto) => new CreateCustomerTask(customerDto);
-    
+    public static CreateCustomerTask For(CustomerDTO customerDto)
+    {
+        return new CreateCustomerTask(customerDto);
+    }
+
     // [UpData]
     // public void UpData(){}
     //

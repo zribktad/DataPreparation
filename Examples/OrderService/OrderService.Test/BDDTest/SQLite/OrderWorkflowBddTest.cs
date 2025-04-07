@@ -8,7 +8,6 @@ using TestStack.BDDfy;
 
 namespace OrderService.Test.BDDTest.SQLite;
 
-
 [DataPreparationFixture]
 [Story(
     AsA = "data preparer",
@@ -16,7 +15,7 @@ namespace OrderService.Test.BDDTest.SQLite;
     SoThat = "I can verify the full transition from creation to delivery")]
 public class OrderWorkflowBddTest : SqLiteDataPreparationFixture
 {
-    readonly OrderServiceSteps _steps = new();
+    private readonly OrderServiceSteps _steps = new();
 
     [DataPreparationTest]
     [UsePreparedDataFor(typeof(UpdateOrderStatusTask))]
@@ -36,4 +35,4 @@ public class OrderWorkflowBddTest : SqLiteDataPreparationFixture
             .Then(_ => _steps.ThenOrderStatusShouldBe(Status.DELIVERED))
             .BDDfy();
     }
-} 
+}

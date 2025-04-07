@@ -7,18 +7,17 @@ using OrderService.Models;
 
 namespace OrderService.BoaTest.Factories.SQLite;
 
-
 [FactoryLifetime(ServiceLifetime.Scoped)]
-public class CustomerDtoFactory: IDataFactory<CustomerDTO>
+public class CustomerDtoFactory : IDataFactory<CustomerDTO>
 {
     public CustomerDtoFactory()
     {
-        
     }
-    
+
     public CustomerDtoFactory(OrderServiceContext context)
     {
     }
+
     public bool Delete(long createId, CustomerDTO data, IDataParams? args)
     {
         return true;
@@ -26,8 +25,9 @@ public class CustomerDtoFactory: IDataFactory<CustomerDTO>
 
     public CustomerDTO Create(long createId, IDataParams? args)
     {
-        
-        Address address = args?.Find<Address>(out var retAddress) == true ? retAddress : new Address() {City = "City", Street = "Street", PostalCode = "ZipCode"};
+        var address = args?.Find<Address>(out var retAddress) == true
+            ? retAddress
+            : new Address() { City = "City", Street = "Street", PostalCode = "ZipCode" };
         return new CustomerDTO()
         {
             Name = $"Name {createId}",

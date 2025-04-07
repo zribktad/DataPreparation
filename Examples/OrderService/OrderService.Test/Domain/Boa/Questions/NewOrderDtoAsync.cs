@@ -12,25 +12,25 @@ namespace OrderService.Test.Domain.Boa.Questions;
 
 public class NewOrderDtoAsync : IQuestionAsync<OrderDTO>
 {
-
     public NewOrderDtoAsync(IDataParams? dataParams)
     {
         DataParams = dataParams;
     }
-  
+
 
     private IDataParams? DataParams { get; set; } = null;
+
     public Task<OrderDTO> RequestAsAsync(IActor actor)
     {
         var ability = actor.Using<UseSourceFactory>();
         ability.Factory.ShouldNotBeNull();
-      
-        return ability.Factory.NewAsync<OrderDTO,OrderDtoFactoryAsync>(DataParams);
+
+        return ability.Factory.NewAsync<OrderDTO, OrderService.Test.Domain.Factories.SQLite.OrderDtoFactoryAsync>(
+            DataParams);
     }
 
     public static NewOrderDtoAsync WithNoArgs()
     {
         return new NewOrderDtoAsync(null);
     }
-
 }

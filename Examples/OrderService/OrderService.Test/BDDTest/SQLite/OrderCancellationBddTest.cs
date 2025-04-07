@@ -14,7 +14,7 @@ namespace OrderService.Test.BDDTest.SQLite;
     SoThat = "I can verify that the order status is updated correctly")]
 public class OrderCancellationBddTest : SqLiteDataPreparationFixture
 {
-    readonly OrderServiceSteps _steps = new();
+    private readonly OrderServiceSteps _steps = new();
 
     [DataPreparationTest]
     public void CancelOrder_ValidOrder_ChangesOrderStatus()

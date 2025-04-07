@@ -19,7 +19,7 @@ namespace DataPreparation.Testing
         /// <param name="dataProviders">The types of data providers to use for preparing data.</param>
         public UsePreparedDataAttribute(params Type[] dataProviders)
         {
-            _dataProviders = dataProviders ?? throw new ArgumentNullException(nameof(dataProviders));
+            _preparedDataTypes = dataProviders ?? throw new ArgumentNullException(nameof(dataProviders));
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace DataPreparation.Testing
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
             var testStore = TestStore.Initialize(testInfo);
             // Prepare data for the test from attribute
-            var preparedDataList = GetDataPreparation.GetPreparedData(testStore, _dataProviders);
+            var preparedDataList = GetDataPreparation.GetPreparedData(testStore, _preparedDataTypes);
             // Add the prepared data to the store
             testStore.PreparedData.AddDataPreparation(preparedDataList);
             // Up data for the test if all data are prepared
@@ -52,7 +52,7 @@ namespace DataPreparation.Testing
 
 
         
-        private readonly Type[] _dataProviders;
+        private readonly Type[] _preparedDataTypes;
 
         /// <summary>
         /// Gets the targets for the action.

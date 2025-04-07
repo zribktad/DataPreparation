@@ -27,13 +27,13 @@ public class OrderStatusServiceBoaTestFixture
         _mockOrderRepository = new Mock<IRepository<Order>>();
         _mockOrderStatusRepository = new Mock<IRepository<OrderStatus>>();
 
-        
+
         var mockFactoryClient = new Mock<IHttpClientFactory>();
         mockFactoryClient.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
         // Create the service instance
         _orderStatusService = new Services.OrderStatusService(
-            _mockOrderStatusRepository.Object, 
-            _mockOrderRepository.Object, null, null,mockFactoryClient.Object);
+            _mockOrderStatusRepository.Object,
+            _mockOrderRepository.Object, null, null, mockFactoryClient.Object);
 
         // Assign the actor
         _actor = new Actor("OrderStatusTester");
@@ -48,9 +48,14 @@ public class OrderStatusServiceBoaTestFixture
         var order = new Order { Id = orderId };
         var statusDto = new OrderStatusInputDTO { OrderStatus = nameof(Status.DELIVERED) };
 
-        _mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+        _mockOrderRepository
+            .Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns(order);
-        _mockOrderStatusRepository.Setup(repo => repo.Insert(It.IsAny<OrderStatus>())).Returns(new OrderStatus { Status =  (Status)Enum.Parse(typeof(Status), statusDto.OrderStatus), StatusDate = DateTime.Now.ToUniversalTime() });
+        _mockOrderStatusRepository.Setup(repo => repo.Insert(It.IsAny<OrderStatus>())).Returns(new OrderStatus
+        {
+            Status = (Status)Enum.Parse(typeof(Status), statusDto.OrderStatus),
+            StatusDate = DateTime.Now.ToUniversalTime()
+        });
         // Act
         var addTask = AddOrderStatusTask.For(orderId, statusDto);
         _actor.AttemptsTo(addTask);
@@ -68,11 +73,12 @@ public class OrderStatusServiceBoaTestFixture
         var order = new Order { Id = orderId };
         var statusDto = new OrderStatusInputDTO { OrderStatus = "InvalidStatus" };
 
-        _mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+        _mockOrderRepository
+            .Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns(order);
 
         // Act & Assert
-        Action act = () => _actor.AttemptsTo(AddOrderStatusTask.For(orderId, statusDto));
+        var act = () => _actor.AttemptsTo(AddOrderStatusTask.For(orderId, statusDto));
         act.ShouldThrow<InvalidOperationException>();
         _mockOrderStatusRepository.Verify(repo => repo.Insert(It.IsAny<OrderStatus>()), Times.Never);
     }
@@ -84,11 +90,12 @@ public class OrderStatusServiceBoaTestFixture
         var orderId = 999;
         var statusDto = new OrderStatusInputDTO { OrderStatus = nameof(Status.DELIVERED) };
 
-        _mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+        _mockOrderRepository
+            .Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns<Order>(null);
 
         // Act & Assert
-        Action act = () => _actor.AttemptsTo(AddOrderStatusTask.For(orderId, statusDto));
+        var act = () => _actor.AttemptsTo(AddOrderStatusTask.For(orderId, statusDto));
         act.ShouldThrow<ArgumentException>();
         _mockOrderStatusRepository.Verify(repo => repo.Insert(It.IsAny<OrderStatus>()), Times.Never);
     }
@@ -99,13 +106,14 @@ public class OrderStatusServiceBoaTestFixture
         // Arrange
         var orderId = 1;
         var status = new OrderStatus { Status = Status.SENT, StatusDate = DateTime.Now };
-        var order = new Order 
-        { 
-            Id = orderId, 
+        var order = new Order
+        {
+            Id = orderId,
             OrderStatuses = new List<OrderStatus> { status }
         };
 
-        _mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+        _mockOrderRepository
+            .Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns(order);
 
         // Act
@@ -115,7 +123,7 @@ public class OrderStatusServiceBoaTestFixture
         orderStatuses.ShouldNotBeNull();
         orderStatuses.Count().ShouldBe(1);
         orderStatuses.First().OrderStatus.ShouldBe(nameof(Status.SENT));
-        orderStatuses.First().StatusDate.ShouldBeLessThanOrEqualTo(DateTime.Now +TimeSpan.FromMinutes(5));
+        orderStatuses.First().StatusDate.ShouldBeLessThanOrEqualTo(DateTime.Now + TimeSpan.FromMinutes(5));
     }
 
     [Test]
@@ -124,14 +132,15 @@ public class OrderStatusServiceBoaTestFixture
         // Arrange
         var orderId = 999;
 
-        _mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+        _mockOrderRepository
+            .Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns<Order>(null);
 
         // Act & Assert
         Action act = () => _actor.AsksFor(OrderStatusesForOrderId.ForOrderId(orderId));
         act.ShouldThrow<ArgumentException>();
     }
-    
+
     [Test]
     public void AddOrderStatus_ValidOrderIdAndStatusDto_Full()
     {
@@ -139,32 +148,36 @@ public class OrderStatusServiceBoaTestFixture
         var orderId = 1;
         var statusDto = new OrderStatusInputDTO { OrderStatus = nameof(Status.DELIVERED) };
         var order = new Order { Id = orderId };
-       
 
-        _mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+
+        _mockOrderRepository
+            .Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns(order);
-        
-        _mockOrderStatusRepository.Setup(repo => repo.Insert(It.IsAny<OrderStatus>())).Returns(new OrderStatus { Status =  (Status)Enum.Parse(typeof(Status), statusDto.OrderStatus), StatusDate = DateTime.Now.ToUniversalTime() });
+
+        _mockOrderStatusRepository.Setup(repo => repo.Insert(It.IsAny<OrderStatus>())).Returns(new OrderStatus
+        {
+            Status = (Status)Enum.Parse(typeof(Status), statusDto.OrderStatus),
+            StatusDate = DateTime.Now.ToUniversalTime()
+        });
         // Act
-        var addStatusTask =   AddOrderStatusTask.For(orderId, statusDto);
+        var addStatusTask = AddOrderStatusTask.For(orderId, statusDto);
         _actor.AttemptsTo(addStatusTask);
         Enum.TryParse<Status>(addStatusTask.AddResult.OrderStatus, out var status);
-        var orderstatus = new OrderStatus() {Status = status ,StatusDate = addStatusTask.AddResult.StatusDate };
-        order.OrderStatuses = new List<OrderStatus> {orderstatus };
-        
-        _mockOrderRepository.Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
+        var orderstatus = new OrderStatus() { Status = status, StatusDate = addStatusTask.AddResult.StatusDate };
+        order.OrderStatuses = new List<OrderStatus> { orderstatus };
+
+        _mockOrderRepository
+            .Setup(repo => repo.GetById(orderId, It.IsAny<Func<IQueryable<Order>, IQueryable<Order>>>()))
             .Returns(() => order);
-       
+
         var orderStatuses = _actor.AsksFor(OrderStatusesForOrderId.ForOrderId(orderId));
 
-       
+
         // Assert
         _mockOrderStatusRepository.Verify(repo => repo.Insert(It.IsAny<OrderStatus>()), Times.Once);
         orderStatuses.ShouldNotBeNull();
         orderStatuses.Count().ShouldBe(1);
         orderStatuses.First().OrderStatus.ShouldBe(nameof(Status.DELIVERED));
-        orderStatuses.First().StatusDate.ShouldBeLessThanOrEqualTo(DateTime.Now +TimeSpan.FromMinutes(5));        
-        
-        
+        orderStatuses.First().StatusDate.ShouldBeLessThanOrEqualTo(DateTime.Now + TimeSpan.FromMinutes(5));
     }
 }

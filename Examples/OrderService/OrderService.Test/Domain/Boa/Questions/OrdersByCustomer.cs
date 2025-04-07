@@ -19,5 +19,8 @@ public class OrdersByCustomer : IQuestion<IEnumerable<Order>>
         return ability.Service.GetOrders().Where(o => o.CustomerId == _customerId);
     }
 
-    public static OrdersByCustomer WithId(long customerId) => new OrdersByCustomer(customerId);
+    public static OrdersByCustomer WithId(long customerId)
+    {
+        return new OrdersByCustomer(customerId);
+    }
 }

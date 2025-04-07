@@ -23,5 +23,8 @@ public class UpdateCustomerTask : ITask
         UpdatedCustomer = ability.Service.UpdateCustomer(_customerId, _updatedCustomer);
     }
 
-    public static UpdateCustomerTask For(long customerId, Customer updatedCustomer) => new UpdateCustomerTask(customerId, updatedCustomer);
+    public static UpdateCustomerTask For(long customerId, Customer updatedCustomer)
+    {
+        return new UpdateCustomerTask(customerId, updatedCustomer);
+    }
 }

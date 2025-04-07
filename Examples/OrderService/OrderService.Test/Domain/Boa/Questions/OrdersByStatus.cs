@@ -19,5 +19,8 @@ public class OrdersByStatus : IQuestion<IEnumerable<Order>>
         return ability.Service.GetOrders().Where(o => o.OrderStatuses.LastOrDefault()?.Status == _status);
     }
 
-    public static OrdersByStatus WithStatus(Status status) => new OrdersByStatus(status);
+    public static OrdersByStatus WithStatus(Status status)
+    {
+        return new OrdersByStatus(status);
+    }
 }

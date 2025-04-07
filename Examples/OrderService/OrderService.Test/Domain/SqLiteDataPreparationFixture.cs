@@ -11,11 +11,10 @@ using Steeltoe.Discovery;
 
 namespace OrderService.Test.Domain;
 
-public class SqLiteDataPreparationFixture: IDataPreparationTestServices, IDataPreparationLogger
+public class SqLiteDataPreparationFixture : IDataPreparationTestServices, IDataPreparationLogger
 {
     public void DataPreparationServices(IServiceCollection serviceCollection)
     {
-
         SqliteConnection databaseConnection = new("DataSource=:memory:");
         databaseConnection.Open();
         serviceCollection.AddDbContext<OrderServiceContext>(options =>
@@ -27,16 +26,16 @@ public class SqLiteDataPreparationFixture: IDataPreparationTestServices, IDataPr
         serviceCollection.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         serviceCollection.AddScoped<IOrderService, OrderService.Services.OrderService>();
         serviceCollection.AddScoped<IOrderManagementService, OrderManagementService>();
-        serviceCollection.AddScoped<IOrderStatusService,  OrderStatusService>();
+        serviceCollection.AddScoped<IOrderStatusService, OrderStatusService>();
         serviceCollection.AddScoped<IOrderItemService, OrderItemService>();
-        serviceCollection.AddScoped<ICustomerService,  CustomerService>();
+        serviceCollection.AddScoped<ICustomerService, CustomerService>();
         serviceCollection.AddScoped<IDiscoveryClient, FakeDiscoveryClient>();
         serviceCollection.AddScoped<IHttpClientFactory, FakeHttpClientFactory>();
 
         var context = serviceCollection.BuildServiceProvider().GetRequiredService<OrderServiceContext>();
         context.Database.EnsureCreated();
     }
-    
+
 
     public ILoggerFactory InitializeDataPreparationTestLogger()
     {
@@ -46,6 +45,5 @@ public class SqLiteDataPreparationFixture: IDataPreparationTestServices, IDataPr
             builder.AddDebug();
             builder.AddConsole();
         });
-
     }
 }

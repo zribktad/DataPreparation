@@ -5,11 +5,16 @@ using OrderService.Models;
 
 namespace OrderService.BoaTest.ShowCases.Factories;
 
-public class OrderDtoFactory: IDataFactory<OrderDTO>
+public class OrderDtoFactory : IDataFactory<OrderDTO>
 {
     public OrderDTO Create(long id, IDataParams? args)
-    { var factory = PreparationContext.GetFactory();
-       return new OrderDTO(){OrderItems = factory.Get<OrderItem,OrderItemFactory>(2),CustomerId = factory.Get<Customer,CustomerFactory>().Id};
+    {
+        var factory = PreparationContext.GetFactory();
+        return new OrderDTO()
+        {
+            OrderItems = factory.Get<OrderItem, OrderItemFactory>(2),
+            CustomerId = factory.Get<Customer, CustomerFactory>().Id
+        };
     }
 
     public bool Delete(long id, OrderDTO data, IDataParams? args)
