@@ -23,7 +23,7 @@ public class CreateOrderAndRegisterTask : ITask //, IReturn<Order>
         CreatedOrder = ability.Service.CreateOrder(_orderDto);
         var factoryAbility = actor.Using<UseSourceFactory>();
 
-        factoryAbility.Factory.Register<Order, OrderRegisterAsync>(CreatedOrder, out _); //this is for data dependency
+        factoryAbility.SFactory.Register<Order, OrderRegisterAsync>(CreatedOrder, out _); //this is for data dependency
     }
 
     public Order GetResult()

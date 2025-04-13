@@ -13,7 +13,8 @@
         <PackageTags>NUnit;Testing;Data;TestData;DataPreparation;UnitTesting;Test;ManageData</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageIcon>icon.png</PackageIcon>
+        <PackageIcon>icon.jpg</PackageIcon>
+        <Version>1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,7 +27,7 @@
   <ItemGroup>
 
     <None Include="..\README.md" Pack="true" PackagePath="\" />
-    <None Include="..\icon.png" Pack="true" PackagePath="\" />
+    <None Include="..\icon.jpg" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 

@@ -6,7 +6,7 @@ using OrderService.Models;
 using OrderService.Test.Domain.Boa.Abilities;
 using OrderService.Test.Domain.Factories.AsyncMock;
 using Shouldly;
-using CustomerFactoryAsync = OrderService.BoaTest.Factories.SQLite.CustomerFactoryAsync;
+using CustomerFactoryAsync = OrderService.Test.Domain.Factories.SQLite.CustomerFactoryAsync;
 
 namespace OrderService.Test.Domain.Boa.Questions;
 
@@ -21,6 +21,6 @@ public class GetOrderDto : IQuestion<OrderDTO>
     public OrderDTO RequestAs(IActor actor)
     {
         var ability = actor.Using<UseSourceFactory>();
-        return  ability.Factory.Get<OrderDTO, OrderDtoFactory>();
+        return  ability.SFactory.Get<OrderDTO, OrderDtoFactory>();
     }
 }
