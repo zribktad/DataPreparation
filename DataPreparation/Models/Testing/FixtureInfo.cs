@@ -9,10 +9,10 @@ public class FixtureInfo: ContextTestInfo
 {
     public readonly Type Type;
     public readonly object Instance;
-    public FixtureInfo(ITest test): base(test)
+    public FixtureInfo(ITest test, object? testFixture): base(test)
     {
-        Type = test.Fixture?.GetType() ?? throw new Exception("Test Fixture not found");
-        Instance = test.Fixture;
+        Type = test.TypeInfo?.Type ?? throw new Exception("Test Fixture not found");
+        Instance = testFixture ;
     }
     
     

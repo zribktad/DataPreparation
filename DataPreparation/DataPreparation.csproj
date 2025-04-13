@@ -28,6 +28,13 @@
 
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\icon.jpg" Pack="true" PackagePath="\" />
+    <None Remove="Analyzers\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Analyzers\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Analyzers\**" />
   </ItemGroup>
 
 

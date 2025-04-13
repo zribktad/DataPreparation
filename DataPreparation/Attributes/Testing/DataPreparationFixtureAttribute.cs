@@ -1,12 +1,4 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using DataPreparation.Analyzers;
-using DataPreparation.Factory.Testing;
-using DataPreparation.Provider;
-using DataPreparation.Testing;
-using DataPreparation.Factory.Testing;
-using DataPreparation.Helpers;
-using DataPreparation.Testing.Factory;
+﻿using DataPreparation.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
@@ -35,7 +27,7 @@ namespace DataPreparation.Testing
         public void BeforeTest(ITest test)
         {
             
-            var fixtureInfo = new FixtureInfo(test);
+            var fixtureInfo = new FixtureInfo(test,test.Fixture);
          
             //Get logger if not found NullLogger
             var loggerFactory = LoggerHelper.CreateOrNullLogger(fixtureInfo);
@@ -45,7 +37,7 @@ namespace DataPreparation.Testing
             //Get copy of base data service collection
             IServiceCollection baseDataServiceCollection = new DataRegister(loggerFactory,fixtureInfo.Type.Assembly).GetBaseDataServiceCollection();
             
-            if (test.Fixture is IDataPreparationTestServices dataPreparationTestServices)
+            if (fixtureInfo.Instance is IDataPreparationTestServices dataPreparationTestServices)
             {
                 try
                 {
@@ -66,7 +58,7 @@ namespace DataPreparation.Testing
             // }
 
             //create fixture store
-            Store.CreateFixtureStore(new(test), loggerFactory,baseDataServiceCollection.BuildServiceProvider());
+            Store.CreateFixtureStore(fixtureInfo, loggerFactory,baseDataServiceCollection.BuildServiceProvider());
             
         }
 
@@ -84,7 +76,7 @@ namespace DataPreparation.Testing
                 throw new Exception("Test Fixture type not found after test");
             }
             
-            Store.RemoveFixtureStore(new(test));
+            Store.RemoveFixtureStore(new(test,test.Fixture));
             
         }
 
@@ -92,6 +84,5 @@ namespace DataPreparation.Testing
         /// Gets the targets for the action.
         /// </summary>
         public ActionTargets Targets => ActionTargets.Suite;
-        private string _filePath;
     }
 }

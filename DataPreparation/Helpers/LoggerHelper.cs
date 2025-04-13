@@ -12,7 +12,7 @@ internal static class LoggerHelper
         {
             if (fixtureInfo.Instance is IDataPreparationLogger dataPreparationLoggerInitializer)
             {
-                var builder =dataPreparationLoggerInitializer.InitializeDataPreparationTestLogger();
+                var builder = dataPreparationLoggerInitializer.InitializeDataPreparationTestLogger();
                 if (builder is { } factory)
                 {
                     return factory;

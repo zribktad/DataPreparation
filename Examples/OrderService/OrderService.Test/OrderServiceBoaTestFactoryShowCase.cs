@@ -28,6 +28,11 @@ namespace OrderService.Test;
 [Parallelizable(ParallelScope.All)]
 public class OrderServiceBoaTestFactoryShowCase : IDataPreparationLogger, IDataPreparationTestServices
 {
+
+    public OrderServiceBoaTestFactoryShowCase()
+    {
+    }
+
     public void DataPreparationServices(IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<Mock<IRepository<Customer>>>();

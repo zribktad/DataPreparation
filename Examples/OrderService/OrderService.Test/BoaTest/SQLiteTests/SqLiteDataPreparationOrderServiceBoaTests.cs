@@ -267,7 +267,7 @@ public class SqLiteDataPreparationOrderServiceBoaTests : SqLiteDataPreparationFi
         actor.Can(UseOrderStatusService.FromDataPreparationProvider());
         actor.Can(UseOrderManagementService.FromDataPreparationProvider());
         var order = await actor.AsksForAsync(GetOrder.FromFactory());
-        
+        order.OrderStatuses.LastOrDefault()!.Status.ShouldBe(Status.CREATED);
         
 
         actor.AttemptsTo(UpdateOrderStatusTask.For(order.Id, Status.PROCESSING));
@@ -276,7 +276,7 @@ public class SqLiteDataPreparationOrderServiceBoaTests : SqLiteDataPreparationFi
         actor.AttemptsTo(UpdateOrderStatusTask.For(order.Id, Status.DELIVERED));
 
         var deliveredOrder = actor.AsksFor(new OrderById(order.Id));
-        order.OrderStatuses.LastOrDefault()!.Status.ShouldBe(Status.CREATED);
+    
         deliveredOrder.OrderStatuses.LastOrDefault()!.Status.ShouldBe(Status.DELIVERED);
     }
 
