@@ -1,6 +1,6 @@
 namespace DataPreparation.Data.Setup;
 
-public interface IDataFactoryAsync :IDataRegisterAsync, IDataFactoryBase // TODO 
+public interface IDataFactoryAsync :IDataRegisterAsync // TODO 
 {
     Task<object>  Create(long createId, IDataParams? args, CancellationToken token = default);
 }
