@@ -10,7 +10,6 @@ public class SqliteOrderServiceContextFactory : IDesignTimeDbContextFactory<Sqli
         
         var builder = new DbContextOptionsBuilder<OrderServiceContext>();
         
-            
         // Aplikovanie SQLite konfigurácií
         builder.UseSqlite("DataSource=:memory:", sqliteOptions =>
         {
