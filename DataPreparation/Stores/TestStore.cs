@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 namespace DataPreparation.Models.Data;
 
-public class TestStore
+internal class TestStore
 {
     public TestInfo TestInfo { get; }
     public IServiceProvider ServiceProvider { get; }
@@ -19,6 +19,7 @@ public class TestStore
     public ILoggerFactory LoggerFactory { get; }
     public AttributeUsingCounter AttributeUsingCounter { get; } 
     public DataPreparationTestStores PreparedData { get;} 
+    
     internal TestStore(TestInfo testInfo, ILoggerFactory loggerFactory, IServiceScope serviceScope, IList<Attribute> dataPreparationAttributes)
     {
         TestInfo = testInfo;
@@ -128,44 +129,40 @@ public class TestStore
         return null;
     }
     
-       #region Test Store
-        private static TestStore Create(TestInfo testContextTestInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
+    #region Test Store
+    private static TestStore Create(TestInfo testContextTestInfo, ILoggerFactory loggerFactory,IList<Attribute> dataPreparationAttributes)
+    {
+        var testLogger = loggerFactory.CreateLogger(typeof(Store));
+        testLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
+
+        if (Store.GetFixtureStore(testContextTestInfo.FixtureInfo) is { } fixtureStore)
         {
-            var testLogger = loggerFactory.CreateLogger(typeof(Store));
-            testLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
+            var fixtureLogger = fixtureStore.LoggerFactory.CreateLogger(nameof(Store));
+            fixtureLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
 
-            if (Store.GetFixtureStore(testContextTestInfo.FixtureInfo) is { } fixtureStore)
+            if (!fixtureStore.CreateTestStore(testContextTestInfo, loggerFactory,dataPreparationAttributes))
             {
-                var fixtureLogger = fixtureStore.LoggerFactory.CreateLogger(nameof(Store));
-                fixtureLogger.LogTrace("Test data initialization for {0} started", testContextTestInfo);
-
-                if (!fixtureStore.CreateTestStore(testContextTestInfo, loggerFactory,dataPreparationAttributes))
-                {
-                    LoggerHelper.Log(logger => logger.LogTrace("Test data initialization for {0} already exists", testContextTestInfo),
-                        fixtureLogger,testLogger);
-                }
+                LoggerHelper.Log(logger => logger.LogTrace("Test data initialization for {0} already exists", testContextTestInfo),
+                    fixtureLogger,testLogger);
             }
-            else
-            {
-                testLogger.LogError("No {0} found for {1}.", typeof(DataPreparationFixtureAttribute), testContextTestInfo.FixtureInfo);
-                throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for { testContextTestInfo.FixtureInfo}.");
-            }
-            LoggerHelper.Log(logger => logger.LogDebug("Test data initialization for {0} created", testContextTestInfo), 
-                fixtureStore.LoggerFactory.CreateLogger(typeof(Store)),testLogger);
-  
-            return Get(testContextTestInfo)!;
         }
-
-      
-        private static TestStore? Get(TestInfo testInfo)
+        else
         {
-            var store =  Store.GetFixtureStore(testInfo.FixtureInfo).GetTestStore(testInfo);
-            return store;
+            testLogger.LogError("No {0} found for {1}.", typeof(DataPreparationFixtureAttribute), testContextTestInfo.FixtureInfo);
+            throw new InvalidOperationException($"No {typeof(DataPreparationFixtureAttribute)} found for { testContextTestInfo.FixtureInfo}.");
         }
+        LoggerHelper.Log(logger => logger.LogDebug("Test data initialization for {0} created", testContextTestInfo), 
+            fixtureStore.LoggerFactory.CreateLogger(typeof(Store)),testLogger);
 
-        #endregion
-    
-    
-   
+        return Get(testContextTestInfo)!;
+    }
+
+    private static TestStore? Get(TestInfo testInfo)
+    {
+        var store =  Store.GetFixtureStore(testInfo.FixtureInfo).GetTestStore(testInfo);
+        return store;
+    }
+
+    #endregion
 }
 

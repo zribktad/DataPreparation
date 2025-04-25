@@ -3,9 +3,9 @@ using Mono.Cecil;
 
 namespace DataPreparation.Helpers;
 
-public static  class MethodConvertor
+internal static class MethodConvertor
 {
-    public static MethodInfo? GetInfo(Type? classType, string methodName, TypeReference[] array)
+    internal static MethodInfo? GetInfo(Type? classType, string methodName, TypeReference[] array)
     {
         if (classType == null) return null;
         
@@ -17,7 +17,8 @@ public static  class MethodConvertor
 
         return null;
     }
-    public static MethodInfo? GetInfo(MethodDefinition? methodDef)
+    
+    internal static MethodInfo? GetInfo(MethodDefinition? methodDef)
     {
         if (methodDef == null)
             return null;

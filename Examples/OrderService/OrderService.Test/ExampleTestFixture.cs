@@ -4,7 +4,6 @@ using DataPreparation.Factory.Testing;
 using DataPreparation.Provider;
 using DataPreparation.Testing;
 using DataPreparation.Testing.Factory;
-using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -32,6 +31,7 @@ public class ExampleTextFixture : IDataPreparationLogger, IDataPreparationTestSe
     {
         // Cleanup code after test with DI provider
     }
+    
     [DataPreparationTest] // Test method marker
     [UsePreparedDataParamsFor(typeof(TestedClass),["params"])] // Use prepared data for the class
     public void TestExample() // Test method
