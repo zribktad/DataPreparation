@@ -51,6 +51,7 @@ public class SqLiteDataPreparationOrderServiceBoaTests : SqLiteDataPreparationFi
         var orderDto = new OrderDTO { CustomerId = customer.Id, OrderItems = orderItems };
 
         #endregion
+        
 
         orderDto = await factory.GetAsync<OrderDTO, OrderDtoFactoryAsync>();
         //FactoryObjects the order service
