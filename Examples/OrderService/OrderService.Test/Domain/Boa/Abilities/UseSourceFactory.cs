@@ -4,15 +4,9 @@ using DataPreparation.Testing.Factory;
 
 namespace OrderService.Test.Domain.Boa.Abilities;
 
-public class UseSourceFactory : IAbility
+public class UseSourceFactory(ISourceFactory sFactory) : IAbility
 {
-    public ISourceFactory Factory { get; }
-
-    public UseSourceFactory(ISourceFactory factory)
-    {
-        Factory = factory;
-    }
-
+    public ISourceFactory SFactory { get; } = sFactory;
     public static IAbility FromDataPreparation()
     {
         return new UseSourceFactory(PreparationContext.GetFactory());

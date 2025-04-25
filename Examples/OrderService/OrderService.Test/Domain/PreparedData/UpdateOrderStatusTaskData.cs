@@ -14,31 +14,21 @@ using Steeltoe.Discovery.Eureka;
 namespace OrderService.BoaTest.PreparedData;
 
 [PreparationClassFor(typeof(UpdateOrderStatusTask))]
-public class UpdateOrderStatusTaskData : IBeforePreparation
+public class UpdateOrderStatusTaskData(IDiscoveryClient discoveryClient, IHttpClientFactory httpClientFactory)
+    : IBeforePreparation
 {
-    private FakeDiscoveryClient? _discoveryClient;
+    private readonly FakeDiscoveryClient? _discoveryClient = discoveryClient as FakeDiscoveryClient;
 
-    private FakeHttpClientFactory? _httpClientFactory;
+    private readonly FakeHttpClientFactory? _httpClientFactory = httpClientFactory as FakeHttpClientFactory;
 
-    public UpdateOrderStatusTaskData(IDiscoveryClient discoveryClient, IHttpClientFactory httpClientFactory)
-    {
-        _discoveryClient = discoveryClient as FakeDiscoveryClient;
-        _httpClientFactory = httpClientFactory as FakeHttpClientFactory;
-    }
-
-
+    [UpData]
     public void UpData()
     {
         //DiscoveryClient
-        var mockServiceInstance = new Mock<IServiceInstance>();
-        mockServiceInstance.Setup(instance => instance.Host).Returns("Test");
-        mockServiceInstance.Setup(instance => instance.Port).Returns(0);
-        var serviceInstance = mockServiceInstance.Object;
+        var serviceInstance = SetupDiscovery();
         _discoveryClient.FakeServiceInstance = serviceInstance;
 
         //HttpClientFactory
-
-
         var fakeAddress = AddressFaker.Generate();
         var mockHandler = new Mock<HttpMessageHandler>();
         mockHandler
@@ -62,6 +52,15 @@ public class UpdateOrderStatusTaskData : IBeforePreparation
         _httpClientFactory.FakeHttpClient = mockClient;
     }
 
+    private static IServiceInstance SetupDiscovery()
+    {
+        var mockServiceInstance = new Mock<IServiceInstance>();
+        mockServiceInstance.Setup(instance => instance.Host).Returns("Test");
+        mockServiceInstance.Setup(instance => instance.Port).Returns(0);
+        var serviceInstance = mockServiceInstance.Object;
+        return serviceInstance;
+    }
+    [DownData]
     public void DownData()
     {
     }

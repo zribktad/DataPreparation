@@ -14,6 +14,7 @@ using OrderService.BoaTest.OrderService.Abilities;
 using OrderService.BoaTest.OrderService.Questions;
 using OrderService.BoaTest.OrderService.Tasks;
 using OrderService.BoaTest.OrderStatusService.Abilities;
+using OrderService.BoaTest.PreparedData;
 using OrderService.DTO;
 using OrderService.Models;
 using OrderService.Services;
@@ -50,6 +51,7 @@ public class SqLiteDataPreparationOrderServiceBoaTests : SqLiteDataPreparationFi
         var orderDto = new OrderDTO { CustomerId = customer.Id, OrderItems = orderItems };
 
         #endregion
+        
 
         orderDto = await factory.GetAsync<OrderDTO, OrderDtoFactoryAsync>();
         //FactoryObjects the order service
@@ -230,7 +232,7 @@ public class SqLiteDataPreparationOrderServiceBoaTests : SqLiteDataPreparationFi
     }
 
     [DataPreparationTest]
-    [UsePreparedDataFor(typeof(UpdateOrderStatusTask))]
+    [UsePreparedDataFor(typeof(UpdateOrderStatusTask))]  //alternative  [UsePreparedData(typeof(UpdateOrderStatusTaskData))]
     public async Task CompleteOrderWorkflow_FromCreateToShipped()
     {
         var actor = new Actor("OrderProcessor", new ConsoleLogger());
@@ -254,6 +256,29 @@ public class SqLiteDataPreparationOrderServiceBoaTests : SqLiteDataPreparationFi
 
         var finalOrder = actor.AsksFor(new OrderById(createTask.CreatedOrder.Id));
         finalOrder.OrderStatuses.LastOrDefault()!.Status.ShouldBe(Status.DELIVERED);
+    }
+    
+    [DataPreparationTest]
+    [UsePreparedDataFor(typeof(UpdateOrderStatusTask))]  //alternative  [UsePreparedData(typeof(UpdateOrderStatusTaskData))]
+    public async Task CompleteOrderStatusWorkflow_FromCreateToShipped()
+    {
+        var actor = new Actor("OrderProcessor", new ConsoleLogger());
+        actor.Can(UseSourceFactory.FromDataPreparation());
+        actor.Can(UseOrderService.FromDataPreparationProvider());
+        actor.Can(UseOrderStatusService.FromDataPreparationProvider());
+        actor.Can(UseOrderManagementService.FromDataPreparationProvider());
+        var order = await actor.AsksForAsync(GetOrder.FromFactory());
+        order.OrderStatuses.LastOrDefault()!.Status.ShouldBe(Status.CREATED);
+        
+
+        actor.AttemptsTo(UpdateOrderStatusTask.For(order.Id, Status.PROCESSING));
+        actor.AttemptsTo(UpdateOrderStatusTask.For(order.Id, Status.SENT));
+        actor.AttemptsTo(UpdateOrderStatusTask.For(order.Id, Status.DELIVERING));
+        actor.AttemptsTo(UpdateOrderStatusTask.For(order.Id, Status.DELIVERED));
+
+        var deliveredOrder = actor.AsksFor(new OrderById(order.Id));
+    
+        deliveredOrder.OrderStatuses.LastOrDefault()!.Status.ShouldBe(Status.DELIVERED);
     }
 
     [DataPreparationTest]
