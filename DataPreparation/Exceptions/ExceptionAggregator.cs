@@ -54,4 +54,9 @@ internal class ExceptionAggregator
     /// </summary>
     /// <value>True if there are one or more exceptions collected; otherwise, false.</value>
     public bool HasExceptions => _exceptions.Count > 0;
+
+    public void Clear()
+    {
+        _exceptions.Clear();
+    }
 }
