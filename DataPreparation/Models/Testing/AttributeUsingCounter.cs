@@ -1,6 +1,6 @@
 namespace DataPreparation.Testing;
 
-public class AttributeUsingCounter(IList<Attribute> dataPreparationAttributes)
+internal class AttributeUsingCounter(IList<Attribute> dataPreparationAttributes)
 {
     int AttributesUseUpCount { get; set; }
     

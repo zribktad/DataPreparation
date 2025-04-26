@@ -9,7 +9,7 @@ namespace DataPreparation.Models.Data;
 /// A thread-safe history store that allows adding items, retrieving by ID, and retrieving the latest items.
 /// </summary>
 /// <typeparam name="T">The type of the item stored in the history store.</typeparam>
-public class HistoryStore<T>:IReadOnlyCollection<T> where T : notnull
+internal class HistoryStore<T>:IReadOnlyCollection<T> where T : notnull
 {
     
     /// <summary>

@@ -9,24 +9,27 @@ namespace DataPreparation.Testing
     /// <summary>
     /// A store for managing data preparation instances associated with specific methods.
     /// </summary>
-    public class DataPreparationTestStores(ILoggerFactory loggerFactory)
+    internal class DataPreparationTestStores(ILoggerFactory loggerFactory)
     {
         private readonly List<PreparedData> _preparation = new();
         private readonly Stack<PreparedData>  _processed = new();
         private readonly ILogger _logger = loggerFactory.CreateLogger<DataPreparationTestStores>();
         
-        public void PushProcessed( PreparedData data)
+        internal void PushProcessed( PreparedData data)
         {
             _processed.Push(data);
         }
-        public bool TryPopProcessed(out PreparedData? data)
+        
+        internal bool TryPopProcessed(out PreparedData? data)
         {
             return _processed.TryPop(out data);
         }
-        internal  List<PreparedData> GetPreparation()
+        
+        internal List<PreparedData> GetPreparation()
         {
             return _preparation;
         }
+        
         internal void AddDataPreparation( object preparedMethodData, object[] upData, object[] downData)
         {
             _logger.LogTrace($"Adding data preparation instance with type {preparedMethodData.GetType().Name}.");
@@ -42,10 +45,9 @@ namespace DataPreparation.Testing
             }).ToList());
         }
 
+        internal bool IsEmpty() => _processed.Count == 0 && _preparation.Count == 0;
 
-        public bool IsEmpty() => _processed.Count == 0 && _preparation.Count == 0;
-
-        public void AddDataPreparationList(List<object?> preparedData, object[]?[] upData, object[]?[] downData)
+        internal void AddDataPreparationList(List<object?> preparedData, object[]?[] upData, object[]?[] downData)
         {
             for (int i = 0; i < preparedData.Count; i++)
             {

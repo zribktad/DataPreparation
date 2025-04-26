@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DataPreparation.Testing;
 
-public class FixtureStore(
+internal class FixtureStore(
     FixtureInfo fixtureInfo,
     ILoggerFactory loggerFactoryFactory,
     IServiceProvider serviceProvider)

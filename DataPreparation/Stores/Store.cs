@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 
 namespace DataPreparation.Testing
 {
-
     internal static class Store
     {
         //Store FixtureStore for each test fixture
@@ -28,7 +27,7 @@ namespace DataPreparation.Testing
             return ret;
         }
 
-        public static FixtureStore GetFixtureStore(FixtureInfo fixtureInfo)
+        internal static FixtureStore GetFixtureStore(FixtureInfo fixtureInfo)
         {
             return FixtureStores[fixtureInfo];
         }
@@ -38,7 +37,7 @@ namespace DataPreparation.Testing
             return FixtureStores.TryRemove(fixtureInfo, out _);
         }
         
-        public static ICollection<FixtureStore> GetFixtureStores()
+        internal static ICollection<FixtureStore> GetFixtureStores()
         {
             return FixtureStores.Values;
         }

@@ -3,7 +3,7 @@ using Mono.Cecil;
 namespace DataPreparation.Analyzers;
 
 
-public class MethodAnalysisResult
+internal class MethodAnalysisResult
 {
     public string MethodName { get; set; }
     public string ReturnType { get; set; }
@@ -45,7 +45,7 @@ public class MethodAnalysisResult
     }
 }
 
-public class ParameterInfo(string name, string type)
+internal class ParameterInfo(string name, string type)
 {
     public string Name { get; set; } = name;
     public string Type { get; set; } = type;

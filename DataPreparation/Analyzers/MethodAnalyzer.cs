@@ -13,7 +13,7 @@ namespace DataPreparation.Analyzers
  
     internal static class MethodAnalyzer
     {
-        public static string GetSourceCodeForType(Type type)
+        internal static string GetSourceCodeForType(Type type)
         {
             var assemblyPath = type.Assembly.Location;
 
@@ -42,7 +42,7 @@ namespace DataPreparation.Analyzers
         }
      
         
-        public static string testSourceCodeTest = @"
+        private static string testSourceCodeTest = @"
 using System;
 using FluentAssertions;
 
@@ -64,7 +64,7 @@ public class ExampleTests
     }
 }";
         
-        public static void AnalyzeTestFixture(string testSourceCodePath, Type testFixtureType)
+        internal static void AnalyzeTestFixture(string testSourceCodePath, Type testFixtureType)
         {
             // Read the source code of the test case
             var testSourceCodeString = ReadAllFile(testSourceCodePath);
@@ -98,7 +98,7 @@ public class ExampleTests
          
         }
 
-        public static void AnalyzeTestMethod(Type testFixtureType, MethodInfo methodMethodInfo)
+        internal static void AnalyzeTestMethod(Type testFixtureType, MethodInfo methodMethodInfo)
         {
             var analyzedMethodData = AnalyzerStore.AddOrGetAnalyzeMethodData(testFixtureType,methodMethodInfo);
             AnalyzeTestMethod(analyzedMethodData.Root, analyzedMethodData.FileRoot);
@@ -107,7 +107,7 @@ public class ExampleTests
             
         }
 
-        static void PrintSyntaxTree(SyntaxNode node, int level)
+        private static void PrintSyntaxTree(SyntaxNode node, int level)
         {
             // Odsadenie podľa úrovne
             var indent = new string(' ', level * 2);
@@ -214,11 +214,11 @@ public class ExampleTests
                 }
         }
 
-        static string ShouldClausule2 = "#track#.#param#.Should().Be(#value#)";
-        static string ShouldClausule = "#track#.Should(c => c.#param# == #value#)";
-        static string ShouldBeClausule = "#track#.Should().Be(#value#)";
-        static string AssertClausule = "Assert.That(#track#, Is.EqualTo(#value#))";
-        static string AssertClausule2 = "Assert.That(#track#, Has.Exactly(#count#).Matches<*>(* => *.#param# == #value#))"; //Assert.That(result, Has.Exactly(1).Matches<Customer>(c => c.Id == 1L));
+        private static string ShouldClausule2 = "#track#.#param#.Should().Be(#value#)";
+        private static string ShouldClausule = "#track#.Should(c => c.#param# == #value#)";
+        private static string ShouldBeClausule = "#track#.Should().Be(#value#)";
+        private static string AssertClausule = "Assert.That(#track#, Is.EqualTo(#value#))";
+        private static string AssertClausule2 = "Assert.That(#track#, Has.Exactly(#count#).Matches<*>(* => *.#param# == #value#))"; //Assert.That(result, Has.Exactly(1).Matches<Customer>(c => c.Id == 1L));
         private static IEnumerable<InvocationExpressionSyntax> GetAssertionStatementsForTestMethod(MethodDeclarationSyntax testSourceCode)
         {
             var assertionStatements = testSourceCode.DescendantNodes()
@@ -265,7 +265,7 @@ public class ExampleTests
             return testFixture;
         }
 
-        public static void AnalyzeTestMethod(string testSourceCode)
+        internal static void AnalyzeTestMethod(string testSourceCode)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(testSourceCode);
         var root = syntaxTree.GetRoot();
@@ -297,7 +297,7 @@ public class ExampleTests
         
         
 
-    static void TrackVariableSetters(SyntaxNode root, string variableName)
+    private static void TrackVariableSetters(SyntaxNode root, string variableName)
     {
         // Find assignments to the variable
         var assignments = root.DescendantNodes()
@@ -324,7 +324,7 @@ public class ExampleTests
         }
     }
 
-    static void TraceVariableDeclaration(SyntaxNode root, string variableName)
+    private static void TraceVariableDeclaration(SyntaxNode root, string variableName)
     {
         // If the variable name is actually a literal value, skip tracing it
         if (IsLiteralValue(variableName))
@@ -355,7 +355,7 @@ public class ExampleTests
         }
     }
 
-    static void TrackVariableReferences(SyntaxNode root)
+    private static void TrackVariableReferences(SyntaxNode root)
     {
         var res = root.ChildNodes().Select(node => node.ChildNodes().Select(nodeChild => nodeChild.ChildNodes()))
             .ToList();
@@ -372,13 +372,13 @@ public class ExampleTests
         }
     }
 
-    static bool IsLiteralValue(string value)
+    private static bool IsLiteralValue(string value)
     {
         // Check if the string is a numeric literal or a valid value in the assertion
         return int.TryParse(value, out _);
     }
 
-    static void AnalyzeMethodCall(SyntaxNode root, InvocationExpressionSyntax methodCall)
+    private static void AnalyzeMethodCall(SyntaxNode root, InvocationExpressionSyntax methodCall)
     {
         var methodName = methodCall.Expression.ToString();
         Console.WriteLine($"Method Called: {methodName}");
@@ -410,7 +410,7 @@ public class ExampleTests
 
         #region Cecil MethodAnalyzer
 
-        public static MethodAnalysisResult Analyze(MethodInfo method)
+        internal static MethodAnalysisResult Analyze(MethodInfo method)
         {
             var assemblyPath = method.DeclaringType.Assembly.Location;
             var assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
@@ -462,7 +462,7 @@ public class ExampleTests
 
         #endregion
 
-        public static string ReadAllFile(string filePath)
+        internal static string ReadAllFile(string filePath)
         {
            return System.IO.File.ReadAllText(filePath);
         }

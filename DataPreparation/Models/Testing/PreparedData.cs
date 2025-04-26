@@ -4,16 +4,16 @@ using Microsoft.Extensions.Logging;
 
 namespace DataPreparation.Models;
 
-public class PreparedData
+internal class PreparedData
 {
     private readonly object _preparedDataInstance;
-     private readonly object[] _paramsUpData;
-     private readonly object[] _paramsDownData;
-     private readonly MethodInfo? _runUpMethod;
-     private readonly MethodInfo? _runDownMethod;
-     private readonly ILogger _logger;
+    private readonly object[] _paramsUpData;
+    private readonly object[] _paramsDownData;
+    private readonly MethodInfo? _runUpMethod;
+    private readonly MethodInfo? _runDownMethod;
+    private readonly ILogger _logger;
     
-    public PreparedData(object preparedDataInstance, object[] paramsUpData, object[] paramsDownData, ILoggerFactory logger)
+    internal PreparedData(object preparedDataInstance, object[] paramsUpData, object[] paramsDownData, ILoggerFactory logger)
     {
         _preparedDataInstance = preparedDataInstance;
         _logger = logger.CreateLogger<PreparedData>();
@@ -108,11 +108,11 @@ public class PreparedData
         }
         return newParams.ToArray();
     }
-    public bool IsRunUpASync() => _runUpMethod?.ReturnType == typeof(Task);
+    internal bool IsRunUpASync() => _runUpMethod?.ReturnType == typeof(Task);
     
-    public bool IsRunDownASync() => _runDownMethod?.ReturnType == typeof(Task);
+    internal bool IsRunDownASync() => _runDownMethod?.ReturnType == typeof(Task);
    
-    public object? RunUp()
+    internal object? RunUp()
     {
         _logger.LogTrace($"Start UpData for {_preparedDataInstance.GetType().Name}");
         if (_runUpMethod != null)
@@ -125,7 +125,7 @@ public class PreparedData
         return null;
     }
 
-    public object? RunDown()
+    internal object? RunDown()
     {
         _logger.LogTrace($"Start DownData for {_preparedDataInstance.GetType().Name}");
         if (_runDownMethod != null)
@@ -139,13 +139,13 @@ public class PreparedData
         return null;
     }
 
-    public Task RunUpAsync()
+    internal Task RunUpAsync()
     {
         var result = RunUp();
         if (result is Task t) return t;
         return Task.CompletedTask;
     }
-    public Task RunDownAsync()
+    internal Task RunDownAsync()
     {
         var result = RunDown();
         if(result is Task t) return t;
