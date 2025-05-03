@@ -1,4 +1,10 @@
-# DataPreparation
+
+<p align="left">
+  <img src="icon.jpg" alt="Preview" width="400"/>
+</p>
+
+# Data Preparation NUnit Framework Extension
+
 
 [![NuGet](https://img.shields.io/nuget/v/DataPreparation.svg)](https://www.nuget.org/packages/DataPreparation/)
 [![License](https://img.shields.io/github/license/zribktad/DataPreparation)](LICENSE)
