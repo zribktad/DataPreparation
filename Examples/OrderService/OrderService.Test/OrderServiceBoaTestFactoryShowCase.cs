@@ -176,13 +176,26 @@ public class OrderServiceBoaTestFactoryShowCase : IDataPreparationLogger, IDataP
     
 
     [DataPreparationTest]
-    public void CreateOrder_FullOrderDTO_ReturnsOrder_BDD()
+    public void Order_BDD()
+    {
+        OrderServiceStepsMock steps = new();
+        this.Given(_ => steps.GivenIHaveUser())
+            .And(_ => steps.GivenActorCanCreateOrder())
+            .When(_ => steps.WhenICreatesOrderData())
+            .Then(_ => steps.ThanICreatesOrder())
+            .When(_ => steps.WhenILookAtOrder())
+            .Then(_ => steps.ThenOrderShouldBeCreated())
+            .BDDfy();
+    }
+    
+    [DataPreparationTest]
+    public void CreateOrder_FullOrderDTO_ReturnsOrder_BDD2()
     {
         OrderServiceStepsMock steps = new();
         this.Given(_ => steps.GivenIHaveActor())
             .And(_ => steps.GivenActorCanUseSourceFactory())
-            .And(_ => steps.GivenActorCanUseOrderService())
-            .When(_ => steps.WhenICreatesOrderdto())
+            .And(_ => steps.GivenUserCanCreateOrder())
+            .When(_ => steps.WhenICreatesOrderData())
             .Then(_ => steps.ThanICreatesOrder())
             .When(_ => steps.WhenILookAtOrder())
             .Then(_ => steps.ThenOrderShouldBeCreated())

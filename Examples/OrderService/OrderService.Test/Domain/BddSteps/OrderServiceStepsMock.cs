@@ -21,18 +21,28 @@ public class OrderServiceStepsMock
     {
         _actor = new Actor("OrderTester", new ConsoleLogger());
     }
+    public void GivenIHaveUser()
+    {
+        _actor = new Actor("User", new ConsoleLogger());
+       
+    }
 
     public void GivenActorCanUseSourceFactory()
     {
         _actor.Can(UseOrderService.FromMockFactory());
     }
 
-    public void GivenActorCanUseOrderService()
+    public void GivenActorCanCreateOrder()
     {
         _actor.Can( UseSourceFactory.FromDataPreparation());
     }
+    public void GivenUserCanCreateOrder()
+    {
+        GivenActorCanUseSourceFactory();
+        _actor.Can( UseSourceFactory.FromDataPreparation());
+    }
 
-    public void WhenICreatesOrderdto()
+    public void WhenICreatesOrderData()
     {
          _orderDto = _actor.AsksFor(GetOrderDto.One());
     }
