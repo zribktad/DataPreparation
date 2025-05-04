@@ -180,24 +180,24 @@ public class OrderServiceBoaTestFactoryShowCase : IDataPreparationLogger, IDataP
     {
         OrderServiceStepsMock steps = new();
         this.Given(_ => steps.GivenIHaveUser())
-            .And(_ => steps.GivenActorCanCreateOrder())
-            .When(_ => steps.WhenICreatesOrderData())
-            .Then(_ => steps.ThanICreatesOrder())
-            .When(_ => steps.WhenILookAtOrder())
+            .And(_ => steps.GivenUserCanCreateOrder())
+            .When(_ => steps.WhenUserCreatesOrderData())
+            .Then(_ => steps.ThanUserCreatesOrder())
+            .When(_ => steps.WhenUserLookAtOrder())
             .Then(_ => steps.ThenOrderShouldBeCreated())
             .BDDfy();
     }
     
     [DataPreparationTest]
-    public void CreateOrder_FullOrderDTO_ReturnsOrder_BDD2()
+    public void CreateOrder_FullOrderDTO_ReturnsOrder_BDD()
     {
         OrderServiceStepsMock steps = new();
         this.Given(_ => steps.GivenIHaveActor())
             .And(_ => steps.GivenActorCanUseSourceFactory())
-            .And(_ => steps.GivenUserCanCreateOrder())
-            .When(_ => steps.WhenICreatesOrderData())
-            .Then(_ => steps.ThanICreatesOrder())
-            .When(_ => steps.WhenILookAtOrder())
+            .And(_ => steps.GivenActorCanCreateOrder())
+            .When(_ => steps.WhenUserCreatesOrderData())
+            .Then(_ => steps.ThanUserCreatesOrder())
+            .When(_ => steps.WhenUserLookAtOrder())
             .Then(_ => steps.ThenOrderShouldBeCreated())
             .BDDfy();
     }

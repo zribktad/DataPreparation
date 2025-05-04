@@ -42,19 +42,19 @@ public class OrderServiceStepsMock
         _actor.Can( UseSourceFactory.FromDataPreparation());
     }
 
-    public void WhenICreatesOrderData()
+    public void WhenUserCreatesOrderData()
     {
          _orderDto = _actor.AsksFor(GetOrderDto.One());
     }
 
-    public void ThanICreatesOrder()
+    public void ThanUserCreatesOrder()
     {
         var createTask = CreateOrderTask.For(_orderDto); 
         _actor.AttemptsTo(createTask);
         _createdOrder = createTask.CreatedOrder;
     }
 
-    public void WhenILookAtOrder()
+    public void WhenUserLookAtOrder()
     {
         _order = _actor.AsksFor(OrderById.WithId(_createdOrder.Id));
     }
