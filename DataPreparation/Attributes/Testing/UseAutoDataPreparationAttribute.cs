@@ -1,8 +1,9 @@
 ﻿namespace DataPreparation.Attributes.Testing;
 
-public class UseAutoDataPreparationAttribute :Attribute
+//Currently not supported
+class UseAutoDataPreparationAttribute :Attribute
 {
-    public UseAutoDataPreparationAttribute(ulong depth, params object[] parameters)
+    private UseAutoDataPreparationAttribute(ulong depth, params object[] parameters)
     {
         
     }

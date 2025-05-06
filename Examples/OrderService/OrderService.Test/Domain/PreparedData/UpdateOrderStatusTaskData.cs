@@ -68,7 +68,7 @@ public class UpdateOrderStatusTaskData(IDiscoveryClient discoveryClient, IHttpCl
 
 public static class AddressFaker
 {
-    private static readonly Faker<AddressDTO> _faker = new Faker<AddressDTO>()
+    private static readonly Faker<AddressDTO> Faker = new Faker<AddressDTO>()
         .RuleFor(a => a.Street, f => f.Address.StreetAddress())
         .RuleFor(a => a.City, f => f.Address.City())
         .RuleFor(a => a.ZipCode, f => f.Address.ZipCode())
@@ -76,11 +76,11 @@ public static class AddressFaker
 
     public static AddressDTO Generate()
     {
-        return _faker.Generate();
+        return Faker.Generate();
     }
 
     public static List<AddressDTO> Generate(int count)
     {
-        return _faker.Generate(count);
+        return Faker.Generate(count);
     }
 }
