@@ -1,37 +1,24 @@
-# SWA Order Service
+# Order Service
 
-SWA Order service slouží pro správu objednávek a potřebných informací uživatele. Je součástí projektu https://gitlab.fel.cvut.cz/kimldavi/swa-main
+ Order service is used for managing orders and necessary user information. 
 
-## Technologie
-SWA Order Service využívá  následující technologie:
+## Technologies
+Order Service uses the following technologies:
 
-- **ASP.NET Core 6.0**: Moderní webový framework od společnosti Microsoft, který poskytuje vysoký výkon a flexibilitu.
-- **Entity Framework Core**: Výkonný ORM nástroj, který umožňuje jednoduchou práci s databází a zajišťuje efektivní správu dat.
-- **Postgresql**: Spolehlivý a škálovatelný databázový systém, který zajišťuje bezpečné a rychlé ukládání a přístup k datům.
-- **Docker**: Platforma pro kontejnerizaci, která umožňuje snadné nasazení a škálování aplikace v různých prostředích.
+- **ASP.NET Core 6.0**: Modern web framework from Microsoft that provides high performance and flexibility.
+- **Entity Framework Core**: Powerful ORM tool that allows simple database operations and ensures efficient data management.
+- **PostgreSQL**: Reliable and scalable database system that ensures secure and fast data storage and access.
+- **Docker**: Containerization platform that enables easy deployment and scaling of applications in various environments.
 
-## Požadavky
+## Requirements
 
-- .NET SDK 8.0 nebo vyšší
+- .NET SDK 8.0 or higher
 - PostgreSQL
-- Docker (pre kontejnerizaci)
+- Docker (for containerization)
 
-## Instalace
+## Configuration
 
-1. Klonujte tento repozitár:
-   ```bash
-   git clone https://github.com/kimldavi/swa-orderservice.git
-   cd swa-orderservice/OrderService
-   ```
-
-2. Nainstalujte závislosti:
-   ```bash
-   dotnet restore
-   ```
-
-## Konfigurace
-
-- Upravte `appsettings.json` súbor podľa vašich potrieb. Typický súbor `appsettings.json` vyzerá nasledovne alebo cez enviromens variables:
+- Modify the `appsettings.json` file according to your needs. A typical `appsettings.json` file looks like this or can be set via environment variables:
 
 ```json
 {
@@ -56,35 +43,34 @@ SWA Order Service využívá  následující technologie:
     }
   }
 }
-
 ```
 
-## Migrace databáze
+## Database Migration
 
-1. Vytvořte nebo aktualizujte schéma pomocí Entity Framework:
+1. Create or update the schema using Entity Framework:
    ```bash
    dotnet ef database update
    ```
 
-## Spuštění aplikace
+## Running the Application
 
-- Pro spuštění samotné aplikace:
+- To run the application itself:
   ```bash
   dotnet run
   ```
 
-- Pro spuštění pomocí Dockeru společně s databází:
+- To run using Docker along with the database:
   ```bash
   docker-compose up
   ```
 
-## Používání
+## Usage
 
-Základní návod na spuštění:
+Basic startup guide:
 
-1. Spusťte aplikci podle návodu výše.
-2. API bude přístupná na URL adrese, která je definovaná v konfiguraci (napr. `https://localhost:8080`).
-3. Lze si prohlédnout jednotlivé body API pomocí Swaggeru na adrese `http://localhost:8080/swagger/index.html`
+1. Run the application according to the instructions above.
+2. The API will be accessible at the URL defined in the configuration (e.g., `https://localhost:8080`).
+3. You can view the API endpoints using Swagger at `http://localhost:8080/swagger/index.html`
 
 
 
