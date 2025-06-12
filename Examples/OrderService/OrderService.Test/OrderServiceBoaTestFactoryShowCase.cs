@@ -1,3 +1,32 @@
+// -----------------------------------------------------------------------------
+// OrderServiceBoaTestFactoryShowCase.cs
+//
+// This file contains integration and unit tests for the OrderService using the
+// Boa.Constrictor Screenplay pattern, NUnit, Moq, and custom data preparation utilities.
+//
+// Main Class:
+//   OrderServiceBoaTestFactoryShowCase
+//
+// Purpose:
+//   - Verifies the creation of orders in the OrderService.
+//   - Demonstrates different test data setup strategies: manual mocks, DI, and factories.
+//   - Uses the Screenplay pattern for test actions and assertions.
+//
+// Key Features:
+//   - [DataPreparationFixture] and [Parallelizable] for advanced test setup and parallelism.
+//   - Dependency injection for test data and service mocks.
+//   - Custom attributes for data preparation and parameterized tests.
+//   - Fluent assertions with Shouldly.
+//
+// Test Methods:
+//   - CreateOrder_FullOrderDTO_ReturnsOrder: Manual mock setup.
+//   - CreateOrder_FullOrderDTO_ReturnsOrder_Before: Uses DI and prepared data.
+//   - CreateOrder_FullOrderDTO_ReturnsOrder_Factory: Uses factories for test data/services.
+//
+// Technologies:
+//   - Boa.Constrictor.Screenplay, NUnit, Moq, Shouldly, custom DataPreparation utilities.
+// -----------------------------------------------------------------------------
+
 using Boa.Constrictor.Screenplay;
 using DataPreparation.Factory.Testing;
 using DataPreparation.Provider;
@@ -26,20 +55,15 @@ namespace OrderService.Test;
 
 [DataPreparationFixture]
 [Parallelizable(ParallelScope.All)]
-public class OrderServiceBoaTestFactoryShowCase : IDataPreparationLogger, IDataPreparationTestServices
+public class OrderServiceBoaTestFactoryShowCase : IDataPreparationLogger, IDataPreparationTestServices, IBeforeTest, IAfterTest
 {
-
-    public OrderServiceBoaTestFactoryShowCase()
-    {
-    }
-
+    #region Fixture Setup
     public void DataPreparationServices(IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<Mock<IRepository<Customer>>>();
         serviceCollection.AddScoped<Mock<IRepository<Order>>>();
         serviceCollection.AddScoped<CreationOrderDTO>();
     }
-
     public ILoggerFactory InitializeDataPreparationTestLogger()
     {
         return LoggerFactory.Create(builder =>
@@ -49,6 +73,43 @@ public class OrderServiceBoaTestFactoryShowCase : IDataPreparationLogger, IDataP
             builder.AddConsole();
         });
     }
+    public void BeforeTest(IServiceProvider testProvider)
+    {
+        
+    }
+    public void AfterTest(IServiceProvider testProvider)
+    {
+    }
+    
+    #endregion
+    
+    // -----------------------------------------------------------------------------
+    // Test Descriptions
+    // -----------------------------------------------------------------------------
+    // CreateOrder_FullOrderDTO_ReturnsOrder:
+    //   Tests order creation using manually constructed mocks for repositories and DTOs.
+    //   Verifies that the created order matches the input data.
+    //
+    // CreateOrder_FullOrderDTO_ReturnsOrder_Before:
+    //   Uses dependency injection to provide prepared data and mocks.
+    //   Tests order creation and checks that the result matches the expected customer and order items.
+    //
+    // CreateOrder_FullOrderDTO_ReturnsOrder_Factory:
+    //   Uses a factory to generate test data and services.
+    //   Verifies that the order is created correctly and the returned data matches the input.
+    //
+    // CreateOrder_FullOrderDTO_ReturnsOrder_FactoryBetter:
+    //   Demonstrates a more advanced factory-based approach using actor abilities.
+    //   Retrieves DTOs and services from the actor and verifies order creation.
+    //
+    // Order_BDD:
+    //   Implements a BDD-style test using BDDfy. Steps are defined in a separate steps class,
+    //   and the test verifies the full order creation workflow.
+    //
+    // CreateOrder_FullOrderDTO_ReturnsOrderFactoryAsync:
+    //   Asynchronous test using async factories to generate test data.
+    //   Verifies that the order is created as expected and the number of order items matches the prepared data.
+    // -----------------------------------------------------------------------------
 
     [Test]
     public void CreateOrder_FullOrderDTO_ReturnsOrder()
@@ -187,20 +248,7 @@ public class OrderServiceBoaTestFactoryShowCase : IDataPreparationLogger, IDataP
             .Then(_ => steps.ThenOrderShouldBeCreated())
             .BDDfy();
     }
-    
-    [DataPreparationTest]
-    public void CreateOrder_FullOrderDTO_ReturnsOrder_BDD()
-    {
-        OrderServiceStepsMock steps = new();
-        this.Given(_ => steps.GivenIHaveActor())
-            .And(_ => steps.GivenActorCanUseSourceFactory())
-            .And(_ => steps.GivenActorCanCreateOrder())
-            .When(_ => steps.WhenUserCreatesOrderData())
-            .Then(_ => steps.ThanUserCreatesOrder())
-            .When(_ => steps.WhenUserLookAtOrder())
-            .Then(_ => steps.ThenOrderShouldBeCreated())
-            .BDDfy();
-    }
+   
     
     //Example of async test using async factory
     [DataPreparationTest]
@@ -229,5 +277,6 @@ public class OrderServiceBoaTestFactoryShowCase : IDataPreparationLogger, IDataP
         result.OrderItems.Count()
             .ShouldBe(PreparationContext.GetFactory().Was<OrderItem, OrderItemFactoryAsync>().ToList().Count);
     }
+
 
 }
