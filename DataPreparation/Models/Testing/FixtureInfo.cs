@@ -5,7 +5,7 @@ using NUnit.Framework.Internal.Execution;
 
 namespace DataPreparation.Testing;
 
-public class FixtureInfo: ContextTestInfo
+internal class FixtureInfo: ContextTestInfo
 {
     public readonly Type Type;
     public readonly object Instance;

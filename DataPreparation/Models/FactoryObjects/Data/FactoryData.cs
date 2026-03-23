@@ -3,7 +3,7 @@ using DataPreparation.Testing.Factory;
 
 namespace DataPreparation.Factory.Testing;
 
-public class FactoryData(long id, object data, IDataParams? args, IDataFactoryBase factoryBase) : IFactoryData
+internal class FactoryData(long id, object data, IDataParams? args, IDataFactoryBase factoryBase) : IFactoryData
 {
     public long Id { get; } = id;
     public object Data { get; } = data ?? throw new ArgumentNullException(nameof(data));

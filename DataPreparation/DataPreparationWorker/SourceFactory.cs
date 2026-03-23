@@ -23,7 +23,7 @@ namespace DataPreparation.Factory.Testing;
 /// - Query previously created instances (Was)
 /// - Retrieve instances by ID (GetById)
 /// </remarks>
-public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : ISourceFactory
+internal class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : ISourceFactory
 {
     private readonly FactoryHistoryManager _history = new(logger);
 

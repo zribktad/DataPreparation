@@ -1,6 +1,6 @@
 namespace DataPreparation.Models.Data;
 
-public class ThreadSafeCounter
+internal class ThreadSafeCounter
 {
     private long _counter = 0;
 

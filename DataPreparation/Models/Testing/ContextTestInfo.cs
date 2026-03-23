@@ -3,7 +3,7 @@ using NUnit.Framework.Interfaces;
 
 namespace DataPreparation.Data;
 
-public class ContextTestInfo
+internal class ContextTestInfo
 {
     private readonly string _id;
     private readonly object?[] _arguments;
