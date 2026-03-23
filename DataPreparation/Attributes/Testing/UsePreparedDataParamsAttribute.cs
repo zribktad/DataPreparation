@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using DataPreparation.DataHandlers;
 using DataPreparation.Models;
 using DataPreparation.Models.Data;
@@ -36,7 +36,7 @@ namespace DataPreparation.Testing
         public override void BeforeTest(ITest test)
         {
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            TestStore testStore = TestStore.Initialize(testInfo);
+            TestStore testStore = TestStoreLifecycleManager.Initialize(testInfo);
             // Prepare data for the test from attribute
             var preparedDataClassInstanceInList = GetDataPreparation.GetPreparedData(testStore, [_preparaDataType]);
             // Add the prepared data to the store
@@ -54,8 +54,8 @@ namespace DataPreparation.Testing
         {
             // Down data for the test
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = TestStore.Get(testInfo);
-            TestStore.Deinitialize(testStore);
+            var testStore = TestStoreLifecycleManager.FindByContext(testInfo);
+            TestStoreLifecycleManager.Deinitialize(testStore);
         }
 
 

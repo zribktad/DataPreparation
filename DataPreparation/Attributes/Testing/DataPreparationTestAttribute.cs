@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using DataPreparation.Data;
 using DataPreparation.Helpers;
 using DataPreparation.Models.Data;
@@ -57,7 +57,7 @@ namespace DataPreparation.Testing.Factory
         public void BeforeTest(ITest test)
         {
             _testInfo = TestInfo.CreateTestInfo(test);
-            TestStore.Initialize(_testInfo);
+            TestStoreLifecycleManager.Initialize(_testInfo);
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace DataPreparation.Testing.Factory
         /// </remarks>
         public void AfterTest(ITest test)
         {
-            var testStore = TestStore.Get(_testInfo);
-            TestStore.Deinitialize(testStore);
+            var testStore = TestStoreLifecycleManager.FindByContext(_testInfo);
+            TestStoreLifecycleManager.Deinitialize(testStore);
         }
 
         /// <summary>

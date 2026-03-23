@@ -4,41 +4,38 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DataPreparation.Helpers;
 
+/// <summary>
+/// Helper for creating logger factories and logging to multiple loggers simultaneously.
+/// </summary>
 internal static class LoggerHelper
 {
+    /// <summary>
+    /// Creates a logger factory from the fixture's IDataPreparationLogger implementation,
+    /// or falls back to NullLoggerFactory if none is configured.
+    /// </summary>
+    /// <param name="fixtureInfo">The fixture information to check for logger configuration</param>
+    /// <returns>A configured ILoggerFactory or NullLoggerFactory</returns>
     internal static ILoggerFactory CreateOrNullLogger(FixtureInfo fixtureInfo)
     {
-        try
+        if (fixtureInfo.Instance is IDataPreparationLogger loggerInitializer)
         {
-            if (fixtureInfo.Instance is IDataPreparationLogger dataPreparationLoggerInitializer)
-            {
-                var builder = dataPreparationLoggerInitializer.InitializeDataPreparationTestLogger();
-                if (builder is { } factory)
-                {
-                    return factory;
-                }
-            }
-#if DEBUG
-                Console.WriteLine($"LoggerFactory factory not found for {fixtureInfo.GetType()} use NullLoggerFactory");
-#endif
+            var factory = loggerInitializer.InitializeDataPreparationTestLogger();
+            if (factory is not null) return factory;
         }
-        catch (Exception e)
-        {
-#if DEBUG
-            Console.Error.WriteLine(e);
-            throw;
-#endif
-        }
-        
+
         return NullLoggerFactory.Instance;
     }
 
-
-    internal static void Log( Action<ILogger> logAction,params ILogger?[] loggers)
+    /// <summary>
+    /// Executes a logging action on all non-null loggers.
+    /// </summary>
+    /// <param name="logAction">The logging action to execute</param>
+    /// <param name="loggers">The loggers to write to</param>
+    internal static void Log(Action<ILogger> logAction, params ILogger?[] loggers)
     {
         foreach (var logger in loggers)
         {
-            if(logger == null) continue;
+            if (logger == null) continue;
             logAction(logger);
         }
     }

@@ -1,4 +1,4 @@
-﻿using DataPreparation.Data;
+using DataPreparation.Data;
 using DataPreparation.DataHandlers;
 using DataPreparation.Models.Data;
 using DataPreparation.Provider;
@@ -70,7 +70,7 @@ namespace DataPreparation.Testing
         {
             // Create or get the test store for the current test
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = TestStore.Initialize(testInfo);
+            var testStore = TestStoreLifecycleManager.Initialize(testInfo);
             
             // Prepare data for the test from the data types specified in the attribute
             var preparedDataList = GetDataPreparation.GetPreparedData(testStore, _preparedDataTypes);
@@ -98,8 +98,8 @@ namespace DataPreparation.Testing
         {
             // Get the test store and clean up all test data
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = TestStore.Get(testInfo);
-            TestStore.Deinitialize(testStore);
+            var testStore = TestStoreLifecycleManager.FindByContext(testInfo);
+            TestStoreLifecycleManager.Deinitialize(testStore);
         }
 
         /// <summary>

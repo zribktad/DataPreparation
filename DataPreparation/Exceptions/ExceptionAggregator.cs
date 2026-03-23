@@ -55,6 +55,37 @@ internal class ExceptionAggregator
     /// <value>True if there are one or more exceptions collected; otherwise, false.</value>
     public bool HasExceptions => _exceptions.Count > 0;
 
+    /// <summary>
+    /// Executes an action and captures any thrown exception.
+    /// Useful in cleanup scenarios where execution should continue despite errors.
+    /// </summary>
+    /// <param name="action">The action to execute</param>
+    public void TryExecute(Action action)
+    {
+        try { action(); }
+        catch (Exception e) { Add(e); }
+    }
+
+    /// <summary>
+    /// Executes an async operation and captures any thrown exception.
+    /// Useful in async cleanup scenarios where execution should continue despite errors.
+    /// </summary>
+    /// <param name="action">The async operation to execute</param>
+    public async ValueTask TryExecuteAsync(Func<ValueTask> action)
+    {
+        try { await action().ConfigureAwait(false); }
+        catch (Exception e) { Add(e); }
+    }
+
+    /// <summary>
+    /// Throws the aggregated exception if any exceptions have been collected.
+    /// </summary>
+    public void ThrowIfAny()
+    {
+        var exception = Get();
+        if (exception != null) throw exception;
+    }
+
     public void Clear()
     {
         _exceptions.Clear();

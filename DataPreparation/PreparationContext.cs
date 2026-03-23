@@ -1,4 +1,4 @@
-﻿using DataPreparation.Data;
+using DataPreparation.Data;
 using DataPreparation.Models.Data;
 using DataPreparation.Testing;
 using DataPreparation.Testing.Factory;
@@ -36,7 +36,7 @@ namespace DataPreparation.Provider
         public static IServiceProvider GetProvider()
         {
             // Retrieve the test store associated with the current test context
-            var currentTestStore = TestStore.Get(new ContextTestInfo(TestContext.CurrentContext.Test));
+            var currentTestStore = TestStoreLifecycleManager.FindByContext(new ContextTestInfo(TestContext.CurrentContext.Test));
             if(currentTestStore == null)
             {
                 throw new InvalidOperationException($"This method should be called from a test method context.");
@@ -63,7 +63,7 @@ namespace DataPreparation.Provider
         /// </example>
         public static ISourceFactory GetFactory()
         {
-            var currentTestStore = TestStore.Get(new ContextTestInfo(TestContext.CurrentContext.Test));
+            var currentTestStore = TestStoreLifecycleManager.FindByContext(new ContextTestInfo(TestContext.CurrentContext.Test));
             if(currentTestStore == null)
             {
                 throw new InvalidOperationException($"This method should be called from a test method context.");
