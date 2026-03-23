@@ -338,7 +338,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
        if (foundData != null)
        {
           return foundData is T data ? data 
-               : throw CastExeption(logger,$"Data is not of type {typeof(T)} for operation {nameof(GetById)}.");
+               : throw CastException(logger,$"Data is not of type {typeof(T)} for operation {nameof(GetById)}.");
        }
 
        return default;
@@ -692,7 +692,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
                 logger.LogDebug($"[{nameof(Get)}]: Retrieved data for {typeof(TDataFactory)} with id {createdId}");
                 if ((item as FactoryData)!.Data is not TRet data)
                 {
-                    throw CastExeption(logger,
+                    throw CastException(logger,
                         $"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.");
                 }
 
@@ -721,7 +721,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
             }
             catch (InvalidCastException e)
             {
-                throw CastExeption(logger,$"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.",e);
+                throw CastException(logger,$"Data is not of type {typeof(TRet)} for operation {nameof(Get)}.",e);
             }
         }
         createdIds = new List<long>();
@@ -741,7 +741,7 @@ public class SourceFactory(IServiceProvider serviceProvider, ILogger logger) : I
     /// <param name="text">The error message</param>
     /// <param name="exception">Optional inner exception</param>
     /// <returns>An InvalidCastException with the specified message</returns>
-    private InvalidCastException CastExeption(ILogger log, string text, Exception? exception = null)
+    private InvalidCastException CastException(ILogger log, string text, Exception? exception = null)
     {
         var ex = new InvalidCastException(text, exception);
         log.LogError(ex, "Error in cast:");

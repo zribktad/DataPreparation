@@ -53,5 +53,11 @@ namespace DataPreparation.UnitTests.Stores
             Assert.That(_fixtureStore.FixtureInfo, Is.Not.Null);
             Assert.That(_fixtureStore.LoggerFactory, Is.Not.Null);
         }
+
+        [TearDown]
+        public void TearDown()
+        {
+            (_ServiceProvider as IDisposable)?.Dispose();
+        }
     }
 }
