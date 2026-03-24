@@ -1,4 +1,4 @@
-﻿using DataPreparation.Exceptions;
+using DataPreparation.Exceptions;
 using DataPreparation.Models;
 using DataPreparation.Models.Data;
 using Microsoft.Extensions.Logging;
@@ -35,7 +35,7 @@ namespace DataPreparation.Testing
         private static async ValueTask DataUpTask(TestStore testStore)
         {
             // Increment the attribute counter and check if all attributes have been processed
-            testStore.AttributeUsingCounter.IncrementAttrributeCountUp();
+            testStore.AttributeUsingCounter.IncrementAttributeCountUp();
             if (!testStore.AttributeUsingCounter.IsAllUpAttributesRun()) return;
             
             // NOTE: Analysis code is commented out, but could be used to analyze method calls
@@ -46,7 +46,7 @@ namespace DataPreparation.Testing
             
             // Log that we're starting the data preparation process
             testStore.LoggerFactory.CreateLogger(typeof(DataPreparationHandler))
-                .LogInformation($"Data preparation Up for before test {testStore.TestInfo} started.");
+                .LogInformation("Data preparation Up for before test {TestInfo} started.", testStore.TestInfo);
             
             // Retrieve all preparation data items to be executed
             var testData = testStore.PreparedData.GetPreparation();
@@ -95,7 +95,7 @@ namespace DataPreparation.Testing
             
             // Log the start of the data teardown process
             testStore.LoggerFactory.CreateLogger(typeof(DataPreparationHandler))
-                .LogInformation($"Data preparation before test Down {testStore.TestInfo} started.");
+                .LogInformation("Data preparation before test Down {TestInfo} started.", testStore.TestInfo);
             
             // Use an exception aggregator to collect all exceptions during teardown
             // so we can continue cleanup even if some operations fail
@@ -125,7 +125,6 @@ namespace DataPreparation.Testing
                 {
                     // Collect exceptions but continue with cleanup
                     exceptionAggregator.Add(e);
-                    throw;
                 }
             }
             

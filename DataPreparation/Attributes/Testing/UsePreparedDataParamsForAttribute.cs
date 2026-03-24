@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using DataPreparation.Data;
 using DataPreparation.DataHandlers;
@@ -71,7 +71,7 @@ namespace DataPreparation.Testing
         {
             
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            TestStore testStore = TestStore.Initialize(testInfo);
+            TestStore testStore = TestStoreLifecycleManager.Initialize(testInfo);
             
             // Prepare class data for the test from attribute
             var preparedData = GetDataPreparation.GetPreparedDataFromCode(testStore, _useClassDataPreparation, _classType, _methodName);
@@ -92,9 +92,9 @@ namespace DataPreparation.Testing
         public override void AfterTest(ITest test)
         {
             TestInfo testInfo = TestInfo.CreateTestInfo(test);
-            var testStore = TestStore.Get(testInfo);
+            var testStore = TestStoreLifecycleManager.FindByContext(testInfo);
          
-            TestStore.Deinitialize(testStore);
+            TestStoreLifecycleManager.Deinitialize(testStore);
         }
 
        

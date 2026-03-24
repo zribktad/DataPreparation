@@ -1,26 +1,46 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
         <RootNamespace>DataPreparation</RootNamespace>
+
+        <!-- NuGet Package Metadata -->
         <Title>Data Preparation</Title>
         <Authors>Tadeáš Zribko</Authors>
-        <Description>DataPreparation provides robust tools for creating, managing, and validating test data in NUnit testing.</Description>
+        <Description>DataPreparation provides robust tools for creating, managing, and validating test data in NUnit testing. Features include factory-pattern data creation, test data lifecycle management, async support, DI integration, and convention-based data preparation.</Description>
+        <Copyright>Copyright © 2025-2026 Tadeáš Zribko</Copyright>
         <RepositoryUrl>https://github.com/zribktad/DataPreparation</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>NUnit;Testing;Data;TestData;DataPreparation;UnitTesting;Test;ManageData</PackageTags>
+        <PackageProjectUrl>https://github.com/zribktad/DataPreparation</PackageProjectUrl>
+        <PackageTags>NUnit;Testing;Data;TestData;DataPreparation;UnitTesting;Test;ManageData;Factory;TestDataFactory;NUnit4;DependencyInjection</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>icon.jpg</PackageIcon>
-        <Version>1.1.0</Version>
+        <PackageReleaseNotes>v2.0.0: Multi-target .NET 8/9/10, NUnit 4 support, modern C# features, improved code quality</PackageReleaseNotes>
+        <Version>2.0.0</Version>
+
+        <!-- Build Configuration -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Deterministic>true</Deterministic>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <!-- Enable SourceLink for debuggable NuGet packages -->
+    <PropertyGroup>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2" />
-      <PackageReference Include="NUnit" Version="3.14.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
+      <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+      <PackageReference Include="NUnit" Version="4.5.1" />
     </ItemGroup>
   <ItemGroup>
 

@@ -162,7 +162,7 @@ internal class HistoryStore<T>:IReadOnlyCollection<T> where T : notnull
 /// Represents an item in the history, containing an ID and a value.
 /// </summary>
 /// <typeparam name="T">The type of the value stored in the history item.</typeparam>
-public class HistoryItem<T> where T : notnull
+internal class HistoryItem<T> where T : notnull
 {
     /// <summary>
     /// Gets the ID of the history item.

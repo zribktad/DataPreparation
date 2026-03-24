@@ -6,7 +6,7 @@ using NUnit.Framework.Internal.Execution;
 
 namespace DataPreparation.Testing;
 
-public class TestInfo :ContextTestInfo
+internal class TestInfo :ContextTestInfo
 {
     
    

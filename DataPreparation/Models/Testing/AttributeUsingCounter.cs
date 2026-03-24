@@ -4,7 +4,7 @@ internal class AttributeUsingCounter(IList<Attribute> dataPreparationAttributes)
 {
     int AttributesUseUpCount { get; set; }
     
-    internal int IncrementAttrributeCountUp()
+    internal int IncrementAttributeCountUp()
     {
         if(IsAllUpAttributesRun())
         {
