@@ -20,6 +20,19 @@ public class DockerHelper
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DockerHelper"/> class.
+    /// This constructor is kept for backwards compatibility.
+    /// </summary>
+    /// <param name="containerId">The Docker container ID</param>
+    /// <param name="databaseName">The name of the PostgreSQL database</param>
+    /// <param name="userName">The database user name</param>
+    /// <param name="password">The database password</param>
+    public DockerHelper(string containerId, string databaseName, string userName, string password)
+        : this(containerId, databaseName, userName, password, Microsoft.Extensions.Logging.Abstractions.NullLogger<DockerHelper>.Instance)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DockerHelper"/> class.
     /// </summary>
     /// <param name="containerId">The Docker container ID</param>
     /// <param name="databaseName">The name of the PostgreSQL database</param>

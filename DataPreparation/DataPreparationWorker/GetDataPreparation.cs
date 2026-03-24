@@ -149,6 +149,6 @@ internal static class GetDataPreparation
     {
         var exception = new InvalidOperationException(message);
         logger.LogError(exception, "Data preparation failed: {Message}", message);
-        throw exception;
+        return exception;
     }
 }

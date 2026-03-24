@@ -63,17 +63,7 @@ internal class ExceptionAggregator
     public void TryExecute(Action action)
     {
         try { action(); }
-        catch (Exception e) { Add(e); }
-    }
-
-    /// <summary>
-    /// Executes an async operation and captures any thrown exception.
-    /// Useful in async cleanup scenarios where execution should continue despite errors.
-    /// </summary>
-    /// <param name="action">The async operation to execute</param>
-    public async ValueTask TryExecuteAsync(Func<ValueTask> action)
-    {
-        try { await action().ConfigureAwait(false); }
+        catch (AggregateException e) { Add(e.Flatten()); }
         catch (Exception e) { Add(e); }
     }
 

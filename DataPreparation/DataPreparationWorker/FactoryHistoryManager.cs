@@ -72,10 +72,6 @@ internal class FactoryHistoryManager(ILogger logger)
                 throw e;
             }
         }
-        catch (InvalidOperationException)
-        {
-            throw;
-        }
         catch (Exception e)
         {
             logger.LogError(e, "Failed to create history for {FactoryType}", typeof(TDataFactory));
@@ -95,7 +91,7 @@ internal class FactoryHistoryManager(ILogger logger)
             logger.LogDebug("[{Operation}]: Retrieved data for {FactoryType} with id {Id}",
                 "Get", typeof(TDataFactory), createdId);
 
-            if ((item as FactoryData)!.Data is not TRet data)
+            if (item.Data is not TRet data)
             {
                 throw CastException($"Data is not of type {typeof(TRet)} for operation Get.");
             }
@@ -227,20 +223,24 @@ internal class FactoryHistoryManager(ILogger logger)
                 };
 
                 if (deleted)
+                {
                     logger.LogInformation("Deleted data for {FactoryType} with id {Id}", factoryType, data.Id);
+                }
                 else
-                    LogAndCollect(exceptionAggregator,
-                        $"Failed to delete data for {factoryType} with id {data.Id} and arguments {data.Args}");
+                {
+                    logger.LogError("Failed to delete data for {FactoryType} with id {Id} and arguments {Args}", factoryType, data.Id, data.Args);
+                    exceptionAggregator.Add(new InvalidOperationException($"Failed to delete data for {factoryType} with id {data.Id} and arguments {data.Args}"));
+                }
             }
             catch (InvalidOperationException e)
             {
-                LogAndCollect(exceptionAggregator,
-                    $"Error to delete data for {factoryType} with id {data.Id} and arguments {data.Args}", e);
+                logger.LogError(e, "Error deleting data for {FactoryType} with id {Id} and arguments {Args}", factoryType, data.Id, data.Args);
+                exceptionAggregator.Add(new InvalidOperationException($"Error to delete data for {factoryType} with id {data.Id} and arguments {data.Args}", e));
             }
             catch (Exception e)
             {
-                LogAndCollect(exceptionAggregator,
-                    $"Error to delete data for {factoryType} with id {data.Id} and arguments {data.Args}", e);
+                logger.LogError(e, "Error deleting data for {FactoryType} with id {Id} and arguments {Args}", factoryType, data.Id, data.Args);
+                exceptionAggregator.Add(new InvalidOperationException($"Error to delete data for {factoryType} with id {data.Id} and arguments {data.Args}", e));
             }
         }
 
@@ -256,12 +256,5 @@ internal class FactoryHistoryManager(ILogger logger)
         var ex = new InvalidCastException(text, exception);
         logger.LogError(ex, "Error in cast:");
         return ex;
-    }
-
-    private void LogAndCollect(ExceptionAggregator aggregator, string message, Exception? innerException = null)
-    {
-        var ex = new InvalidOperationException(message, innerException);
-        logger.LogError(ex, "{Message}", message);
-        aggregator.Add(ex);
     }
 }
