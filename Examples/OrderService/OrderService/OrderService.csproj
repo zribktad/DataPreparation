@@ -33,7 +33,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
     <PackageReference Include="Steeltoe.Discovery.ClientCore" Version="3.2.6" />
     <PackageReference Include="Steeltoe.Discovery.Eureka" Version="3.2.8" />
-    <PackageReference Include="Steeltoe.Management.EndpointCore" Version="3.2.6" />
+    <PackageReference Include="Steeltoe.Management.EndpointCore" Version="3.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="xunit.extensibility.core" Version="2.5.3" />
   </ItemGroup>
